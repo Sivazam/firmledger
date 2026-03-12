@@ -40,7 +40,7 @@ export default function MonthlyReportPage() {
             <Paper sx={{ p: 2, height: 400, display: 'flex', flexDirection: 'column' }}>
                 <Typography variant="subtitle1" gutterBottom>Money In vs Money Out</Typography>
                 {data.length > 0 ? (
-                    <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
+                    <Box sx={{ height: 350, width: '100%', mt: 2 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data}>
                                 <CartesianGrid strokeDasharray="3 3" />

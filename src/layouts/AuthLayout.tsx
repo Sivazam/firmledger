@@ -20,7 +20,7 @@ export default function AuthLayout() {
                         FirmLedger
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                        Enterprise Transaction Recording
+                        Professional Client & Ledger Management
                     </Typography>
                 </Box>
                 <Card sx={{ p: { xs: 3, md: 5 }, boxShadow: 3 }}>

@@ -8,6 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*'],
+      manifestFilename: 'manifest.json',
       manifest: {
         name: 'FirmLedger Accounts',
         short_name: 'FirmLedger',
