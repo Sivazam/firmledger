@@ -22,12 +22,16 @@ export default function ApprovedGuard() {
         }
     }, [initialized, loading, profile]);
 
-    if (!initialized || loading || isApproved === null) {
+    if (!initialized || loading || (isApproved === null && profile?.userType !== 'super-admin')) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                 <CircularProgress />
             </Box>
         );
+    }
+
+    if (profile?.userType === 'super-admin') {
+        return <Outlet />;
     }
 
     if (!profile?.organizationId) {
