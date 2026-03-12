@@ -1,0 +1,181 @@
+src/App.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/common/BottomNavigation.tsx(33,27): error TS6133: 'event' is declared but its value is never read.
+src/components/common/TopAppBar.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/party/PartyCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/party/PartyForm.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/party/PartyForm.tsx(5,23): error TS1484: 'PartyFormData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/party/PartyForm.tsx(25,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(28,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(31,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(34,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(37,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(40,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(43,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartyForm.tsx(46,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/party/PartySelector.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/pdf/ReceiptDocument.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/pdf/ReportDocument.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/pdf/ReportDocument.tsx(9,49): error TS6133: 'children' is declared but its value is never read.
+src/components/transaction/AmountDisplay.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/transaction/AmountDisplay.tsx(2,22): error TS1484: 'TypographyProps' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/transaction/TransactionCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/transaction/TransactionFilters.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/transaction/TransactionForm.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/transaction/TransactionForm.tsx(5,29): error TS1484: 'TransactionFormData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/transaction/TransactionForm.tsx(123,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/transaction/TransactionForm.tsx(132,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/transaction/TransactionForm.tsx(144,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/transaction/TransactionForm.tsx(147,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/transaction/TransactionForm.tsx(151,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/transaction/TransactionForm.tsx(162,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/components/transaction/TransactionTypeSelect.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/config/constants.ts(1,13): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+src/guards/AdminGuard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/guards/ApprovedGuard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/guards/AuthGuard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/guards/ProfileCompleteGuard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/hooks/usePDF.ts(10,31): error TS2345: Argument of type 'never[]' is not assignable to parameter of type 'ReactElement<DocumentProps, string | JSXElementConstructor<any>>'.
+  Type 'never[]' is missing the following properties from type 'ReactElement<DocumentProps, string | JSXElementConstructor<any>>': type, props, key
+src/layouts/AppLayout.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/layouts/AppLayout.tsx(7,1): error TS6133: 'useAuthStore' is declared but its value is never read.
+src/layouts/AuthLayout.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/admin/AdminDashboardPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/admin/AdminDashboardPage.tsx(35,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/pages/admin/AdminDashboardPage.tsx(43,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/pages/admin/AdminDashboardPage.tsx(51,18): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/pages/admin/FirmDetailPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/admin/FirmDetailPage.tsx(9,11): error TS6133: 'id' is declared but its value is never read.
+src/pages/admin/FirmManagementPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/auth/ProfileSetupPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/auth/ProfileSetupPage.tsx(5,46): error TS6133: 'Alert' is declared but its value is never read.
+src/pages/auth/ProfileSetupPage.tsx(22,19): error TS6133: 'profile' is declared but its value is never read.
+src/pages/dashboard/DashboardPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/onboarding/OrganizationSetupPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/onboarding/PendingApprovalPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/party/AddPartyPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/party/AddPartyPage.tsx(4,10): error TS1484: 'PartyFormData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/party/AddPartyPage.tsx(20,82): error TS2345: Argument of type '{ name: string; fatherName: string; address: string; town: string; phoneNumber: string; aadharNumber?: string | undefined; panNumber?: string | undefined; gstNumber?: string | undefined; }' is not assignable to parameter of type 'Omit<Party, "code" | "id" | "createdAt" | "updatedAt">'.
+  Types of property 'gstNumber' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/pages/party/EditPartyPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/party/EditPartyPage.tsx(4,10): error TS1484: 'PartyFormData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/party/PartiesListPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/reports/BalanceSheetPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/reports/ChecklistPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/reports/LedgerPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/reports/LedgerPage.tsx(3,1): error TS6133: 'usePartyStore' is declared but its value is never read.
+src/pages/reports/MonthlyReportPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/reports/ReportsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/reports/ReportsPage.tsx(20,22): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { component: ElementType<any, keyof IntrinsicElements>; } & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<...> & Omit<...>): Element | null', gave the following error.
+    Property 'component' is missing in type '{ children: Element; item: true; xs: number; sm: number; key: number; }' but required in type '{ component: ElementType<any, keyof IntrinsicElements>; }'.
+  Overload 2 of 2, '(props: DefaultComponentProps<GridTypeMap<{}, "div">>): Element | null', gave the following error.
+    Type '{ children: Element; item: true; xs: number; sm: number; key: number; }' is not assignable to type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+      Property 'item' does not exist on type 'IntrinsicAttributes & GridBaseProps & { sx?: SxProps<Theme> | undefined; } & SystemProps<Theme> & Omit<...>'.
+src/pages/settings/SettingsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/transaction/EditTransactionPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/transaction/EditTransactionPage.tsx(4,10): error TS1484: 'TransactionFormData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/transaction/EditTransactionPage.tsx(51,96): error TS2345: Argument of type '{ fromPartyName: string; toPartyName: string; date: Date; type: TransactionType; fromPartyId: string; toPartyId: string; description: string; amount: number; }' is not assignable to parameter of type 'Partial<Transaction>'.
+  Types of property 'date' are incompatible.
+    Type 'Date' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis, isEqual
+src/pages/transaction/EditTransactionPage.tsx(52,52): error TS2345: Argument of type '{ fromPartyName: string; toPartyName: string; date: Date; type: TransactionType; fromPartyId: string; toPartyId: string; description: string; amount: number; }' is not assignable to parameter of type 'Partial<Transaction>'.
+  Types of property 'date' are incompatible.
+    Type 'Date' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis, isEqual
+src/pages/transaction/RecordTransactionPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/transaction/RecordTransactionPage.tsx(4,10): error TS1484: 'TransactionFormData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/transaction/RecordTransactionPage.tsx(34,91): error TS2345: Argument of type '{ fromPartyName: string; toPartyName: string; createdBy: string; date: Date; type: TransactionType; fromPartyId: string; toPartyId: string; description: string; amount: number; }' is not assignable to parameter of type 'Omit<Transaction, "id" | "createdAt" | "updatedAt" | "slNo">'.
+  Types of property 'date' are incompatible.
+    Type 'Date' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis, isEqual
+src/pages/transaction/TransactionDetailPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/transaction/TransactionDetailPage.tsx(13,1): error TS6133: 'Organization' is declared but its value is never read.
+src/pages/transaction/TransactionsListPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/services/auth.service.ts(2,5): error TS6133: 'signInWithEmailAndPassword' is declared but its value is never read.
+src/services/auth.service.ts(3,5): error TS6133: 'createUserWithEmailAndPassword' is declared but its value is never read.
+src/stores/authStore.ts(2,10): error TS1484: 'User' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/utils/validators.ts(18,20): error TS2353: Object literal may only specify known properties, and 'required_error' does not exist in type '{ error?: string | $ZodErrorMap<$ZodIssueInvalidType<unknown>> | undefined; message?: string | undefined; }'.

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <title>FirmLedger</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #F1F5F9;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .splash-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    .splash-footer {
+      position: absolute;
+      bottom: 24px;
+      font-size: 13px;
+      color: #64748B;
+      text-align: center;
+    }
+
+    .splash-footer a {
+      color: #1E40AF;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .splash-footer a:hover {
+      color: #1E3A8A;
+      text-decoration: underline;
+    }
+
+    .splash-logo {
+      height: 140px;
+      /* Allow width to auto-scale */
+      animation: splash-pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes splash-pulse {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.85;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.95);
+        opacity: 0.85;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root">
+    <div class="splash-container">
+      <img src="/logo-splash.svg" class="splash-logo" alt="Loading FirmLedger..." />
+      <div class="splash-footer">
+        Built by <a href="https://wa.me/919014882779?text=I%20have%20a%20software/app/website%20requirement"
+          target="_blank" rel="noopener noreferrer">Harte Labs</a>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if request.auth != null && !exists(/databases/$(database)/documents/usernames/$(username));
+    }
+
+    match /organizations/{orgId} {
+      allow read: if request.auth != null && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (resource.data.ownerId == request.auth.uid || isAdmin());
+
+      match /parties/{partyId} {
+        allow read, write: if request.auth != null && getOrg(orgId).ownerId == request.auth.uid;
+        allow read: if isAdmin();
+      }
+
+      match /transactions/{transactionId} {
+        allow read, write: if request.auth != null && getOrg(orgId).ownerId == request.auth.uid;
+        allow read: if isAdmin();
+      }
+    }
+
+    match /counters/{orgId} {
+      allow read, write: if request.auth != null && getOrg(orgId).ownerId == request.auth.uid;
+    }
+
+    function isAdmin() {
+      let userPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      return request.auth != null && exists(userPath) && get(userPath).data.userType == 'admin';
+    }
+
+    function getOrg(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)).data;
+    }
+  }
+}

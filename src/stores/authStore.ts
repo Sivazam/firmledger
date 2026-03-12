@@ -1,0 +1,47 @@
+import { create } from 'zustand';
+import type { User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../config/firebase';
+import type { UserProfile } from '../types/user.types';
+import { AuthService } from '../services/auth.service';
+
+interface AuthState {
+    user: FirebaseUser | null;
+    profile: UserProfile | null;
+    loading: boolean;
+    initialized: boolean;
+    isAdminMode: boolean;
+    setUser: (user: FirebaseUser | null) => void;
+    setProfile: (profile: UserProfile | null) => void;
+    setAdminMode: (mode: boolean) => void;
+    init: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+    user: null,
+    profile: null,
+    loading: true,
+    initialized: false,
+    isAdminMode: false,
+
+    setUser: (user) => set({ user }),
+    setProfile: (profile) => set({ profile }),
+    setAdminMode: (mode) => set({ isAdminMode: mode }),
+
+    init: () => {
+        onAuthStateChanged(auth, async (user) => {
+            set({ user, loading: true });
+            if (user) {
+                try {
+                    const profile = await AuthService.getUserProfile(user.uid);
+                    set({ profile, isAdminMode: profile?.userType === 'admin' });
+                } catch (error) {
+                    console.error('Failed to fetch user profile:', error);
+                }
+            } else {
+                set({ profile: null, isAdminMode: false });
+            }
+            set({ loading: false, initialized: true });
+        });
+    }
+}));

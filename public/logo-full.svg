@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 100" width="380" height="100">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;display=swap');
+      .C-icon { fill: #1E40AF; }
+      .C-text-bold { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 56px; fill: #1E40AF; letter-spacing: -1px; }
+      .C-text-light { font-family: 'Outfit', sans-serif; font-weight: 300; font-size: 56px; fill: #1E293B; letter-spacing: -2px; }
+    </style>
+  </defs>
+  
+  <g transform="translate(14, 14)">
+    <path class="C-icon" d="M 8,0 L 20,0 L 20,20 L 0,20 L 0,8 A 8,8 0 0 1 8,0 Z" />
+    <rect class="C-icon" x="0" y="26" width="20" height="20" />
+    <path class="C-icon" d="M 0,52 L 20,52 L 20,72 L 8,72 A 8,8 0 0 1 0,64 Z" />
+    
+    <path class="C-icon" d="M 26,0 L 56,0 A 16,16 0 0 1 72,16 L 72,46 L 26,46 Z" />
+    <rect class="C-icon" x="26" y="52" width="20" height="20" />
+    <path class="C-icon" d="M 52,52 L 72,52 L 72,64 A 8,8 0 0 1 64,72 L 52,72 Z" />
+  </g>
+
+  <text x="100" y="68"><tspan class="C-text-bold">Firm</tspan><tspan class="C-text-light">Ledger</tspan></text>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <style>
+      .C { fill: #1E40AF; }
+    </style>
+  </defs>
+  <!-- Left Column -->
+  <path class="C" d="M 22,14 L 34,14 L 34,34 L 14,34 L 14,22 A 8,8 0 0 1 22,14 Z" />
+  <rect class="C" x="14" y="40" width="20" height="20" />
+  <path class="C" d="M 14,66 L 34,66 L 34,86 L 22,86 A 8,8 0 0 1 14,78 Z" />
+
+  <!-- Right Block (Top) -->
+  <path class="C" d="M 40,14 L 70,14 A 16,16 0 0 1 86,30 L 86,60 L 40,60 Z" />
+
+  <!-- Right Blocks (Bottom) -->
+  <rect class="C" x="40" y="66" width="20" height="20" />
+  <path class="C" d="M 66,66 L 86,66 L 86,78 A 8,8 0 0 1 78,86 L 66,86 Z" />
+</svg>
