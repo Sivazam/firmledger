@@ -5,12 +5,29 @@ import theme from './config/theme';
 import { router } from './router';
 import { useAuthStore } from './stores/authStore';
 
+import SplashScreen from './components/common/SplashScreen';
+
 function App() {
-  const { init } = useAuthStore();
+  const { init, initialized } = useAuthStore();
+  const [showSplash, setShowSplash] = React.useState(true);
 
   useEffect(() => {
     init();
+    // Force splash for at least 5 seconds
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 5000);
+    return () => clearTimeout(timer);
   }, [init]);
+
+  if (showSplash || !initialized) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <SplashScreen />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>

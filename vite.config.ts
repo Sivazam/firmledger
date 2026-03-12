@@ -13,7 +13,7 @@ export default defineConfig({
         name: 'FirmLedger Accounts',
         short_name: 'FirmLedger',
         description: 'Professional Client & Ledger Management',
-        theme_color: '#1565C0',
+        theme_color: '#FFFFFF',
         background_color: '#F5F5F5',
         display: 'standalone',
         scope: '/',

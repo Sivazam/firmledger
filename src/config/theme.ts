@@ -49,8 +49,14 @@ const theme = createTheme({
         },
         containedPrimary: {
           background: '#1E40AF',
+          color: '#FFFFFF',
           '&:hover': {
             background: '#1E3A8A',
+          },
+          '&.Mui-disabled': {
+            background: '#1E40AF',
+            color: '#FFFFFF',
+            opacity: 0.7
           }
         }
       }

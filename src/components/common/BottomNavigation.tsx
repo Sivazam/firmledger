@@ -49,8 +49,27 @@ export default function BottomNavigation() {
     };
 
     return (
-        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }} elevation={3}>
-            <MuiBottomNavigation showLabels value={getActiveValue()} onChange={handleChange}>
+        <Paper
+            sx={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                pb: 'env(safe-area-inset-bottom)',
+                backgroundColor: 'background.paper',
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
+            }}
+            elevation={0}
+        >
+            <MuiBottomNavigation
+                showLabels
+                value={getActiveValue()}
+                onChange={handleChange}
+                sx={{ height: 64 }}
+            >
                 {showAdminTabs ? (
                     <BottomNavigationAction label="Home" value="admin_home" icon={<HomeIcon />} />
                 ) : (
