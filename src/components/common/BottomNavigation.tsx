@@ -17,7 +17,11 @@ export default function BottomNavigation() {
 
     const currentPath = location.pathname;
     const isActuallyAdmin = profile?.userType === 'admin';
+    const isSuperAdmin = profile?.userType === 'super-admin';
     const { isAdminMode } = useAuthStore();
+
+    if (isSuperAdmin) return null;
+
     const showAdminTabs = isActuallyAdmin && isAdminMode;
 
     const getActiveValue = () => {

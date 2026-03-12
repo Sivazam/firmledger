@@ -6,6 +6,7 @@ import AuthGuard from './guards/AuthGuard';
 import ProfileCompleteGuard from './guards/ProfileCompleteGuard';
 import ApprovedGuard from './guards/ApprovedGuard';
 import AdminGuard from './guards/AdminGuard';
+import SuperAdminGuard from './guards/SuperAdminGuard';
 
 import AuthLayout from './layouts/AuthLayout';
 import AppLayout from './layouts/AppLayout';
@@ -19,6 +20,7 @@ import PendingApprovalPage from './pages/onboarding/PendingApprovalPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import FirmManagementPage from './pages/admin/FirmManagementPage';
 import FirmDetailPage from './pages/admin/FirmDetailPage';
+const SuperAdminDashboardPage = lazy(() => import('./pages/super-admin/SuperAdminDashboardPage'));
 
 import { useAuthStore } from './stores/authStore';
 
@@ -51,6 +53,7 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
 const HomeRedirect = () => {
     const { profile, isAdminMode } = useAuthStore();
     if (profile?.userType === 'admin' && isAdminMode) return <Navigate to="/admin/dashboard" replace />;
+    if (profile?.userType === 'super-admin') return <Navigate to="/super-admin" replace />;
     return <Navigate to="/dashboard" replace />;
 };
 
@@ -87,6 +90,12 @@ export const router = createBrowserRouter([
                                     { path: '/admin/dashboard', element: <AdminDashboardPage /> },
                                     { path: '/admin/firms', element: <FirmManagementPage /> },
                                     { path: '/admin/firms/:id', element: <FirmDetailPage /> },
+                                ]
+                            },
+                            {
+                                element: <SuperAdminGuard />,
+                                children: [
+                                    { path: '/super-admin', element: <SuspenseWrapper><SuperAdminDashboardPage /></SuspenseWrapper> },
                                 ]
                             },
 
