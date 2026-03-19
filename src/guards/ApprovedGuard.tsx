@@ -1,28 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import React from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { OrganizationService } from '../services/organization.service';
+import { useOrganizationStore } from '../stores/organizationStore';
 import { Box, CircularProgress } from '@mui/material';
 
 export default function ApprovedGuard() {
-    const { profile, loading, initialized } = useAuthStore();
-    const [isApproved, setIsApproved] = useState<boolean | null>(null);
+    const { profile, loading: authLoading, initialized: authInit } = useAuthStore();
+    const { currentOrganization, loading: orgLoading, initialized: orgInit } = useOrganizationStore();
+    const location = useLocation();
 
-    useEffect(() => {
-        async function checkApproval() {
-            if (profile?.organizationId) {
-                const org = await OrganizationService.getOrganization(profile.organizationId);
-                setIsApproved(org?.status === 'approved');
-            } else {
-                setIsApproved(false);
-            }
-        }
-        if (initialized && !loading && profile) {
-            checkApproval();
-        }
-    }, [initialized, loading, profile]);
-
-    if (!initialized || loading || (isApproved === null && profile?.userType !== 'super-admin')) {
+    if (!authInit || authLoading || (profile && !orgInit)) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                 <CircularProgress />
@@ -30,15 +17,15 @@ export default function ApprovedGuard() {
         );
     }
 
-    if (profile?.userType === 'super-admin') {
-        return <Outlet />;
-    }
+    if (!profile) return <Navigate to="/login" state={{ from: location }} replace />;
 
-    if (!profile?.organizationId) {
+    if (profile.userType === 'super-admin') return <Outlet />;
+
+    if (!profile.organizationId) {
         return <Navigate to="/setup-organization" replace />;
     }
 
-    if (!isApproved) {
+    if (currentOrganization?.status !== 'approved') {
         return <Navigate to="/pending-approval" replace />;
     }
 

@@ -14,13 +14,15 @@ const googleProvider = new GoogleAuthProvider();
 
 export const AuthService = {
     async isUsernameAvailable(username: string): Promise<boolean> {
-        const userDoc = doc(db, 'usernames', username);
+        const cleanUsername = username.trim().toLowerCase();
+        const userDoc = doc(db, 'usernames', cleanUsername);
         const snap = await getDoc(userDoc);
         return !snap.exists();
     },
 
     async registerWithUsername(username: string, email: string, uid: string) {
-        const userDoc = doc(db, 'usernames', username);
+        const cleanUsername = username.trim().toLowerCase();
+        const userDoc = doc(db, 'usernames', cleanUsername);
         const snap = await getDoc(userDoc);
         if (snap.exists()) {
             throw new Error('Username already taken.');
@@ -29,7 +31,8 @@ export const AuthService = {
     },
 
     async getEmailFromUsername(username: string): Promise<string> {
-        const userDoc = doc(db, 'usernames', username);
+        const cleanUsername = username.trim().toLowerCase();
+        const userDoc = doc(db, 'usernames', cleanUsername);
         const snap = await getDoc(userDoc);
         if (!snap.exists()) {
             throw new Error('Username not found.');

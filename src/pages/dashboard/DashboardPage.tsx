@@ -35,18 +35,18 @@ export default function DashboardPage() {
         let totalPayables = 0; // Simplified
 
         transactions.forEach(tx => {
-            const txDate = tx.date.toDate();
+            const txDate = (tx.date as any).toDate ? (tx.date as any).toDate() : new Date(tx.date as any);
             const isToday = dayjs(txDate).isSame(today, 'day');
 
-            if (tx.type === TransactionType.RECEIPT) {
+            if (tx.type === TransactionType.CR || tx.type === TransactionType.BR) {
                 if (isToday) todaysReceipts += tx.amount;
-                totalReceivables -= tx.amount; // Very basic logic just for dashboard visuals
-            } else if (tx.type === TransactionType.PAYMENT) {
+                totalReceivables -= tx.amount; 
+            } else if (tx.type === TransactionType.CP || tx.type === TransactionType.BP) {
                 if (isToday) todaysPayments += tx.amount;
                 totalPayables -= tx.amount;
-            } else if (tx.type === TransactionType.SALES) {
+            } else if (tx.type === TransactionType.SI) {
                 totalReceivables += tx.amount;
-            } else if (tx.type === TransactionType.PURCHASE) {
+            } else if (tx.type === TransactionType.PI) {
                 totalPayables += tx.amount;
             }
         });
@@ -58,9 +58,9 @@ export default function DashboardPage() {
             todaysPayments,
             recentTransactions: [...transactions]
                 .sort((a, b) => {
-                    const dateA = a.date.toDate ? a.date.toDate() : new Date(a.date);
-                    const dateB = b.date.toDate ? b.date.toDate() : new Date(b.date);
-                    return dateB.getTime() - dateA.getTime();
+                    const dateA = (a.date as any).toDate ? (a.date as any).toDate().getTime() : new Date(a.date as any).getTime();
+                    const dateB = (b.date as any).toDate ? (b.date as any).toDate().getTime() : new Date(b.date as any).getTime();
+                    return dateB - dateA;
                 })
                 .slice(0, 5)
         };

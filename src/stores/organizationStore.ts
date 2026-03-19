@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { OrganizationService } from '../services/organization.service';
 import type { Organization } from '../types/organization.types';
 
@@ -7,6 +9,7 @@ interface OrganizationState {
     loading: boolean;
     initialized: boolean;
     fetchOrganization: (orgId: string) => Promise<void>;
+    subscribeToOrganization: (orgId: string) => () => void;
     setOrganization: (org: Organization | null) => void;
 }
 
@@ -25,6 +28,21 @@ export const useOrganizationStore = create<OrganizationState>((set) => ({
         } finally {
             set({ loading: false });
         }
+    },
+
+    subscribeToOrganization: (orgId: string) => {
+        set({ loading: true });
+        const unsub = onSnapshot(doc(db, 'organizations', orgId), (snap) => {
+            if (snap.exists()) {
+                set({ currentOrganization: snap.data() as Organization, initialized: true, loading: false });
+            } else {
+                set({ currentOrganization: null, initialized: true, loading: false });
+            }
+        }, (error) => {
+            console.error('Organization subscription error:', error);
+            set({ loading: false });
+        });
+        return unsub;
     },
 
     setOrganization: (org) => set({ currentOrganization: org, initialized: true })

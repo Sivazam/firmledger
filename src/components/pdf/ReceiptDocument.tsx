@@ -2,6 +2,7 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { Transaction } from '../../types/transaction.types';
 import type { Organization } from '../../types/organization.types';
+import { TransactionType } from '../../config/constants';
 import { formatDate, formatINRPdf, formatAmountInWords } from '../../utils/formatters';
 
 const styles = StyleSheet.create({
@@ -35,13 +36,17 @@ interface Props {
 export default function ReceiptDocument({ transaction, organization }: Props) {
     const getDocTitle = () => {
         switch (transaction.type) {
-            case 'receipt': return 'Receipt Voucher';
-            case 'payment': return 'Payment Voucher';
-            case 'sales': return 'Sales Invoice / Voucher';
-            case 'purchase': return 'Purchase Voucher';
-            case 'journal': return 'Journal Voucher';
-            case 'sales_return': return 'Credit Note (Sales Return)';
-            case 'purchase_return': return 'Debit Note (Purchase Return)';
+            case TransactionType.CR:
+            case TransactionType.BR:
+                return 'Receipt Voucher';
+            case TransactionType.CP:
+            case TransactionType.BP:
+                return 'Payment Voucher';
+            case TransactionType.SI: return 'Sales Invoice / Voucher';
+            case TransactionType.PI: return 'Purchase Voucher';
+            case TransactionType.JV: return 'Journal Voucher';
+            case TransactionType.SR: return 'Credit Note (Sales Return)';
+            case TransactionType.PR: return 'Debit Note (Purchase Return)';
             default: return 'Transaction Voucher';
         }
     };

@@ -15,12 +15,14 @@ export default function MonthlyReportPage() {
             if (!groups[month]) groups[month] = { credit: 0, debit: 0 };
 
             switch (tx.type) {
-                case 'receipt':
-                case 'sales':
+                case TransactionType.CR:
+                case TransactionType.BR:
+                case TransactionType.SI:
                     groups[month].credit += (tx.amount / 100);
                     break;
-                case 'payment':
-                case 'purchase':
+                case TransactionType.CP:
+                case TransactionType.BP:
+                case TransactionType.PI:
                     groups[month].debit += (tx.amount / 100);
                     break;
             }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, TextField, Typography, Box, Link as MuiLink, Alert, Paper } from '@mui/material';
+import { Button, TextField, Typography, Box, Link as MuiLink, Alert } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
@@ -23,7 +23,7 @@ export default function LoginPage() {
         setLoading(true);
 
         const cleanIdentifier = identifier.trim();
-        const cleanPassword = password.trim();
+        const cleanPassword = password;
 
         try {
             let emailToUse = cleanIdentifier;
@@ -59,96 +59,77 @@ export default function LoginPage() {
     };
 
     return (
-        <Box sx={{ 
-            minHeight: '80vh', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            p: 2
-        }}>
-            <Paper elevation={0} sx={{ 
-                p: 4, 
-                width: '100%', 
-                maxWidth: 400, 
-                borderRadius: 4,
-                border: '1px solid',
-                borderColor: 'divider',
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: 2 
-            }} component="form" onSubmit={handleLogin}>
-                <Box textAlign="center" mb={2}>
-                    <Box component="img" src="/logo.svg" sx={{ height: 48, mb: 2 }} />
-                    <Typography variant="h5" fontWeight="800">Welcome Back</Typography>
-                    <Typography variant="body2" color="text.secondary">Enter your credentials to continue</Typography>
-                </Box>
+        <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box textAlign="center" mb={2}>
+                <Box component="img" src="/logo.svg" sx={{ height: 48, mb: 1 }} />
+                <Typography variant="h5" fontWeight="800">Welcome Back</Typography>
+                <Typography variant="body2" color="text.secondary">Enter your credentials to continue</Typography>
+            </Box>
 
-                {error && <Alert severity="error">{error}</Alert>}
+            {error && <Alert severity="error">{error}</Alert>}
 
-                <TextField
-                    label="Email or Username"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    required
-                />
-                <TextField
-                    label="Password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    edge="end"
-                                    size="small"
-                                >
-                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
-                />
+            <TextField
+                label="Email or Username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                required
+            />
+            <TextField
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <IconButton
+                                onClick={() => setShowPassword(!showPassword)}
+                                edge="end"
+                                size="small"
+                            >
+                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+            />
 
-                <Box textAlign="right" sx={{ mt: -1 }}>
-                    <MuiLink component={Link} to="/forgot-password" variant="body2" sx={{ fontWeight: 600 }}>
-                        Forgot Password?
-                    </MuiLink>
-                </Box>
+            <Box textAlign="right" sx={{ mt: -1 }}>
+                <MuiLink component={Link} to="/forgot-password" variant="body2" sx={{ fontWeight: 600 }}>
+                    Forgot Password?
+                </MuiLink>
+            </Box>
 
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    disabled={loading}
-                    sx={{ mt: 1 }}
-                >
-                    {loading ? 'Logging in...' : 'Log In'}
-                </Button>
+            <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                size="large"
+                disabled={loading}
+            >
+                {loading ? 'Logging in...' : 'Log In'}
+            </Button>
 
-                <Typography textAlign="center" variant="body2" color="text.secondary" sx={{ position: 'relative', '&::before, &::after': { content: '""', position: 'absolute', top: '50%', width: '40%', height: '1px', bgcolor: 'divider' }, '&::before': { left: 0 }, '&::after': { right: 0 } }}>
-                    OR
-                </Typography>
+            <Typography textAlign="center" variant="body2" color="text.secondary" sx={{ position: 'relative', '&::before, &::after': { content: '""', position: 'absolute', top: '50%', width: '38%', height: '1px', bgcolor: 'divider' }, '&::before': { left: 0 }, '&::after': { right: 0 } }}>
+                OR
+            </Typography>
 
-                <Button
-                    variant="outlined"
-                    startIcon={<GoogleIcon />}
-                    onClick={handleGoogleLogin}
-                    sx={{ color: 'text.primary', borderColor: 'divider' }}
-                >
-                    Sign in with Google
-                </Button>
+            <Button
+                variant="outlined"
+                startIcon={<GoogleIcon />}
+                onClick={handleGoogleLogin}
+                sx={{ color: 'text.primary', borderColor: 'divider' }}
+            >
+                Sign in with Google
+            </Button>
 
-                <Typography textAlign="center" mt={2} variant="body2">
-                    Don't have an account?{' '}
-                    <MuiLink component={Link} to="/signup" sx={{ fontWeight: 700 }}>
-                        Sign up
-                    </MuiLink>
-                </Typography>
-            </Paper>
+            <Typography textAlign="center" mt={2} variant="body2">
+                Don't have an account?{' '}
+                <MuiLink component={Link} to="/signup" sx={{ fontWeight: 700 }}>
+                    Sign up
+                </MuiLink>
+            </Typography>
         </Box>
     );
 }

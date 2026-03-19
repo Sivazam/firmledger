@@ -10,12 +10,12 @@ import SplashScreen from './components/common/SplashScreen';
 
 function App() {
   const { init, initialized, profile } = useAuthStore();
-  const { fetchOrganization, currentOrganization } = useOrganizationStore();
+  const { subscribeToOrganization, currentOrganization } = useOrganizationStore();
   const [showSplash, setShowSplash] = React.useState(true);
 
   useEffect(() => {
     init();
-    // Force splash for at least 5 seconds
+    // Force splash for at least 3 seconds
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 3000);
@@ -23,10 +23,11 @@ function App() {
   }, [init]);
 
   useEffect(() => {
-    if (profile?.organizationId && (!currentOrganization || currentOrganization.id !== profile.organizationId)) {
-      fetchOrganization(profile.organizationId);
+    if (profile?.organizationId) {
+      const unsub = subscribeToOrganization(profile.organizationId);
+      return () => unsub();
     }
-  }, [profile?.organizationId, fetchOrganization, currentOrganization]);
+  }, [profile?.organizationId, subscribeToOrganization]);
 
   useEffect(() => {
     const backfillCashParty = async () => {
