@@ -18,11 +18,10 @@ export const formatINRPdf = (amountInPaisa: number): string => {
     });
 };
 
-export const formatDate = (date: Date | Timestamp): string => {
-    if (date instanceof Timestamp) {
-        return dayjs(date.toDate()).format('DD/MM/YYYY');
-    }
-    return dayjs(date).format('DD/MM/YYYY');
+export const formatDate = (date: Date | Timestamp | any): string => {
+    if (!date) return '-';
+    const d = (date as any).toDate ? (date as any).toDate() : new Date(date);
+    return dayjs(d).format('DD-MM-YYYY');
 };
 
 const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];

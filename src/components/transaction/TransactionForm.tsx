@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 import { Box, Button, TextField, Grid } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,10 +32,10 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         }
     }, [profile?.organizationId]);
 
-    const { control, handleSubmit, watch, setValue, register, formState: { errors } } = useForm<TransactionFormData>({
+    const { control, handleSubmit, watch, setValue, register, formState: { errors } } = useForm<any>({
         resolver: zodResolver(transactionSchema),
         defaultValues: initialData || {
-            date: new Date(),
+            date: dayjs().format('YYYY-MM-DD'),
             type: TransactionType.CR,
             fromPartyId: '',
             toPartyId: '',
@@ -179,7 +180,8 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         type="date"
                         fullWidth
                         InputLabelProps={{ shrink: true }}
-                        {...register('date', { valueAsDate: true })}
+                        {...register('date')}
+                        onFocus={(e) => (e.target as any).showPicker?.()}
                         error={!!errors.date}
                         helperText={errors.date?.message}
                     />

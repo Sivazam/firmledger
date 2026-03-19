@@ -17,7 +17,7 @@ export const partySchema = z.object({
 export type PartyFormData = z.infer<typeof partySchema>;
 
 export const transactionSchema = z.object({
-    date: z.date({ message: 'Date is required' }),
+    date: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date({ message: 'Date is required' })),
     type: z.nativeEnum(TransactionType),
     fromPartyId: z.string().min(1, 'From Party is required'),
     toPartyId: z.string().min(1, 'To Party is required'),
