@@ -3,7 +3,7 @@ import { TransactionType } from '../config/constants';
 
 export interface Transaction {
     id: string;
-    slNo: number;
+    slNo: string | number;
     date: Timestamp;
     type: TransactionType;
     fromPartyId: string;

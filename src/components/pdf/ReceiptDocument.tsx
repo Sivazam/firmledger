@@ -72,7 +72,7 @@ export default function ReceiptDocument({ transaction, organization }: Props) {
                 </View>
 
                 <View style={styles.metaRow}>
-                    <Text style={styles.metaText}>Voucher No: SL-{transaction.slNo}</Text>
+                    <Text style={styles.metaText}>Voucher No: {transaction.slNo}</Text>
                     <Text style={styles.metaText}>Date: {formatDate(transaction.date)}</Text>
                 </View>
 

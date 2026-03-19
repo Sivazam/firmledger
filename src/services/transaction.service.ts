@@ -5,7 +5,7 @@ import { CounterService } from './counter.service';
 
 export const TransactionService = {
     async addTransaction(orgId: string, data: Omit<Transaction, 'id' | 'slNo' | 'createdAt' | 'updatedAt'>): Promise<Transaction> {
-        const slNo = await CounterService.getNextSlNo(orgId);
+        const slNo = await CounterService.getNextSlNo(orgId, data.type);
         const newDocRef = doc(collection(db, `organizations/${orgId}/transactions`));
 
         const newTransaction: Transaction = {

@@ -50,7 +50,7 @@ export default function RecordTransactionPage() {
                 open: true,
                 variant: 'success',
                 title: 'Transaction Recorded',
-                message: `Successfully recorded transaction for ${formatINR(data.amount)}.`,
+                message: `Successfully recorded transaction ${newTx.slNo} for ${formatINR(data.amount)}.`,
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
                     navigate(-1);

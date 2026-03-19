@@ -60,7 +60,7 @@ export default function EditTransactionPage() {
                 open: true,
                 variant: 'success',
                 title: 'Transaction Updated',
-                message: `Successfully updated transaction SL-${transaction.slNo}.`,
+                message: `Successfully updated transaction ${transaction.slNo}.`,
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
                     navigate(-1);
@@ -83,7 +83,7 @@ export default function EditTransactionPage() {
     return (
         <Box maxWidth={800} mx="auto">
             <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
-            <Typography variant="h5" mb={3}>Edit Transaction SL-{transaction.slNo}</Typography>
+            <Typography variant="h5" mb={3}>Edit Transaction {transaction.slNo}</Typography>
             <TransactionForm initialData={initialData} onSubmit={handleSubmit} isLoading={loading} />
             <ConfirmDialog
                 open={dialogConfig.open}

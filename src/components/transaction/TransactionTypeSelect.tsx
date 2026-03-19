@@ -5,9 +5,10 @@ import { TransactionType, TRANSACTION_TYPE_LABELS } from '../../config/constants
 interface Props {
     value: TransactionType;
     onChange: (value: TransactionType) => void;
+    disabled?: boolean;
 }
 
-export default function TransactionTypeSelect({ value, onChange }: Props) {
+export default function TransactionTypeSelect({ value, onChange, disabled }: Props) {
     const types = Object.values(TransactionType);
 
     return (
@@ -17,6 +18,7 @@ export default function TransactionTypeSelect({ value, onChange }: Props) {
             value={value}
             onChange={(e) => onChange(e.target.value as TransactionType)}
             fullWidth
+            disabled={disabled}
         >
             {types.map((type) => (
                 <MenuItem key={type} value={type}>

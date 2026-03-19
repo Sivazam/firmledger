@@ -170,7 +170,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         name="type"
                         control={control}
                         render={({ field }) => (
-                            <TransactionTypeSelect value={field.value} onChange={field.onChange} />
+                            <TransactionTypeSelect value={field.value} onChange={field.onChange} disabled={!!initialData} />
                         )}
                     />
                 </Grid>

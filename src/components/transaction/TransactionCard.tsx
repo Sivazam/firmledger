@@ -28,7 +28,7 @@ export default function TransactionCard({ tx }: { tx: Transaction }) {
             <CardContent sx={{ '&:last-child': { pb: 2 } }}>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography variant="body2" color="text.secondary">
-                        SL-{tx.slNo} • {formatDate(tx.date)}
+                        {tx.slNo} • {formatDate(tx.date)}
                     </Typography>
                     <Chip label={tx.type.toUpperCase().replace('_', ' ')} size="small" color={getTypeColor(tx.type) as any} />
                 </Box>
