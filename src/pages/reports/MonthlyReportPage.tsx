@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTransactionStore } from '../../stores/transactionStore';
+import { TransactionType } from '../../config/constants';
 import dayjs from 'dayjs';
 
 export default function MonthlyReportPage() {
