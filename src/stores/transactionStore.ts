@@ -30,11 +30,21 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
     addTransactionLocal: (tx) => {
         const newTx = [tx, ...get().transactions];
-        set({ transactions: newTx });
+        set({ transactions: newTx.sort((a, b) => {
+            const da = (b.date as any).toMillis ? (b.date as any).toMillis() : new Date(b.date as any).getTime();
+            const db = (a.date as any).toMillis ? (a.date as any).toMillis() : new Date(a.date as any).getTime();
+            if (da !== db) return da - db;
+            return String(b.slNo).localeCompare(String(a.slNo), undefined, { numeric: true });
+        }) });
     },
 
     updateTransactionLocal: (txId, data) => {
         const updated = get().transactions.map(t => t.id === txId ? { ...t, ...data } : t);
-        set({ transactions: updated.sort((a, b) => b.slNo - a.slNo) });
+        set({ transactions: updated.sort((a, b) => {
+            const da = (b.date as any).toMillis ? (b.date as any).toMillis() : new Date(b.date as any).getTime();
+            const db = (a.date as any).toMillis ? (a.date as any).toMillis() : new Date(a.date as any).getTime();
+            if (da !== db) return da - db;
+            return String(b.slNo).localeCompare(String(a.slNo), undefined, { numeric: true });
+        }) });
     }
 }));
