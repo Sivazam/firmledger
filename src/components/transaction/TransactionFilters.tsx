@@ -75,7 +75,7 @@ export default function TransactionFilters({
                         label="From Date"
                         type="date"
                         value={fromDate}
-                        onChange={(e) => setFromDate(e.target.value)}
+                        onChange={(e) => { setFromDate(e.target.value); if(e.target.value) (e.target as any).blur(); }}
                         InputLabelProps={{ shrink: true }}
                         sx={{ bgcolor: 'background.paper' }}
                     />
@@ -87,7 +87,7 @@ export default function TransactionFilters({
                         label="To Date"
                         type="date"
                         value={toDate}
-                        onChange={(e) => setToDate(e.target.value)}
+                        onChange={(e) => { setToDate(e.target.value); if(e.target.value) (e.target as any).blur(); }}
                         InputLabelProps={{ shrink: true }}
                         sx={{ bgcolor: 'background.paper' }}
                     />

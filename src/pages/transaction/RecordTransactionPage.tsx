@@ -9,6 +9,7 @@ import { usePartyStore } from '../../stores/partyStore';
 import { OrganizationService } from '../../services/organization.service';
 import { useNavigate } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
+import { formatDate, formatINR } from '../../utils/formatters';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 export default function RecordTransactionPage() {
@@ -49,7 +50,7 @@ export default function RecordTransactionPage() {
                 open: true,
                 variant: 'success',
                 title: 'Transaction Recorded',
-                message: `Successfully recorded transaction for ₹${data.amount}.`,
+                message: `Successfully recorded transaction for ${formatINR(data.amount)}.`,
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
                     navigate(-1);

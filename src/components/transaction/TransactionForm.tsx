@@ -180,7 +180,13 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         type="date"
                         fullWidth
                         InputLabelProps={{ shrink: true }}
-                        {...register('date')}
+                        {...register('date', {
+                            onChange: (e) => {
+                                if (e.target.value) {
+                                    (e.target as any).blur();
+                                }
+                            }
+                        })}
                         onFocus={(e) => (e.target as any).showPicker?.()}
                         error={!!errors.date}
                         helperText={errors.date?.message as any}
@@ -208,9 +214,8 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                         label="Amount (₹)"
-                        inputMode="numeric"
                         type="number"
-                        inputProps={{ step: "0.01", min: "0" }}
+                        inputProps={{ step: "0.01", min: "0", inputMode: 'decimal' }}
                         fullWidth
                         {...register('amount', { valueAsNumber: true })}
                         error={!!errors.amount}

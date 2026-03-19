@@ -79,10 +79,10 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                     <TextField label="Town" {...register('town')} error={!!errors.town} helperText={errors.town?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Phone Number" inputMode="numeric" {...register('phoneNumber')} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} />
+                    <TextField label="Phone Number" type="tel" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} {...register('phoneNumber')} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextField label="Aadhar (Optional)" inputMode="numeric" {...register('aadharNumber')} error={!!errors.aadharNumber} helperText={errors.aadharNumber?.message} />
+                    <TextField label="Aadhar (Optional)" type="tel" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} {...register('aadharNumber')} error={!!errors.aadharNumber} helperText={errors.aadharNumber?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField label="PAN (Optional)" {...register('panNumber')} error={!!errors.panNumber} helperText={errors.panNumber?.message} />
