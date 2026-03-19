@@ -155,7 +155,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                             field.onChange(p?.id || '');
                         }}
                         error={!!errors[fieldName]}
-                        helperText={errors[fieldName]?.message}
+                        helperText={errors[fieldName]?.message as any}
                     />
                 )}
             />
@@ -183,7 +183,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         {...register('date')}
                         onFocus={(e) => (e.target as any).showPicker?.()}
                         error={!!errors.date}
-                        helperText={errors.date?.message}
+                        helperText={errors.date?.message as any}
                     />
                 </Grid>
 
@@ -201,7 +201,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         fullWidth
                         {...register('description')}
                         error={!!errors.description}
-                        helperText={errors.description?.message}
+                        helperText={errors.description?.message as any}
                     />
                 </Grid>
 
@@ -214,7 +214,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         fullWidth
                         {...register('amount', { valueAsNumber: true })}
                         error={!!errors.amount}
-                        helperText={errors.amount?.message}
+                        helperText={errors.amount?.message as any}
                     />
                 </Grid>
             </Grid>
