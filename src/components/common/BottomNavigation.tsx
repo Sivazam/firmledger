@@ -34,8 +34,7 @@ export default function BottomNavigation() {
             if (currentPath === '/' || currentPath === '/dashboard') return 'home';
             if (currentPath.startsWith('/parties')) return 'parties';
             if (currentPath.startsWith('/transactions')) return 'new_tx';
-            if (currentPath.startsWith('/reports')) return 'reports';
-            if (currentPath.startsWith('/settings')) return 'settings';
+            if (currentPath.startsWith('/settings') || currentPath.startsWith('/reports')) return 'settings';
             return 'home';
         }
     };
@@ -46,7 +45,7 @@ export default function BottomNavigation() {
             case 'firms': navigate('/admin/firms'); break;
             case 'home': navigate('/dashboard'); break;
             case 'parties': navigate('/parties'); break;
-            case 'new_tx': navigate('/transactions'); break;
+            case 'new_tx': navigate('/transactions/record'); break;
             case 'reports': navigate('/reports'); break;
             case 'settings': navigate('/settings'); break;
         }
@@ -89,9 +88,6 @@ export default function BottomNavigation() {
                 )}
                 {!showAdminTabs && (
                     <BottomNavigationAction label="New Tx" value="new_tx" icon={<AddCircleOutlineIcon />} />
-                )}
-                {!showAdminTabs && (
-                    <BottomNavigationAction label="Reports" value="reports" icon={<AssessmentIcon />} />
                 )}
 
                 <BottomNavigationAction label="More" value="settings" icon={<MoreHorizIcon />} />

@@ -9,14 +9,16 @@ interface Props {
     onChange: (party: Party | null) => void;
     error?: boolean;
     helperText?: string;
+    filter?: (party: Party) => boolean;
 }
 
-export default function PartySelector({ label, value, onChange, error, helperText }: Props) {
+export default function PartySelector({ label, value, onChange, error, helperText, filter }: Props) {
     const { parties } = usePartyStore();
+    const filteredOptions = filter ? parties.filter(filter) : parties;
 
     return (
         <Autocomplete
-            options={parties}
+            options={filteredOptions}
             autoHighlight
             getOptionLabel={(option) => `${option.name} (${option.code}) - ${option.town}`}
             value={value}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 import AddIcon from '@mui/icons-material/Add';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -13,6 +14,8 @@ export default function TransactionsListPage() {
     const { profile } = useAuthStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('');
+    const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+    const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,25 +25,30 @@ export default function TransactionsListPage() {
     }, [profile?.organizationId, initialized, fetchTransactions]);
 
     const filteredTransactions = transactions.filter(tx => {
+        const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
+        const isWithinDate = txDate.isAfter(dayjs(fromDate).subtract(1, 'day')) && 
+                             txDate.isBefore(dayjs(toDate).add(1, 'day'));
+        
         const matchSearch = tx.slNo.toString().includes(searchTerm) ||
             tx.fromPartyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             tx.toPartyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             tx.description.toLowerCase().includes(searchTerm.toLowerCase());
         const matchType = selectedType ? tx.type === selectedType : true;
-        return matchSearch && matchType;
+        
+        return isWithinDate && matchSearch && matchType;
     });
 
     return (
         <Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h5" fontWeight="bold">Transactions</Typography>
-            </Box>
-
             <TransactionFilters
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
+                fromDate={fromDate}
+                setFromDate={setFromDate}
+                toDate={toDate}
+                setToDate={setToDate}
             />
 
             {loading ? (

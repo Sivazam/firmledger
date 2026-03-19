@@ -1,12 +1,26 @@
 export enum TransactionType {
-    RECEIPT = 'receipt',
-    PAYMENT = 'payment',
-    JOURNAL = 'journal',
-    SALES = 'sales',
-    PURCHASE = 'purchase',
-    SALES_RETURN = 'sales_return',
-    PURCHASE_RETURN = 'purchase_return',
+    CR = 'CR', // CASH RECEIPT
+    CP = 'CP', // CASH PAYMENT
+    BR = 'BR', // BANK RECEIPT
+    BP = 'BP', // BANK PAYMENT
+    SI = 'SI', // SALES
+    SR = 'SR', // SALES RETURN
+    PI = 'PI', // PURCHASE
+    PR = 'PR', // PURCHASE RETURN
+    JV = 'JV', // JOURNAL VOUCHER
 }
+
+export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
+    [TransactionType.CR]: 'CASH RECEIPT',
+    [TransactionType.CP]: 'CASH PAYMENT',
+    [TransactionType.BR]: 'BANK RECEIPT',
+    [TransactionType.BP]: 'BANK PAYMENT',
+    [TransactionType.SI]: 'SALES',
+    [TransactionType.SR]: 'SALES RETURN',
+    [TransactionType.PI]: 'PURCHASE',
+    [TransactionType.PR]: 'PURCHASE RETURN',
+    [TransactionType.JV]: 'JOURNAL VOUCHER',
+};
 
 export const VALIDATION_PATTERNS = {
     AADHAR: /^\d{12}$/,

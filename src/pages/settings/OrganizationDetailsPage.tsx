@@ -96,7 +96,7 @@ export default function OrganizationDetailsPage() {
                 <TextField label="Organization Name" name="orgName" value={formData.orgName} onChange={handleChange} />
                 <TextField label="Address" name="address" multiline rows={2} value={formData.address} onChange={handleChange} />
                 <TextField label="City" name="city" value={formData.city} onChange={handleChange} />
-                <TextField label="Pincode" name="pincode" value={formData.pincode} onChange={handleChange} />
+                <TextField label="Pincode" name="pincode" inputMode="numeric" value={formData.pincode} onChange={handleChange} />
                 <TextField label="GST Number" name="gstNumber" value={formData.gstNumber} onChange={handleChange} />
 
                 <Box>

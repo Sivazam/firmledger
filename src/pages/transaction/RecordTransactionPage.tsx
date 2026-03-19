@@ -71,8 +71,6 @@ export default function RecordTransactionPage() {
 
     return (
         <Box maxWidth={800} mx="auto">
-            <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
-            <Typography variant="h5" mb={3}>Record Transaction</Typography>
             <TransactionForm onSubmit={handleSubmit} isLoading={loading} />
             <ConfirmDialog
                 open={dialogConfig.open}

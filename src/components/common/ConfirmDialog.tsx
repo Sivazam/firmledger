@@ -46,7 +46,7 @@ export default function ConfirmDialog({
                 </Box>
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'center', pb: 3, pt: 1, gap: 1 }}>
-                {variant === 'confirm' && onCancel && (
+                {onCancel && (
                     <Button onClick={onCancel} variant="outlined" color="inherit">
                         {cancelText}
                     </Button>

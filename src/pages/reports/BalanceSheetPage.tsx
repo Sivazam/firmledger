@@ -1,5 +1,13 @@
-import React, { useMemo } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Button, Grid, TextField } from '@mui/material';
+import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ReportPDF from '../../components/pdf/ReportPDF';
+import { ReportExportService } from '../../utils/reportExport';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { Stack } from '@mui/material';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import AmountDisplay from '../../components/transaction/AmountDisplay';
@@ -7,11 +15,20 @@ import AmountDisplay from '../../components/transaction/AmountDisplay';
 export default function BalanceSheetPage() {
     const { parties } = usePartyStore();
     const { transactions } = useTransactionStore();
+    const navigate = useNavigate();
+    const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+    const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
 
     const balances = useMemo(() => {
+        const filteredTxs = transactions.filter(tx => {
+            const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
+            return txDate.isAfter(dayjs(fromDate).subtract(1, 'day')) && 
+                   txDate.isBefore(dayjs(toDate).add(1, 'day'));
+        });
+
         return parties.map(party => {
             let balance = 0;
-            transactions.forEach(tx => {
+            filteredTxs.forEach(tx => {
                 if (tx.fromPartyId === party.id) balance += tx.amount;
                 if (tx.toPartyId === party.id) balance -= tx.amount;
             });
@@ -25,7 +42,67 @@ export default function BalanceSheetPage() {
 
     return (
         <Box p={2}>
-            <Typography variant="h5" mb={3}>Balance Sheet</Typography>
+            <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h5" fontWeight="bold">Balance Sheet</Typography>
+                <Stack direction="row" spacing={1}>
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<FileDownloadIcon />}
+                        onClick={() => {
+                            const headers = ['Party', 'Code', 'Balance', 'Type'];
+                            const rows = balances.map(b => ({
+                                Party: b.party.name,
+                                Code: b.party.code,
+                                Balance: (Math.abs(b.balance) / 100).toFixed(2),
+                                Type: b.balance > 0 ? 'Cr' : 'Dr'
+                            }));
+                            ReportExportService.exportToCSV('Balance_Sheet_Report', rows, headers);
+                        }}
+                    >
+                        Excel (CSV)
+                    </Button>
+                    <PDFDownloadLink
+                        document={
+                            <ReportPDF 
+                                title="Balance Sheet" 
+                                subtitle={`${fromDate} to ${toDate}`}
+                                headers={['Party Name', 'Code', 'Balance', 'Type']}
+                                rows={balances.map(b => [
+                                    b.party.name,
+                                    b.party.code,
+                                    (Math.abs(b.balance) / 100).toFixed(2),
+                                    b.balance > 0 ? 'Cr' : 'Dr'
+                                ])}
+                            />
+                        }
+                        fileName="Balance_Sheet_Report.pdf"
+                        style={{ textDecoration: 'none' }}
+                    >
+                        {({ loading }) => (
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                startIcon={<PictureAsPdfIcon />}
+                                disabled={loading}
+                            >
+                                {loading ? '...' : 'PDF'}
+                            </Button>
+                        )}
+                    </PDFDownloadLink>
+                </Stack>
+            </Box>
+
+            <Grid container spacing={2} mb={3}>
+                <Grid size={{ xs: 6 }}>
+                    <TextField label="From" type="date" fullWidth size="small" value={fromDate} onChange={e => setFromDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                    <TextField label="To" type="date" fullWidth size="small" value={toDate} onChange={e => setToDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+                </Grid>
+            </Grid>
 
             <Box display="flex" gap={4} mb={3}>
                 <Box>

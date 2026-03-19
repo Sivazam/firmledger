@@ -22,7 +22,7 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
     const { register, handleSubmit, setValue, formState: { errors } } = useForm<PartyFormData>({
         resolver: zodResolver(partySchema),
         defaultValues: initialData || {
-            code: '', name: '', fatherName: '', address: '', town: '', phoneNumber: '', aadharNumber: '', panNumber: '', gstNumber: ''
+            code: '', name: '', category: 'CUSTOMER', fatherName: '', address: '', town: '', phoneNumber: '', aadharNumber: '', panNumber: '', gstNumber: ''
         }
     });
 
@@ -46,8 +46,28 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                         helperText={errors.code?.message}
                     />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 8 }}>
-                    <TextField label="Party Name" {...register('name')} error={!!errors.name} helperText={errors.name?.message} />
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField label="Party Name" {...register('name')} error={!!errors.name} helperText={errors.name?.message} fullWidth />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 2 }}>
+                    <TextField
+                        select
+                        label="Category"
+                        {...register('category')}
+                        error={!!errors.category}
+                        helperText={errors.category?.message}
+                        fullWidth
+                        SelectProps={{ native: true }}
+                    >
+                        <option value="CUSTOMER">CUSTOMER</option>
+                        <option value="SUPPLIER">SUPPLIER</option>
+                        <option value="BANK">BANK</option>
+                        <option value="CASH">CASH</option>
+                        <option value="REVENUE">REVENUE</option>
+                        <option value="EXPENSE">EXPENSE</option>
+                        <option value="CAPITAL">CAPITAL</option>
+                        <option value="OTHER">OTHER</option>
+                    </TextField>
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <TextField label="Father Name (Optional)" {...register('fatherName')} error={!!errors.fatherName} helperText={errors.fatherName?.message} />
@@ -59,10 +79,10 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                     <TextField label="Town" {...register('town')} error={!!errors.town} helperText={errors.town?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Phone Number" {...register('phoneNumber')} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} />
+                    <TextField label="Phone Number" inputMode="numeric" {...register('phoneNumber')} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextField label="Aadhar (Optional)" {...register('aadharNumber')} error={!!errors.aadharNumber} helperText={errors.aadharNumber?.message} />
+                    <TextField label="Aadhar (Optional)" inputMode="numeric" {...register('aadharNumber')} error={!!errors.aadharNumber} helperText={errors.aadharNumber?.message} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField label="PAN (Optional)" {...register('panNumber')} error={!!errors.panNumber} helperText={errors.panNumber?.message} />

@@ -67,10 +67,10 @@ export default function PersonalDetailsPage() {
 
             <Box display="flex" flexDirection="column" gap={2}>
                 <TextField label="Full Name" name="displayName" value={formData.displayName} onChange={handleChange} />
-                <TextField label="Phone" name="phone" value={formData.phone} onChange={handleChange} />
+                <TextField label="Phone" name="phone" inputMode="numeric" value={formData.phone} onChange={handleChange} />
                 <TextField label="Address" name="address" multiline rows={2} value={formData.address} onChange={handleChange} />
                 <TextField label="City" name="city" value={formData.city} onChange={handleChange} />
-                <TextField label="Pincode" name="pincode" value={formData.pincode} onChange={handleChange} />
+                <TextField label="Pincode" name="pincode" inputMode="numeric" value={formData.pincode} onChange={handleChange} />
 
                 <Button variant="contained" disabled={loading} onClick={handleSave} size="large">
                     {loading ? 'Saving...' : 'Save Changes'}

@@ -35,7 +35,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         resolver: zodResolver(transactionSchema),
         defaultValues: initialData || {
             date: new Date(),
-            type: TransactionType.RECEIPT,
+            type: TransactionType.CR,
             fromPartyId: '',
             toPartyId: '',
             description: '',
@@ -47,41 +47,48 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
     const [fromParty, setFromParty] = useState<Party | null>(null);
     const [toParty, setToParty] = useState<Party | null>(null);
 
-    // Initialize local party state from passed IDs for edits/loading
+    // Find CASH party
+    const cashParty = parties.find(p => p.code === 'CASH');
+
+    // Initialize from/to party states for editing
     useEffect(() => {
         if (initialData && parties.length > 0) {
-            if (initialData.fromPartyId && !fromParty) {
-                const fp = parties.find(p => p.id === initialData.fromPartyId);
-                if (fp) setFromParty(fp);
+            if (initialData.fromPartyId) {
+                const p = parties.find(x => x.id === initialData.fromPartyId);
+                if (p) setFromParty(p);
             }
-            if (initialData.toPartyId && !toParty) {
-                const tp = parties.find(p => p.id === initialData.toPartyId);
-                if (tp) setToParty(tp);
+            if (initialData.toPartyId) {
+                const p = parties.find(x => x.id === initialData.toPartyId);
+                if (p) setToParty(p);
             }
         }
-    }, [initialData, parties]);
+    }, [initialData?.id, parties]); // Run when initialData ID or parties list changes
 
     useEffect(() => {
-        if (!profile?.organizationId) return;
-        const orgId = profile.organizationId;
+        if (!cashParty) return;
 
-        switch (selectedType) {
-            case TransactionType.RECEIPT:
-            case TransactionType.PURCHASE:
-            case TransactionType.SALES_RETURN:
-                setValue('toPartyId', orgId);
-                if (fromParty?.id === orgId) { setFromParty(null); setValue('fromPartyId', ''); }
-                break;
-            case TransactionType.PAYMENT:
-            case TransactionType.SALES:
-            case TransactionType.PURCHASE_RETURN:
-                setValue('fromPartyId', orgId);
-                if (toParty?.id === orgId) { setToParty(null); setValue('toPartyId', ''); }
-                break;
-            case TransactionType.JOURNAL:
-                break;
+        if (selectedType === TransactionType.CR) {
+            setToParty(cashParty);
+            setValue('toPartyId', cashParty.id);
+            if (fromParty?.id === cashParty.id) { setFromParty(null); setValue('fromPartyId', ''); }
+        } else if (selectedType === TransactionType.CP) {
+            setFromParty(cashParty);
+            setValue('fromPartyId', cashParty.id);
+            if (toParty?.id === cashParty.id) { setToParty(null); setValue('toPartyId', ''); }
+        } else if (selectedType === TransactionType.SI || selectedType === TransactionType.PR) {
+             // From: Org, To: Party
+             setValue('fromPartyId', profile?.organizationId || ''); // Use org ID
+             if (fromParty) setFromParty(null); // Clear manual selection
+        } else if (selectedType === TransactionType.PI || selectedType === TransactionType.SR) {
+             // From: Party, To: Org
+             setValue('toPartyId', profile?.organizationId || ''); // Use org ID
+             if (toParty) setToParty(null); // Clear manual selection
+        } else {
+            // Non-cash transactions: If current selection is CASH, clear it
+            if (fromParty?.id === cashParty.id) { setFromParty(null); setValue('fromPartyId', ''); }
+            if (toParty?.id === cashParty.id) { setToParty(null); setValue('toPartyId', ''); }
         }
-    }, [selectedType, profile?.organizationId, setValue]);
+    }, [selectedType, cashParty, setValue, profile?.organizationId]);
 
     const handleFormSubmit = (data: TransactionFormData) => {
         onSubmit({
@@ -95,20 +102,32 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         const fieldName = isFrom ? 'fromPartyId' : 'toPartyId';
         const label = isFrom ? 'From Party' : 'To Party';
 
-        let isOrgFixed = false;
-        if (selectedType === TransactionType.RECEIPT || selectedType === TransactionType.PURCHASE || selectedType === TransactionType.SALES_RETURN) {
-            isOrgFixed = !isFrom;
-        } else if (selectedType === TransactionType.PAYMENT || selectedType === TransactionType.SALES || selectedType === TransactionType.PURCHASE_RETURN) {
-            isOrgFixed = isFrom;
+        // Logic for default/fixed values
+        const isCashFixed = (selectedType === TransactionType.CR && !isFrom) || (selectedType === TransactionType.CP && isFrom);
+        const isOrgFixed = 
+            ((selectedType === TransactionType.SI || selectedType === TransactionType.PR) && isFrom) ||
+            ((selectedType === TransactionType.PI || selectedType === TransactionType.SR) && !isFrom);
+
+        if (isCashFixed) {
+            return (
+                <TextField
+                    label={label}
+                    value="Cash in Hand (CASH)"
+                    disabled
+                    fullWidth
+                    size="small"
+                />
+            );
         }
 
         if (isOrgFixed) {
             return (
                 <TextField
                     label={label}
-                    value={orgName}
+                    value={`${orgName} (Fixed)`}
                     disabled
                     fullWidth
+                    size="small"
                 />
             );
         }
@@ -121,6 +140,14 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                     <PartySelector
                         label={label}
                         value={isFrom ? fromParty : toParty}
+                        filter={(p) => {
+                            // If CR/CP, the OTHER side must NOT be cash
+                            if (selectedType === TransactionType.CR || selectedType === TransactionType.CP) {
+                                return p.code !== 'CASH';
+                            }
+                            // Otherwise, NO side can be cash
+                            return p.code !== 'CASH';
+                        }}
                         onChange={(p) => {
                             if (isFrom) setFromParty(p);
                             else setToParty(p);
@@ -179,6 +206,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                         label="Amount (₹)"
+                        inputMode="numeric"
                         type="number"
                         inputProps={{ step: "0.01", min: "0" }}
                         fullWidth
@@ -189,7 +217,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                 </Grid>
             </Grid>
 
-            <Button type="submit" variant="contained" size="large" disabled={isLoading} sx={{ mt: 2 }}>
+            <Button type="submit" variant="contained" size="large" disabled={isLoading} sx={{ mt: 2, color: 'white' }}>
                 {isLoading ? 'Saving...' : 'Save Transaction'}
             </Button>
         </Box>

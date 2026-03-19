@@ -1,14 +1,19 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Box, FormControlLabel, Switch } from '@mui/material';
-import SettingsIcon from '@mui/icons-material/Settings';
+import { AppBar, Toolbar, IconButton, Box, FormControlLabel, Switch, Typography } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
+import { AuthService } from '../../services/auth.service';
+import ConfirmDialog from './ConfirmDialog';
 
-export default function TopAppBar({ title, showBack = false }: { title?: string, showBack?: boolean }) {
+export default function TopAppBar({ showBack = false }: { title?: string, showBack?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { profile, isAdminMode, setAdminMode } = useAuthStore();
+    const { currentOrganization } = useOrganizationStore();
+    const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
 
     const isSettings = location.pathname === '/settings';
 
@@ -22,6 +27,11 @@ export default function TopAppBar({ title, showBack = false }: { title?: string,
         }
     };
 
+    const handleLogout = async () => {
+        await AuthService.logout();
+        navigate('/login');
+    };
+
     return (
         <AppBar position="fixed" elevation={1}>
             <Toolbar>
@@ -30,14 +40,29 @@ export default function TopAppBar({ title, showBack = false }: { title?: string,
                         <ArrowBackIcon />
                     </IconButton>
                 )}
-                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-                    {title || (profile?.userType === 'admin' && isAdminMode) ? (
-                        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                            {title || 'Admin Dashboard'}
-                        </Typography>
-                    ) : (
-                        <img src="/logo-full.svg" alt="FirmLedger" style={{ height: 42 }} />
-                    )}
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box 
+                        component="img" 
+                        src="/logo.svg" 
+                        alt="FirmLedger" 
+                        sx={{ height: 32, cursor: 'pointer' }} 
+                        onClick={() => navigate('/')}
+                    />
+                    <Typography 
+                        variant="h6" 
+                        sx={{ 
+                            fontWeight: 800, 
+                            color: 'inherit',
+                            display: { xs: 'block', sm: 'block' },
+                            maxWidth: { xs: '180px', sm: 'none' },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            fontSize: { xs: '1rem', sm: '1.25rem' }
+                        }}
+                    >
+                        {currentOrganization?.orgName || 'FirmLedger'}
+                    </Typography>
                 </Box>
                 {profile?.userType === 'admin' && !isSettings && (
                     <FormControlLabel
@@ -46,12 +71,18 @@ export default function TopAppBar({ title, showBack = false }: { title?: string,
                         sx={{ mr: 2, '& .MuiFormControlLabel-label': { fontSize: '0.875rem', fontWeight: 600 } }}
                     />
                 )}
-                {!isSettings && (
-                    <IconButton color="inherit" onClick={() => navigate('/settings')}>
-                        <SettingsIcon />
-                    </IconButton>
-                )}
+                <IconButton color="inherit" onClick={() => setLogoutDialogOpen(true)}>
+                    <LogoutIcon />
+                </IconButton>
             </Toolbar>
+            <ConfirmDialog
+                open={logoutDialogOpen}
+                title="Logout"
+                message="Are you sure you want to log out?"
+                onConfirm={handleLogout}
+                onCancel={() => setLogoutDialogOpen(false)}
+                variant="error"
+            />
         </AppBar>
     );
 }

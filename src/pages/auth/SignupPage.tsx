@@ -4,12 +4,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { AuthService } from '../../services/auth.service';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { InputAdornment, IconButton } from '@mui/material';
 
 export default function SignupPage() {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -17,31 +21,40 @@ export default function SignupPage() {
         e.preventDefault();
         setError('');
 
-        if (!username.trim() || !email.trim() || !password.trim()) {
+        const cleanUsername = username.trim().toLowerCase();
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPassword = password.trim();
+
+        if (!cleanUsername || !cleanEmail || !cleanPassword) {
             return setError('All fields are required');
         }
 
         setLoading(true);
         try {
-            // Check username availabilityFIRST to prevent ghost accounts
-            const isAvailable = await AuthService.isUsernameAvailable(username.toLowerCase());
+            // Check username availability FIRST to prevent ghost accounts
+            const isAvailable = await AuthService.isUsernameAvailable(cleanUsername);
             if (!isAvailable) {
                 setError('Username already taken.');
                 return;
             }
 
             // Create auth user
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword);
             const uid = userCredential.user.uid;
 
             // Register username map
-            await AuthService.registerWithUsername(username.toLowerCase(), email, uid);
+            await AuthService.registerWithUsername(cleanUsername, cleanEmail, uid);
 
             // Navigate to profile setup
             navigate('/setup-profile');
         } catch (err: any) {
             console.error(err);
-            setError(err.message || 'Failed to create account');
+            let message = err.message || 'Failed to create account';
+            if (message.includes('auth/email-already-in-use')) message = 'Email already registered.';
+            else if (message.includes('auth/weak-password')) message = 'Password should be at least 6 characters.';
+            else message = message.replace('Firebase: Error ', '').replace(/\(auth\/.*\)\./, '').trim();
+            
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -68,10 +81,23 @@ export default function SignupPage() {
             />
             <TextField
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <IconButton
+                                onClick={() => setShowPassword(!showPassword)}
+                                edge="end"
+                                size="small"
+                            >
+                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
             />
 
             <Button

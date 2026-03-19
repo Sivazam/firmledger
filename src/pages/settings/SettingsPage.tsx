@@ -3,6 +3,8 @@ import { Box, Typography, List, ListItem, ListItemText, ListItemIcon, Divider, B
 import PersonIcon from '@mui/icons-material/Person';
 import BusinessIcon from '@mui/icons-material/Business';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../../services/auth.service';
 import { useAuthStore } from '../../stores/authStore';
@@ -23,6 +25,22 @@ export default function SettingsPage() {
             <Typography variant="h5" mb={3}>Settings</Typography>
 
             <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
+                {!showAdminSettings && (
+                    <>
+                        <ListItem component="button" onClick={() => navigate('/transactions')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
+                            <ListItemIcon><ReceiptLongIcon color="primary" /></ListItemIcon>
+                            <ListItemText primary="All Transactions" secondary="View and manage all financial records" />
+                        </ListItem>
+                        <Divider />
+
+                        <ListItem component="button" onClick={() => navigate('/reports')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
+                            <ListItemIcon><AssessmentIcon color="secondary" /></ListItemIcon>
+                            <ListItemText primary="Reports" secondary="View Ledger, Balance Sheet, and more" />
+                        </ListItem>
+                        <Divider />
+                    </>
+                )}
+
                 <ListItem component="button" onClick={() => navigate('/settings/personal')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
                     <ListItemIcon><PersonIcon /></ListItemIcon>
                     <ListItemText primary="Personal Details" secondary="Update your profile, address and contact info" />
@@ -39,18 +57,6 @@ export default function SettingsPage() {
                     </>
                 )}
             </List>
-
-            <Box mt={4}>
-                <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<LogoutIcon />}
-                    fullWidth
-                    onClick={handleLogout}
-                >
-                    Logout
-                </Button>
-            </Box>
 
             <Box mt={6} textAlign="center">
                 <Typography variant="body2" color="text.secondary">

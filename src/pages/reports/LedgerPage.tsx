@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Grid, TextField, Button } from '@mui/material';
+import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import PartySelector from '../../components/party/PartySelector';
@@ -9,14 +11,27 @@ import AmountDisplay from '../../components/transaction/AmountDisplay';
 
 export default function LedgerPage() {
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
+  const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
+  const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
   const { transactions } = useTransactionStore();
+  const navigate = useNavigate();
 
   const ledgerEntries = useMemo(() => {
     if (!selectedParty) return [];
     
     // Sort transactions chronologically (oldest first)
-    const partyTxs = transactions.filter(t => t.fromPartyId === selectedParty.id || t.toPartyId === selectedParty.id)
-                                 .sort((a, b) => a.date.toMillis() - b.date.toMillis());
+    const partyTxs = transactions.filter(t => {
+      const isParty = t.fromPartyId === selectedParty.id || t.toPartyId === selectedParty.id;
+      if (!isParty) return false;
+      
+      const txDate = t.date && (t.date as any).toDate ? dayjs((t.date as any).toDate()) : dayjs(t.date as any);
+      return txDate.isAfter(dayjs(fromDate).subtract(1, 'day')) && 
+             txDate.isBefore(dayjs(toDate).add(1, 'day'));
+    }).sort((a, b) => {
+        const da = a.date && (a.date as any).toDate ? a.date.toDate().getTime() : new Date(a.date as any).getTime();
+        const db = b.date && (b.date as any).toDate ? b.date.toDate().getTime() : new Date(b.date as any).getTime();
+        return da - db;
+    });
     
     let runningBalance = 0; 
     return partyTxs.map(tx => {
@@ -37,10 +52,20 @@ export default function LedgerPage() {
 
   return (
     <Box p={2}>
+      <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
       <Typography variant="h5" mb={3}>Party Ledger</Typography>
-      <Box mb={3} maxWidth={400}>
-        <PartySelector label="Select Party" value={selectedParty} onChange={setSelectedParty} />
-      </Box>
+      
+      <Grid container spacing={2} mb={3}>
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <PartySelector label="Select Party" value={selectedParty} onChange={setSelectedParty} />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4 }}>
+          <TextField label="From" type="date" fullWidth size="small" value={fromDate} onChange={e => setFromDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+        </Grid>
+        <Grid size={{ xs: 6, sm: 4 }}>
+          <TextField label="To" type="date" fullWidth size="small" value={toDate} onChange={e => setToDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+        </Grid>
+      </Grid>
 
       {selectedParty && (
         <Paper sx={{ overflowX: 'auto' }}>

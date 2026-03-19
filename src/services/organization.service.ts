@@ -20,6 +20,21 @@ export const OrganizationService = {
                 organizationId: orgId,
                 updatedAt: serverTimestamp()
             });
+
+            // Create default CASH party
+            const cashPartyId = 'party_cash'; // or use a random ID, but 'CASH' as code is important
+            await setDoc(doc(db, 'organizations', orgId, 'parties', cashPartyId), {
+                id: cashPartyId,
+                code: 'CASH',
+                name: 'Cash in Hand',
+                category: 'CASH',
+                address: 'System Default',
+                town: orgData.city || 'Local',
+                phoneNumber: '0000000000',
+                isSystem: true,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
         }
     },
 

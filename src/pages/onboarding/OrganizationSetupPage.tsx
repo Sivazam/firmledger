@@ -106,6 +106,7 @@ export default function OrganizationSetupPage() {
             />
             <TextField
                 label="Pincode"
+                inputMode="numeric"
                 {...register('pincode')}
                 error={!!errors.pincode}
                 helperText={errors.pincode?.message}

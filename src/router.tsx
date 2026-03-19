@@ -13,6 +13,7 @@ import AppLayout from './layouts/AppLayout';
 
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ProfileSetupPage from './pages/auth/ProfileSetupPage';
 import OrganizationSetupPage from './pages/onboarding/OrganizationSetupPage';
 import PendingApprovalPage from './pages/onboarding/PendingApprovalPage';
@@ -39,6 +40,8 @@ const LedgerPage = lazy(() => import('./pages/reports/LedgerPage'));
 const BalanceSheetPage = lazy(() => import('./pages/reports/BalanceSheetPage'));
 const MonthlyReportPage = lazy(() => import('./pages/reports/MonthlyReportPage'));
 const ChecklistPage = lazy(() => import('./pages/reports/ChecklistPage'));
+const TradingReportPage = lazy(() => import('./pages/reports/TradingReportPage'));
+const PLReportPage = lazy(() => import('./pages/reports/PLReportPage'));
 
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 const PersonalDetailsPage = lazy(() => import('./pages/settings/PersonalDetailsPage'));
@@ -63,6 +66,7 @@ export const router = createBrowserRouter([
         children: [
             { path: '/login', element: <LoginPage /> },
             { path: '/signup', element: <SignupPage /> },
+            { path: '/forgot-password', element: <ForgotPasswordPage /> },
         ]
     },
     {
@@ -118,6 +122,8 @@ export const router = createBrowserRouter([
                                     { path: '/reports/balance-sheet', element: <SuspenseWrapper><BalanceSheetPage /></SuspenseWrapper> },
                                     { path: '/reports/monthly', element: <SuspenseWrapper><MonthlyReportPage /></SuspenseWrapper> },
                                     { path: '/reports/checklist', element: <SuspenseWrapper><ChecklistPage /></SuspenseWrapper> },
+                                    { path: '/reports/trading', element: <SuspenseWrapper><TradingReportPage /></SuspenseWrapper> },
+                                    { path: '/reports/pl', element: <SuspenseWrapper><PLReportPage /></SuspenseWrapper> },
                                 ]
                             },
 

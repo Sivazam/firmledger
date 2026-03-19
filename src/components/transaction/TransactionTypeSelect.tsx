@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextField, MenuItem } from '@mui/material';
-import { TransactionType } from '../../config/constants';
+import { TransactionType, TRANSACTION_TYPE_LABELS } from '../../config/constants';
 
 interface Props {
     value: TransactionType;
@@ -20,7 +20,7 @@ export default function TransactionTypeSelect({ value, onChange }: Props) {
         >
             {types.map((type) => (
                 <MenuItem key={type} value={type}>
-                    {type.replace('_', ' ').toUpperCase()}
+                    {type} - {TRANSACTION_TYPE_LABELS[type]}
                 </MenuItem>
             ))}
         </TextField>
