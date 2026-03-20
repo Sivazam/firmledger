@@ -8,9 +8,7 @@ import type { TransactionFormData } from '../../utils/validators';
 import { TransactionType } from '../../config/constants';
 import TransactionTypeSelect from './TransactionTypeSelect';
 import PartySelector from '../party/PartySelector';
-import { useAuthStore } from '../../stores/authStore';
 import { usePartyStore } from '../../stores/partyStore';
-import { OrganizationService } from '../../services/organization.service';
 import type { Party } from '../../types/party.types';
 
 interface Props {
@@ -20,17 +18,7 @@ interface Props {
 }
 
 export default function TransactionForm({ initialData, onSubmit, isLoading }: Props) {
-    const { profile } = useAuthStore();
     const { parties } = usePartyStore();
-    const [orgName, setOrgName] = useState('Organization');
-
-    useEffect(() => {
-        if (profile?.organizationId) {
-            OrganizationService.getOrganization(profile.organizationId).then(org => {
-                if (org) setOrgName(org.orgName);
-            });
-        }
-    }, [profile?.organizationId]);
 
     const { control, handleSubmit, watch, setValue, register, formState: { errors } } = useForm<any>({
         resolver: zodResolver(transactionSchema),
@@ -66,30 +54,34 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
     }, [initialData?.id, parties]); // Run when initialData ID or parties list changes
 
     useEffect(() => {
-        if (!cashParty) return;
+        if (!cashParty || initialData) return;
 
         if (selectedType === TransactionType.CR) {
             setToParty(cashParty);
             setValue('toPartyId', cashParty.id);
-            if (fromParty?.id === cashParty.id) { setFromParty(null); setValue('fromPartyId', ''); }
+            if (fromParty?.id === cashParty.id) { 
+                setFromParty(null); 
+                setValue('fromPartyId', ''); 
+            }
         } else if (selectedType === TransactionType.CP) {
             setFromParty(cashParty);
             setValue('fromPartyId', cashParty.id);
-            if (toParty?.id === cashParty.id) { setToParty(null); setValue('toPartyId', ''); }
-        } else if (selectedType === TransactionType.SI || selectedType === TransactionType.PR) {
-             // From: Org, To: Party
-             setValue('fromPartyId', profile?.organizationId || ''); // Use org ID
-             if (fromParty) setFromParty(null); // Clear manual selection
-        } else if (selectedType === TransactionType.PI || selectedType === TransactionType.SR) {
-             // From: Party, To: Org
-             setValue('toPartyId', profile?.organizationId || ''); // Use org ID
-             if (toParty) setToParty(null); // Clear manual selection
+            if (toParty?.id === cashParty.id) { 
+                setToParty(null); 
+                setValue('toPartyId', ''); 
+            }
         } else {
-            // Non-cash transactions: If current selection is CASH, clear it
-            if (fromParty?.id === cashParty.id) { setFromParty(null); setValue('fromPartyId', ''); }
-            if (toParty?.id === cashParty.id) { setToParty(null); setValue('toPartyId', ''); }
+            // ALL other types: No CASH allowed on either side
+            if (fromParty?.id === cashParty.id) { 
+                setFromParty(null); 
+                setValue('fromPartyId', ''); 
+            }
+            if (toParty?.id === cashParty.id) { 
+                setToParty(null); 
+                setValue('toPartyId', ''); 
+            }
         }
-    }, [selectedType, cashParty, setValue, profile?.organizationId]);
+    }, [selectedType, cashParty, setValue]);
 
     const handleFormSubmit = (data: TransactionFormData) => {
         onSubmit({
@@ -103,29 +95,14 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         const fieldName = isFrom ? 'fromPartyId' : 'toPartyId';
         const label = isFrom ? 'From Party' : 'To Party';
 
-        // Logic for default/fixed values
+        // Logic for default/fixed values (ONLY for CASH in CR/CP)
         const isCashFixed = (selectedType === TransactionType.CR && !isFrom) || (selectedType === TransactionType.CP && isFrom);
-        const isOrgFixed = 
-            ((selectedType === TransactionType.SI || selectedType === TransactionType.PR) && isFrom) ||
-            ((selectedType === TransactionType.PI || selectedType === TransactionType.SR) && !isFrom);
 
         if (isCashFixed) {
             return (
                 <TextField
                     label={label}
                     value="Cash in Hand (CASH)"
-                    disabled
-                    fullWidth
-                    size="small"
-                />
-            );
-        }
-
-        if (isOrgFixed) {
-            return (
-                <TextField
-                    label={label}
-                    value={`${orgName} (Fixed)`}
                     disabled
                     fullWidth
                     size="small"
@@ -142,11 +119,13 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         label={label}
                         value={isFrom ? fromParty : toParty}
                         filter={(p) => {
-                            // If CR/CP, the OTHER side must NOT be cash
-                            if (selectedType === TransactionType.CR || selectedType === TransactionType.CP) {
-                                return p.code !== 'CASH';
-                            }
-                            // Otherwise, NO side can be cash
+                            // Organization is never allowed (it was passed as profile.organizationId if we had it in list)
+                            // But here we just assume all parties in 'parties' store are valid parties.
+                            // The user said strictly hide CASH for all but CR/CP
+                            const isCashType = selectedType === TransactionType.CR || selectedType === TransactionType.CP;
+                            if (!isCashType) return p.code !== 'CASH';
+                            
+                            // For CR/CP, the OTHER side (non-fixed) must NOT be CASH
                             return p.code !== 'CASH';
                         }}
                         onChange={(p) => {
