@@ -11,7 +11,9 @@ export const partySchema = z.object({
     aadharNumber: z.string().regex(VALIDATION_PATTERNS.AADHAR, 'Invalid Aadhar Number').optional().or(z.literal('')),
     panNumber: z.string().regex(VALIDATION_PATTERNS.PAN, 'Invalid PAN Number').optional().or(z.literal('')),
     gstNumber: z.string().regex(VALIDATION_PATTERNS.GST, 'Invalid GST Number').optional().or(z.literal('')),
-    category: z.enum(['CASH', 'BANK', 'CUSTOMER', 'SUPPLIER', 'REVENUE', 'EXPENSE', 'CAPITAL', 'OTHER']),
+    category: z.enum(['CASH', 'BANK', 'CUSTOMER', 'SUPPLIER', 'REVENUE', 'EXPENSE', 'CAPITAL', 'OTHER', 'Trading', 'P & L', 'Balance Sheet']),
+    openingBalance: z.number().default(0),
+    balanceType: z.enum(['Credit', 'Debit']).default('Debit'),
 });
 
 export type PartyFormData = z.infer<typeof partySchema>;

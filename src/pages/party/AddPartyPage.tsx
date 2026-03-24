@@ -40,6 +40,7 @@ export default function AddPartyPage() {
                 gstNumber: data.gstNumber || '',
                 aadharNumber: data.aadharNumber || '',
                 panNumber: data.panNumber || '',
+                openingBalance: Math.round((data.openingBalance || 0) * 100),
                 code: data.code.toUpperCase()
             };
             const newParty = await PartyService.addParty(profile.organizationId, partyData);

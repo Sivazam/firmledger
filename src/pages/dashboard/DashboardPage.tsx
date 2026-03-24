@@ -11,6 +11,8 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import HistoryIcon from '@mui/icons-material/History';
 import TransactionCard from '../../components/transaction/TransactionCard';
 import { Link } from 'react-router-dom';
 
@@ -29,33 +31,53 @@ export default function DashboardPage() {
     const stats = useMemo(() => {
         const today = dayjs().startOf('day');
 
+        const cashParty = parties.find(p => p.code === 'CASH');
+        const baseBalance = cashParty ? (cashParty.balanceType === 'Debit' ? (cashParty.openingBalance || 0) : -(cashParty.openingBalance || 0)) : 0;
+
         let todaysReceipts = 0;
         let todaysPayments = 0;
-        let totalReceivables = 0; // Simplified
-        let totalPayables = 0; // Simplified
+        let sumCrBeforeToday = 0;
+        let sumCpBeforeToday = 0;
+        let sumCrToday = 0;
+        let sumCpToday = 0;
 
         transactions.forEach(tx => {
-            const txDate = (tx.date as any).toDate ? (tx.date as any).toDate() : new Date(tx.date as any);
-            const isToday = dayjs(txDate).isSame(today, 'day');
+            const txDateRaw = (tx.date as any).toDate ? (tx.date as any).toDate() : new Date(tx.date as any);
+            const txDate = dayjs(txDateRaw).startOf('day');
+            const isToday = txDate.isSame(today, 'day');
+            const isBeforeToday = txDate.isBefore(today);
 
-            if (tx.type === TransactionType.CR || tx.type === TransactionType.BR) {
+            if (tx.type === TransactionType.CR) {
+                if (isToday) {
+                    todaysReceipts += tx.amount;
+                    sumCrToday += tx.amount;
+                } else if (isBeforeToday) {
+                    sumCrBeforeToday += tx.amount;
+                }
+            } else if (tx.type === TransactionType.CP) {
+                if (isToday) {
+                    todaysPayments += tx.amount;
+                    sumCpToday += tx.amount;
+                } else if (isBeforeToday) {
+                    sumCpBeforeToday += tx.amount;
+                }
+            } else if (tx.type === TransactionType.BR) {
                 if (isToday) todaysReceipts += tx.amount;
-                totalReceivables -= tx.amount; 
-            } else if (tx.type === TransactionType.CP || tx.type === TransactionType.BP) {
+            } else if (tx.type === TransactionType.BP) {
                 if (isToday) todaysPayments += tx.amount;
-                totalPayables -= tx.amount;
-            } else if (tx.type === TransactionType.SI) {
-                totalReceivables += tx.amount;
-            } else if (tx.type === TransactionType.PI) {
-                totalPayables += tx.amount;
             }
         });
+
+        const dashboardOpeningBalance = baseBalance + sumCrBeforeToday - sumCpBeforeToday;
+        const dashboardClosingBalance = dashboardOpeningBalance + sumCrToday - sumCpToday;
 
         return {
             totalParties: parties.length,
             totalTransactions: transactions.length,
             todaysReceipts,
             todaysPayments,
+            dashboardOpeningBalance,
+            dashboardClosingBalance,
             recentTransactions: [...transactions]
                 .sort((a, b) => {
                     const dateA = (a.date as any).toDate ? (a.date as any).toDate().getTime() : new Date(a.date as any).getTime();
@@ -96,6 +118,38 @@ export default function DashboardPage() {
                             <ReceiptIcon sx={{ mb: 1, opacity: 0.8 }} />
                             <Typography variant="h4" fontWeight="800">{stats.totalTransactions}</Typography>
                             <Typography variant="body2" sx={{ opacity: 0.8, textTransform: 'uppercase', fontWeight: 700, fontSize: '0.7rem' }}>Transactions</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <Card sx={{ borderLeft: 6, borderColor: 'info.main' }}>
+                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary" textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Opening Balance</Typography>
+                                <Typography variant="h5" fontWeight="800" color="info.main">
+                                    {formatINR(stats.dashboardOpeningBalance)}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ bgcolor: 'info.light', p: 1, borderRadius: 2, opacity: 0.2 }}>
+                                <HistoryIcon sx={{ fontSize: 32, color: 'info.main' }} />
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <Card sx={{ borderLeft: 6, borderColor: 'primary.main', bgcolor: 'primary.light', color: 'primary.contrastText', backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}>
+                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box>
+                                <Typography variant="body2" sx={{ opacity: 0.8 }} textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Closing Balance</Typography>
+                                <Typography variant="h4" fontWeight="900">
+                                    {formatINR(stats.dashboardClosingBalance)}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                                <AccountBalanceWalletIcon sx={{ fontSize: 36, color: 'white' }} />
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>

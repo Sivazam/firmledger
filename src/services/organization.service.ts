@@ -31,6 +31,8 @@ export const OrganizationService = {
                 address: 'System Default',
                 town: orgData.city || 'Local',
                 phoneNumber: '0000000000',
+                openingBalance: 0,
+                balanceType: 'Debit',
                 isSystem: true,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()

@@ -15,6 +15,13 @@ interface ConfirmDialogProps {
     onCancel?: () => void;
     confirmText?: string;
     cancelText?: string;
+    secondaryAction?: {
+        label: string;
+        onClick: () => void;
+        icon?: React.ReactNode;
+        color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+        variant?: 'contained' | 'outlined' | 'text';
+    };
 }
 
 export default function ConfirmDialog({
@@ -25,7 +32,8 @@ export default function ConfirmDialog({
     onConfirm,
     onCancel,
     confirmText = 'OK',
-    cancelText = 'Cancel'
+    cancelText = 'Cancel',
+    secondaryAction
 }: ConfirmDialogProps) {
     const getIcon = () => {
         switch (variant) {
@@ -49,6 +57,16 @@ export default function ConfirmDialog({
                 {onCancel && (
                     <Button onClick={onCancel} variant="outlined" color="inherit">
                         {cancelText}
+                    </Button>
+                )}
+                {secondaryAction && (
+                    <Button
+                        onClick={secondaryAction.onClick}
+                        variant={secondaryAction.variant || 'outlined'}
+                        color={secondaryAction.color || 'primary'}
+                        startIcon={secondaryAction.icon}
+                    >
+                        {secondaryAction.label}
                     </Button>
                 )}
                 <Button

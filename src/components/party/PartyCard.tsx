@@ -74,6 +74,9 @@ export default function PartyCard({ party }: { party: Party }) {
                         <Typography variant="body2">
                             Phone: {party.phoneNumber}
                         </Typography>
+                        <Typography variant="body2" sx={{ mt: 1, fontWeight: 'medium' }}>
+                            Opening Balance: {party.openingBalance / 100} ({party.balanceType})
+                        </Typography>
                     </Box>
                     <Box display="flex">
                         <IconButton onClick={() => navigate(`/parties/edit/${party.id}`)} color="primary">

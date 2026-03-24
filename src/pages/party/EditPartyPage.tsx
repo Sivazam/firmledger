@@ -45,6 +45,7 @@ export default function EditPartyPage() {
                 gstNumber: data.gstNumber || '',
                 aadharNumber: data.aadharNumber || '',
                 panNumber: data.panNumber || '',
+                openingBalance: Math.round((data.openingBalance || 0) * 100),
                 code: data.code.toUpperCase()
             };
             await PartyService.updateParty(profile.organizationId, party.id, partyData);

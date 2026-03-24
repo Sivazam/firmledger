@@ -36,18 +36,16 @@ interface Props {
 export default function ReceiptDocument({ transaction, organization }: Props) {
     const getDocTitle = () => {
         switch (transaction.type) {
-            case TransactionType.CR:
-            case TransactionType.BR:
-                return 'Receipt Voucher';
-            case TransactionType.CP:
-            case TransactionType.BP:
-                return 'Payment Voucher';
-            case TransactionType.SI: return 'Sales Invoice / Voucher';
-            case TransactionType.PI: return 'Purchase Voucher';
+            case TransactionType.CR: return 'Cash Receipt';
+            case TransactionType.BR: return 'Bank Receipt';
+            case TransactionType.CP: return 'Cash Payment';
+            case TransactionType.BP: return 'Bank Payment';
+            case TransactionType.SI: return 'Sales Invoice';
+            case TransactionType.PI: return 'Purchase Invoice';
             case TransactionType.JV: return 'Journal Voucher';
-            case TransactionType.SR: return 'Credit Note (Sales Return)';
-            case TransactionType.PR: return 'Debit Note (Purchase Return)';
-            default: return 'Transaction Voucher';
+            case TransactionType.SR: return 'Sales Return (Credit Note)';
+            case TransactionType.PR: return 'Purchase Return (Debit Note)';
+            default: return 'Transaction Receipt';
         }
     };
 
@@ -77,14 +75,18 @@ export default function ReceiptDocument({ transaction, organization }: Props) {
                 </View>
 
                 <View style={styles.detailsBox}>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>From:</Text>
-                        <Text style={styles.detailValue}>{transaction.fromPartyName}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>To:</Text>
-                        <Text style={styles.detailValue}>{transaction.toPartyName}</Text>
-                    </View>
+                    {!(transaction.type === TransactionType.CP && transaction.fromPartyName === 'Cash in Hand') && (
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>From:</Text>
+                            <Text style={styles.detailValue}>{transaction.fromPartyName}</Text>
+                        </View>
+                    )}
+                    {!(transaction.type === TransactionType.CR && transaction.toPartyName === 'Cash in Hand') && (
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>To:</Text>
+                            <Text style={styles.detailValue}>{transaction.toPartyName}</Text>
+                        </View>
+                    )}
                     <View style={{ ...styles.detailRow, marginTop: 10 }}>
                         <Text style={styles.detailLabel}>Description:</Text>
                         <Text style={styles.detailValue}>{transaction.description}</Text>

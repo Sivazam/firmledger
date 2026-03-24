@@ -1,7 +1,7 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TextField, Button, Box, Grid } from '@mui/material';
+import { TextField, Button, Box, Grid, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import { partySchema } from '../../utils/validators';
 import type { PartyFormData } from '../../utils/validators';
 import type { Party } from '../../types/party.types';
@@ -19,10 +19,15 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
     const [duplicateDialogOpen, setDuplicateDialogOpen] = React.useState(false);
     const [duplicateCode, setDuplicateCode] = React.useState('');
 
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm<PartyFormData>({
+    const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm<any>({
         resolver: zodResolver(partySchema),
-        defaultValues: initialData || {
-            code: '', name: '', category: 'CUSTOMER', fatherName: '', address: '', town: '', phoneNumber: '', aadharNumber: '', panNumber: '', gstNumber: ''
+        defaultValues: initialData ? {
+            ...initialData,
+            openingBalance: (initialData.openingBalance || 0) / 100
+        } : {
+            code: '', name: '', category: 'CUSTOMER', fatherName: '', address: '', town: '', phoneNumber: '', aadharNumber: '', panNumber: '', gstNumber: '',
+            openingBalance: 0,
+            balanceType: 'Debit'
         }
     });
 
@@ -43,11 +48,11 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                             }
                         })}
                         error={!!errors.code}
-                        helperText={errors.code?.message}
+                        helperText={errors.code?.message as any}
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Party Name" {...register('name')} error={!!errors.name} helperText={errors.name?.message} fullWidth />
+                    <TextField label="Party Name" {...register('name')} error={!!errors.name} helperText={errors.name?.message as any} fullWidth />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 2 }}>
                     <TextField
@@ -55,40 +60,72 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                         label="Category"
                         {...register('category')}
                         error={!!errors.category}
-                        helperText={errors.category?.message}
+                        helperText={errors.category?.message as any}
                         fullWidth
                         SelectProps={{ native: true }}
                     >
-                        <option value="CUSTOMER">CUSTOMER</option>
-                        <option value="SUPPLIER">SUPPLIER</option>
-                        <option value="BANK">BANK</option>
-                        <option value="CASH">CASH</option>
-                        <option value="REVENUE">REVENUE</option>
-                        <option value="EXPENSE">EXPENSE</option>
-                        <option value="CAPITAL">CAPITAL</option>
-                        <option value="OTHER">OTHER</option>
+                        <option value="Trading">Trading</option>
+                        <option value="P & L">P & L</option>
+                        <option value="Balance Sheet">Balance Sheet</option>
                     </TextField>
                 </Grid>
                 <Grid size={{ xs: 12 }}>
-                    <TextField label="Father Name (Optional)" {...register('fatherName')} error={!!errors.fatherName} helperText={errors.fatherName?.message} />
+                    <TextField label="Father Name (Optional)" {...register('fatherName')} error={!!errors.fatherName} helperText={errors.fatherName?.message as any} />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
-                    <TextField label="Address" multiline rows={2} {...register('address')} error={!!errors.address} helperText={errors.address?.message} />
+                    <TextField label="Address" multiline rows={2} {...register('address')} error={!!errors.address} helperText={errors.address?.message as any} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Town" {...register('town')} error={!!errors.town} helperText={errors.town?.message} />
+                    <TextField label="Town" {...register('town')} error={!!errors.town} helperText={errors.town?.message as any} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Phone Number" type="tel" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} {...register('phoneNumber')} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message} />
+                    <TextField label="Phone Number" type="tel" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} {...register('phoneNumber')} error={!!errors.phoneNumber} helperText={errors.phoneNumber?.message as any} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextField label="Aadhar (Optional)" type="tel" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} {...register('aadharNumber')} error={!!errors.aadharNumber} helperText={errors.aadharNumber?.message} />
+                    <TextField label="Aadhar (Optional)" type="tel" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} {...register('aadharNumber')} error={!!errors.aadharNumber} helperText={errors.aadharNumber?.message as any} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextField label="PAN (Optional)" {...register('panNumber')} error={!!errors.panNumber} helperText={errors.panNumber?.message} />
+                    <TextField label="PAN (Optional)" {...register('panNumber')} error={!!errors.panNumber} helperText={errors.panNumber?.message as any} />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                    <TextField label="GST (Optional)" {...register('gstNumber')} error={!!errors.gstNumber} helperText={errors.gstNumber?.message} />
+                    <TextField label="GST (Optional)" {...register('gstNumber')} error={!!errors.gstNumber} helperText={errors.gstNumber?.message as any} />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                        label="Opening Balance (₹)"
+                        type="number"
+                        inputProps={{ inputMode: 'numeric', step: "0.01" }}
+                        {...register('openingBalance', { valueAsNumber: true })}
+                        error={!!errors.openingBalance}
+                        helperText={errors.openingBalance?.message as any}
+                        fullWidth
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box sx={{ ml: { sm: 2 } }}>
+                        <FormControl component="fieldset" error={!!errors.balanceType}>
+                            <FormLabel component="legend">Balance Type</FormLabel>
+                            <Controller
+                                name="balanceType"
+                                control={control}
+                                render={({ field }) => (
+                                    <RadioGroup
+                                        {...field}
+                                        row
+                                    >
+                                        <FormControlLabel value="Debit" control={<Radio size="small" />} label="Debit" />
+                                        <FormControlLabel value="Credit" control={<Radio size="small" />} label="Credit" />
+                                    </RadioGroup>
+                                )}
+                            />
+                            {errors.balanceType && (
+                                <Typography variant="caption" color="error">
+                                    {(errors.balanceType as any).message}
+                                </Typography>
+                            )}
+                        </FormControl>
+                    </Box>
                 </Grid>
             </Grid>
 

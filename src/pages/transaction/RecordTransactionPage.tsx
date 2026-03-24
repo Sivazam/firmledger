@@ -11,14 +11,27 @@ import { useNavigate } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
 import { formatDate, formatINR } from '../../utils/formatters';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { pdf } from '@react-pdf/renderer';
+import ReceiptDocument from '../../components/pdf/ReceiptDocument';
+import { useOrganizationStore } from '../../stores/organizationStore';
+import ShareIcon from '@mui/icons-material/Share';
+import type { Transaction } from '../../types/transaction.types';
 
 export default function RecordTransactionPage() {
     const [loading, setLoading] = useState(false);
     const { profile } = useAuthStore();
     const { addTransactionLocal } = useTransactionStore();
     const { parties } = usePartyStore();
+    const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
-    const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
+    const [dialogConfig, setDialogConfig] = useState<{ 
+        open: boolean, 
+        title: string, 
+        message: string, 
+        variant: 'success' | 'error', 
+        onConfirm: () => void,
+        secondaryAction?: any
+    }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
 
@@ -46,6 +59,32 @@ export default function RecordTransactionPage() {
             });
 
             addTransactionLocal(newTx);
+
+            const handleShare = async () => {
+                if (!currentOrganization) return;
+                try {
+                    const blob = await pdf(<ReceiptDocument transaction={newTx} organization={currentOrganization} />).toBlob();
+                    const file = new File([blob], `receipt_${newTx.slNo}.pdf`, { type: 'application/pdf' });
+                    
+                    if (navigator.share) {
+                        await navigator.share({
+                            files: [file],
+                            title: `Receipt ${newTx.slNo}`,
+                            text: `Receipt for ${newTx.toPartyName}`
+                        });
+                    } else {
+                        // Fallback: download
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `receipt_${newTx.slNo}.pdf`;
+                        link.click();
+                    }
+                } catch (err) {
+                    console.error('Sharing failed', err);
+                }
+            };
+
             setDialogConfig({
                 open: true,
                 variant: 'success',
@@ -54,6 +93,12 @@ export default function RecordTransactionPage() {
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
                     navigate(-1);
+                },
+                secondaryAction: {
+                    label: 'Share Receipt',
+                    onClick: handleShare,
+                    icon: <ShareIcon />,
+                    color: 'primary'
                 }
             });
         } catch (err) {
@@ -79,6 +124,7 @@ export default function RecordTransactionPage() {
                 message={dialogConfig.message}
                 variant={dialogConfig.variant}
                 onConfirm={dialogConfig.onConfirm}
+                secondaryAction={dialogConfig.secondaryAction}
             />
         </Box>
     );

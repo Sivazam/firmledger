@@ -1,5 +1,10 @@
 # React + TypeScript + Vite
 
+WIP-
+in adding party module - when adding a party have two more fields - 1.opening balance(which can be 0 also if not mentioned anything) and 2. type of party - credit or debit a(you can use modern radio buttons ot choose).
+
+
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
