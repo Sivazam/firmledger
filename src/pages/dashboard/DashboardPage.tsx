@@ -72,8 +72,6 @@ export default function DashboardPage() {
         const dashboardClosingBalance = dashboardOpeningBalance + sumCrToday - sumCpToday;
 
         return {
-            totalParties: parties.length,
-            totalTransactions: transactions.length,
             todaysReceipts,
             todaysPayments,
             dashboardOpeningBalance,
@@ -102,26 +100,7 @@ export default function DashboardPage() {
             <Typography color="text.secondary" mb={4}>Welcome back to FirmLedger</Typography>
 
             <Grid container spacing={3}>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                    <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-                        <CardContent>
-                            <PeopleIcon sx={{ mb: 1, opacity: 0.8 }} />
-                            <Typography variant="h4" fontWeight="800">{stats.totalParties}</Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.8, textTransform: 'uppercase', fontWeight: 700, fontSize: '0.7rem' }}>Parties</Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                <Grid size={{ xs: 6, sm: 3 }}>
-                    <Card sx={{ bgcolor: 'secondary.main', color: 'white' }}>
-                        <CardContent>
-                            <ReceiptIcon sx={{ mb: 1, opacity: 0.8 }} />
-                            <Typography variant="h4" fontWeight="800">{stats.totalTransactions}</Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.8, textTransform: 'uppercase', fontWeight: 700, fontSize: '0.7rem' }}>Transactions</Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
+                {/* 1. Cash Opening Balance */}
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Card sx={{ borderLeft: 6, borderColor: 'info.main' }}>
                         <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -138,22 +117,7 @@ export default function DashboardPage() {
                     </Card>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <Card sx={{ borderLeft: 6, borderColor: 'primary.main', bgcolor: 'primary.light', color: 'primary.contrastText', backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box>
-                                <Typography variant="body2" sx={{ opacity: 0.8 }} textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Closing Balance</Typography>
-                                <Typography variant="h4" fontWeight="900">
-                                    {formatINR(stats.dashboardClosingBalance)}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                                <AccountBalanceWalletIcon sx={{ fontSize: 36, color: 'white' }} />
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-
+                {/* 2. Todays Receipts */}
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Card>
                         <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -170,6 +134,7 @@ export default function DashboardPage() {
                     </Card>
                 </Grid>
 
+                {/* 3. Todays Payments */}
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Card>
                         <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -181,6 +146,23 @@ export default function DashboardPage() {
                             </Box>
                             <Box sx={{ bgcolor: 'error.light', p: 1, borderRadius: 2, opacity: 0.2 }}>
                                 <TrendingDownIcon sx={{ fontSize: 32, color: 'error.main' }} />
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                {/* 4. Cash Closing Balance */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <Card sx={{ borderLeft: 6, borderColor: 'primary.main', bgcolor: 'primary.light', color: 'primary.contrastText', backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}>
+                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box>
+                                <Typography variant="body2" sx={{ opacity: 0.8 }} textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Closing Balance</Typography>
+                                <Typography variant="h4" fontWeight="900">
+                                    {formatINR(stats.dashboardClosingBalance)}
+                                </Typography>
+                            </Box>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                                <AccountBalanceWalletIcon sx={{ fontSize: 36, color: 'white' }} />
                             </Box>
                         </CardContent>
                     </Card>

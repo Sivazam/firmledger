@@ -8,10 +8,15 @@ import TransactionCard from '../../components/transaction/TransactionCard';
 import TransactionFilters from '../../components/transaction/TransactionFilters';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
 import { useNavigate } from 'react-router-dom';
+import { usePDF } from '../../hooks/usePDF';
+import { pdf } from '@react-pdf/renderer';
+import ReportDocument from '../../components/pdf/ReportDocument';
+import { TRANSACTION_TYPE_LABELS } from '../../config/constants';
 
 export default function TransactionsListPage() {
     const { transactions, fetchTransactions, loading, initialized } = useTransactionStore();
     const { profile } = useAuthStore();
+    const { sharePDF } = usePDF();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('');
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
@@ -38,6 +43,53 @@ export default function TransactionsListPage() {
         return isWithinDate && matchSearch && matchType;
     });
 
+    const handleExportExcel = async () => {
+        if (filteredTransactions.length === 0) return;
+        
+        const headers = ['SL No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
+        const rows = filteredTransactions.map(tx => {
+            const date = tx.date && (tx.date as any).toDate ? (tx.date as any).toDate().toLocaleDateString() : new Date(tx.date as any).toLocaleDateString();
+            return [
+                tx.slNo,
+                date,
+                TRANSACTION_TYPE_LABELS[tx.type] || tx.type,
+                tx.fromPartyName,
+                tx.toPartyName,
+                tx.amount,
+                tx.description.replace(/,/g, ' ') // Simple CSV escape
+            ];
+        });
+
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const filename = `Transactions_${fromDate}_to_${toDate}.csv`;
+
+        const file = new File([blob], filename, { type: 'text/csv' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Transactions Export' });
+        } else {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    const handleExportPDF = async () => {
+        if (filteredTransactions.length === 0) return;
+        try {
+            const doc = <ReportDocument title={`Transactions Report (${fromDate} to ${toDate})`} transactions={filteredTransactions} />;
+            const blob = await pdf(doc).toBlob();
+            await sharePDF(blob, `Transactions_${fromDate}_to_${toDate}.pdf`);
+        } catch (err) {
+            console.error('PDF export failed', err);
+        }
+    };
+
     return (
         <Box>
             <TransactionFilters
@@ -49,6 +101,8 @@ export default function TransactionsListPage() {
                 setFromDate={setFromDate}
                 toDate={toDate}
                 setToDate={setToDate}
+                onExportExcel={handleExportExcel}
+                onExportPDF={handleExportPDF}
             />
 
             {loading ? (

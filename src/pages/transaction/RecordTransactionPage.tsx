@@ -60,10 +60,19 @@ export default function RecordTransactionPage() {
 
             addTransactionLocal(newTx);
 
+            let generatedBlob: Blob | null = null;
+            try {
+                if (currentOrganization) {
+                    generatedBlob = await pdf(<ReceiptDocument transaction={newTx} organization={currentOrganization} />).toBlob();
+                }
+            } catch (err) {
+                console.error('Pre-generating PDF failed', err);
+            }
+
             const handleShare = async () => {
                 if (!currentOrganization) return;
                 try {
-                    const blob = await pdf(<ReceiptDocument transaction={newTx} organization={currentOrganization} />).toBlob();
+                    const blob = generatedBlob || await pdf(<ReceiptDocument transaction={newTx} organization={currentOrganization} />).toBlob();
                     const file = new File([blob], `receipt_${newTx.slNo}.pdf`, { type: 'application/pdf' });
                     
                     if (navigator.share) {
@@ -78,7 +87,10 @@ export default function RecordTransactionPage() {
                         const link = document.createElement('a');
                         link.href = url;
                         link.download = `receipt_${newTx.slNo}.pdf`;
+                        document.body.appendChild(link);
                         link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
                     }
                 } catch (err) {
                     console.error('Sharing failed', err);

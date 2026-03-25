@@ -22,25 +22,55 @@ export default function TransactionDetailPage() {
     const [dialogConfig, setDialogConfig] = React.useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
+    const [pdfBlob, setPdfBlob] = React.useState<Blob | null>(null);
+    const [organization, setOrganization] = React.useState<any>(null);
 
     const tx = transactions.find(t => t.id === id);
+
+    React.useEffect(() => {
+        const preparePDF = async () => {
+            if (tx && profile?.organizationId && !pdfBlob) {
+                try {
+                    const org = await OrganizationService.getOrganization(profile.organizationId);
+                    setOrganization(org);
+                    if (org) {
+                        const blob = await generatePDFBlob(<ReceiptDocument transaction={tx} organization={org} />);
+                        setPdfBlob(blob);
+                    }
+                } catch (err) {
+                    console.error('Failed to pre-generate PDF', err);
+                }
+            }
+        };
+        preparePDF();
+    }, [tx, profile?.organizationId, generatePDFBlob, pdfBlob]);
 
     if (!tx) return <Typography p={2}>Transaction not found</Typography>;
 
     const handleShare = async () => {
-        if (!profile?.organizationId) return;
+        if (!pdfBlob) {
+            // If not ready yet, try one last time (though useEffect usually handles it)
+            if (!profile?.organizationId) return;
+            try {
+                const org = organization || await OrganizationService.getOrganization(profile.organizationId);
+                if (!org) return;
+                const blob = await generatePDFBlob(<ReceiptDocument transaction={tx} organization={org} />);
+                await sharePDF(blob, `Voucher-SL-${tx.slNo}.pdf`);
+            } catch (err) {
+                console.error(err);
+            }
+            return;
+        }
+
         try {
-            const org = await OrganizationService.getOrganization(profile.organizationId);
-            if (!org) return;
-            const blob = await generatePDFBlob(<ReceiptDocument transaction={tx} organization={org} />);
-            await sharePDF(blob, `Voucher-SL-${tx.slNo}.pdf`);
+            await sharePDF(pdfBlob, `Voucher-SL-${tx.slNo}.pdf`);
         } catch (err) {
             console.error(err);
             setDialogConfig({
                 open: true,
                 variant: 'error',
-                title: 'PDF Generation Failed',
-                message: 'Failed to generate PDF. Please try again later.',
+                title: 'Share Failed',
+                message: 'Failed to share PDF. Please try again.',
                 onConfirm: () => setDialogConfig((prev: any) => ({ ...prev, open: false }))
             });
         }
