@@ -78,8 +78,7 @@ export default function RecordTransactionPage() {
                     if (navigator.share) {
                         await navigator.share({
                             files: [file],
-                            title: `Receipt ${newTx.slNo}`,
-                            text: `Receipt for ${newTx.toPartyName}`
+                            title: `Receipt ${newTx.slNo}`
                         });
                     } else {
                         // Fallback: download

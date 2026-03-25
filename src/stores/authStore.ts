@@ -30,7 +30,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     init: () => {
         onAuthStateChanged(auth, async (user) => {
-            set({ user, loading: true });
+            // Only show full loading splash if it's the first initialization
+            set((state) => ({ user, loading: !state.initialized ? true : state.loading }));
             if (user) {
                 try {
                     const profile = await AuthService.getUserProfile(user.uid);

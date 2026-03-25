@@ -7,6 +7,7 @@ import { useAuthStore } from './stores/authStore';
 import { useOrganizationStore } from './stores/organizationStore';
 
 import SplashScreen from './components/common/SplashScreen';
+import AutoUpdater from './components/common/AutoUpdater';
 
 function App() {
   const { init, initialized, profile } = useAuthStore();
@@ -78,6 +79,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <AutoUpdater />
       <RouterProvider router={router} />
     </ThemeProvider>
   );
