@@ -12,8 +12,8 @@ interface Props {
     setFromDate: (val: string) => void;
     toDate: string;
     setToDate: (val: string) => void;
-    onExportExcel: () => void;
-    onExportPDF: () => void;
+    onGenerateReport: () => void;
+    hasTransactions: boolean;
 }
 
 export default function TransactionFilters({
@@ -21,7 +21,8 @@ export default function TransactionFilters({
     selectedType, setSelectedType,
     fromDate, setFromDate,
     toDate, setToDate,
-    onExportExcel, onExportPDF
+    onGenerateReport,
+    hasTransactions
 }: Props) {
     const types = Object.values(TransactionType);
 
@@ -79,6 +80,7 @@ export default function TransactionFilters({
                         type="date"
                         value={fromDate}
                         onChange={(e) => { setFromDate(e.target.value); if(e.target.value) (e.target as any).blur(); }}
+                        onFocus={(e) => (e.target as any).showPicker?.()}
                         InputLabelProps={{ shrink: true }}
                         sx={{ bgcolor: 'background.paper' }}
                     />
@@ -91,30 +93,21 @@ export default function TransactionFilters({
                         type="date"
                         value={toDate}
                         onChange={(e) => { setToDate(e.target.value); if(e.target.value) (e.target as any).blur(); }}
+                        onFocus={(e) => (e.target as any).showPicker?.()}
                         InputLabelProps={{ shrink: true }}
                         sx={{ bgcolor: 'background.paper' }}
                     />
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid size={{ xs: 12, sm: 2 }}>
                     <Button 
                         fullWidth 
-                        variant="outlined" 
+                        variant="contained" 
                         size="small" 
-                        onClick={onExportExcel}
-                        sx={{ height: '40px', borderColor: 'divider', color: 'text.secondary' }}
+                        onClick={onGenerateReport}
+                        disabled={!hasTransactions}
+                        sx={{ height: '40px', fontWeight: 'bold' }}
                     >
-                        Excel
-                    </Button>
-                </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                    <Button 
-                        fullWidth 
-                        variant="outlined" 
-                        size="small" 
-                        onClick={onExportPDF}
-                        sx={{ height: '40px', borderColor: 'divider', color: 'text.secondary' }}
-                    >
-                        PDF
+                        Generate Report
                     </Button>
                 </Grid>
             </Grid>

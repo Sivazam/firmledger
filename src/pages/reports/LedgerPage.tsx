@@ -60,10 +60,10 @@ export default function LedgerPage() {
           <PartySelector label="Select Party" value={selectedParty} onChange={setSelectedParty} />
         </Grid>
         <Grid size={{ xs: 6, sm: 4 }}>
-          <TextField label="From" type="date" fullWidth size="small" value={fromDate} onChange={e => setFromDate(e.target.value)} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
+          <TextField label="From" type="date" fullWidth size="small" value={fromDate} onChange={e => { setFromDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
         </Grid>
         <Grid size={{ xs: 6, sm: 4 }}>
-          <TextField label="To" type="date" fullWidth size="small" value={toDate} onChange={e => setToDate(e.target.value)} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
+          <TextField label="To" type="date" fullWidth size="small" value={toDate} onChange={e => { setToDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
         </Grid>
       </Grid>
 

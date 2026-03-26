@@ -110,7 +110,7 @@ export default function DashboardPage() {
                                     {formatINR(stats.dashboardOpeningBalance)}
                                 </Typography>
                             </Box>
-                            <Box sx={{ bgcolor: 'info.light', p: 1, borderRadius: 2, opacity: 0.2 }}>
+                            <Box sx={{ bgcolor: 'rgba(3, 169, 244, 0.15)', p: 1, borderRadius: 2 }}>
                                 <HistoryIcon sx={{ fontSize: 32, color: 'info.main' }} />
                             </Box>
                         </CardContent>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                                     {formatINR(stats.todaysReceipts)}
                                 </Typography>
                             </Box>
-                            <Box sx={{ bgcolor: 'success.light', p: 1, borderRadius: 2, opacity: 0.2 }}>
+                            <Box sx={{ bgcolor: 'rgba(76, 175, 80, 0.15)', p: 1, borderRadius: 2 }}>
                                 <TrendingUpIcon sx={{ fontSize: 32, color: 'success.main' }} />
                             </Box>
                         </CardContent>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
                                     {formatINR(stats.todaysPayments)}
                                 </Typography>
                             </Box>
-                            <Box sx={{ bgcolor: 'error.light', p: 1, borderRadius: 2, opacity: 0.2 }}>
+                            <Box sx={{ bgcolor: 'rgba(211, 47, 47, 0.15)', p: 1, borderRadius: 2 }}>
                                 <TrendingDownIcon sx={{ fontSize: 32, color: 'error.main' }} />
                             </Box>
                         </CardContent>

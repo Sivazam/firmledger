@@ -90,10 +90,28 @@ export default function TradingReportPage() {
 
             <Grid container spacing={2} mb={3}>
                 <Grid size={{ xs: 6 }}>
-                    <TextField label="From" type="date" fullWidth size="small" value={fromDate} onChange={e => setFromDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+                    <TextField 
+                        label="From" 
+                        type="date" 
+                        fullWidth 
+                        size="small" 
+                        value={fromDate} 
+                        onChange={e => { setFromDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} 
+                        onFocus={(e) => (e.target as any).showPicker?.()}
+                        InputLabelProps={{ shrink: true }} 
+                    />
                 </Grid>
                 <Grid size={{ xs: 6 }}>
-                    <TextField label="To" type="date" fullWidth size="small" value={toDate} onChange={e => setToDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+                    <TextField 
+                        label="To" 
+                        type="date" 
+                        fullWidth 
+                        size="small" 
+                        value={toDate} 
+                        onChange={e => { setToDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} 
+                        onFocus={(e) => (e.target as any).showPicker?.()}
+                        InputLabelProps={{ shrink: true }} 
+                    />
                 </Grid>
             </Grid>
 

@@ -12,6 +12,14 @@ import { usePDF } from '../../hooks/usePDF';
 import { pdf } from '@react-pdf/renderer';
 import ReportDocument from '../../components/pdf/ReportDocument';
 import { TRANSACTION_TYPE_LABELS } from '../../config/constants';
+import { 
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+    Button, IconButton, Menu, MenuItem, Divider, Stack
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DownloadIcon from '@mui/icons-material/Download';
+import ShareIcon from '@mui/icons-material/Share';
+import { formatINR } from '../../utils/formatters';
 
 export default function TransactionsListPage() {
     const { transactions, fetchTransactions, loading, initialized } = useTransactionStore();
@@ -21,6 +29,11 @@ export default function TransactionsListPage() {
     const [selectedType, setSelectedType] = useState('');
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [showReport, setShowReport] = useState(false);
+    
+    const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
+    const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -43,19 +56,18 @@ export default function TransactionsListPage() {
         return isWithinDate && matchSearch && matchType;
     });
 
-    const handleExportExcel = async () => {
+    const handleExportExcel = async (isShare: boolean = false) => {
         if (filteredTransactions.length === 0) return;
         
-        const headers = ['SL No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
+        const headers = ['Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
         const rows = filteredTransactions.map(tx => {
-            const date = tx.date && (tx.date as any).toDate ? (tx.date as any).toDate().toLocaleDateString() : new Date(tx.date as any).toLocaleDateString();
+            const date = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY');
             return [
-                tx.slNo,
                 date,
                 TRANSACTION_TYPE_LABELS[tx.type] || tx.type,
                 tx.fromPartyName,
                 tx.toPartyName,
-                tx.amount,
+                tx.amount / 100,
                 tx.description.replace(/,/g, ' ') // Simple CSV escape
             ];
         });
@@ -65,8 +77,13 @@ export default function TransactionsListPage() {
         const filename = `Transactions_${fromDate}_to_${toDate}.csv`;
 
         const file = new File([blob], filename, { type: 'text/csv' });
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Transactions Export' });
+        
+        if (isShare && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({ files: [file], title: 'Transactions Export' });
+            } catch (err) {
+                console.error('Share failed', err);
+            }
         } else {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -79,12 +96,23 @@ export default function TransactionsListPage() {
         }
     };
 
-    const handleExportPDF = async () => {
+    const handleExportPDF = async (isShare: boolean = false) => {
         if (filteredTransactions.length === 0) return;
         try {
-            const doc = <ReportDocument title={`Transactions Report (${fromDate} to ${toDate})`} transactions={filteredTransactions} />;
-            const blob = await pdf(doc).toBlob();
-            await sharePDF(blob, `Transactions_${fromDate}_to_${toDate}.pdf`);
+            const docText = <ReportDocument title={`Transactions Report (${fromDate} to ${toDate})`} transactions={filteredTransactions} />;
+            const blob = await pdf(docText).toBlob();
+            const filename = `Transactions_${fromDate}_to_${toDate}.pdf`;
+
+            if (isShare) {
+                await sharePDF(blob, filename);
+            } else {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
         } catch (err) {
             console.error('PDF export failed', err);
         }
@@ -101,12 +129,80 @@ export default function TransactionsListPage() {
                 setFromDate={setFromDate}
                 toDate={toDate}
                 setToDate={setToDate}
-                onExportExcel={handleExportExcel}
-                onExportPDF={handleExportPDF}
+                onGenerateReport={() => setShowReport(true)}
+                hasTransactions={filteredTransactions.length > 0}
             />
+
+            {showReport && (
+                <Box mb={2}>
+                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} flexWrap="wrap" gap={1}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <Button 
+                                startIcon={<ArrowBackIcon />} 
+                                onClick={() => setShowReport(false)}
+                                sx={{ fontWeight: 'bold' }}
+                            >
+                                Back to List
+                            </Button>
+                            <Typography variant="h6" fontWeight="bold">Report Preview</Typography>
+                        </Box>
+
+                        {filteredTransactions.length > 0 && (
+                            <Stack direction="row" spacing={1}>
+                                <Button 
+                                    variant="outlined" 
+                                    size="small"
+                                    startIcon={<DownloadIcon />}
+                                    onClick={(e) => setDownloadAnchor(e.currentTarget)}
+                                >
+                                    Download
+                                </Button>
+                                <Button 
+                                    variant="outlined" 
+                                    size="small"
+                                    color="secondary"
+                                    startIcon={<ShareIcon />}
+                                    onClick={(e) => setShareAnchor(e.currentTarget)}
+                                >
+                                    Share
+                                </Button>
+                            </Stack>
+                        )}
+                    </Box>
+                </Box>
+            )}
 
             {loading ? (
                 <Typography textAlign="center">Loading transactions...</Typography>
+            ) : showReport ? (
+                <TableContainer component={Paper} sx={{ mb: 4, overflowX: 'auto' }}>
+                    <Table size="small" stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Date</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Type</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>From Party</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>To Party</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }} align="right">Amount</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Description</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredTransactions.map((tx) => (
+                                <TableRow key={tx.id} hover>
+                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                        {tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY')}
+                                    </TableCell>
+                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{TRANSACTION_TYPE_LABELS[tx.type] || tx.type}</TableCell>
+                                    <TableCell sx={{ minWidth: 150 }}>{tx.fromPartyName}</TableCell>
+                                    <TableCell sx={{ minWidth: 150 }}>{tx.toPartyName}</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>{formatINR(tx.amount)}</TableCell>
+                                    <TableCell sx={{ minWidth: 200 }}>{tx.description}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             ) : filteredTransactions.length > 0 ? (
                 filteredTransactions.map(tx => <TransactionCard key={tx.id} tx={tx} />)
             ) : (
@@ -115,11 +211,31 @@ export default function TransactionsListPage() {
                 </Typography>
             )}
 
-            <FloatingActionButton
-                key="transactions-fab"
-                icon={<AddIcon />}
-                onClick={() => navigate('/transactions/record')}
-            />
+            <Menu
+                anchorEl={downloadAnchor}
+                open={Boolean(downloadAnchor)}
+                onClose={() => setDownloadAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(); setDownloadAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPDF(); setDownloadAnchor(null); }}>PDF</MenuItem>
+            </Menu>
+
+            <Menu
+                anchorEl={shareAnchor}
+                open={Boolean(shareAnchor)}
+                onClose={() => setShareAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPDF(true); setShareAnchor(null); }}>PDF</MenuItem>
+            </Menu>
+
+            {!showReport && (
+                <FloatingActionButton
+                    key="transactions-fab"
+                    icon={<AddIcon />}
+                    onClick={() => navigate('/transactions/record')}
+                />
+            )}
         </Box>
     );
 }
