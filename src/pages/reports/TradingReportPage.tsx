@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField } from '@mui/material';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
 import { TransactionType } from '../../config/constants';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,7 @@ import { Stack } from '@mui/material';
 
 export default function TradingReportPage() {
     const { transactions } = useTransactionStore();
+    const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -68,6 +70,7 @@ export default function TradingReportPage() {
                                     ['Net Purchases', (netPurchases / 100).toFixed(2), 'Net Sales', (netSales / 100).toFixed(2)],
                                     ['Gross Profit c/o', (grossProfit / 100).toFixed(2), '', '']
                                 ]}
+                                organization={currentOrganization}
                             />
                         }
                         fileName="Trading_Account_Report.pdf"

@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
 import PartySelector from '../../components/party/PartySelector';
 import type { Party  } from '../../types/party.types';
 import { formatDate } from '../../utils/formatters';
@@ -14,6 +15,7 @@ export default function LedgerPage() {
   const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
   const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
   const { transactions } = useTransactionStore();
+  const { currentOrganization } = useOrganizationStore();
   const navigate = useNavigate();
 
   const ledgerEntries = useMemo(() => {

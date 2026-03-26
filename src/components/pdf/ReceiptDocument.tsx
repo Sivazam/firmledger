@@ -6,26 +6,28 @@ import { TransactionType } from '../../config/constants';
 import { formatDate, formatINRPdf, formatAmountInWords } from '../../utils/formatters';
 
 const styles = StyleSheet.create({
-    page: { padding: 30, fontSize: 12, fontFamily: 'Helvetica' },
-    headerBox: { display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-    logoBox: { width: 60, height: 60, marginRight: 15 },
+    page: { padding: 30, fontSize: 11, fontFamily: 'Helvetica', backgroundColor: '#fff' },
+    headerBox: { flexDirection: 'row', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#1a237e', paddingBottom: 15 },
+    logoBox: { width: 60, height: 60, marginRight: 20 },
     logo: { width: '100%', height: '100%', objectFit: 'contain' },
     orgDetails: { flex: 1 },
-    orgName: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
-    orgAddress: { fontSize: 10, color: '#444' },
-    titleBox: { textAlign: 'center', marginBottom: 20, padding: 5, backgroundColor: '#f0f0f0' },
-    titleText: { fontSize: 14, fontWeight: 'bold', textTransform: 'uppercase' },
-    metaRow: { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-    metaText: { fontSize: 11 },
-    detailsBox: { border: '1pt solid #ccc', padding: 15, marginBottom: 20 },
-    detailRow: { display: 'flex', flexDirection: 'row', marginBottom: 10 },
-    detailLabel: { width: 80, fontWeight: 'bold', color: '#555' },
-    detailValue: { flex: 1 },
-    amountBox: { marginTop: 10, paddingTop: 10, borderTop: '0.5pt solid #ccc' },
-    amountNum: { fontSize: 16, fontWeight: 'bold' },
-    amountWords: { fontSize: 11, fontStyle: 'italic', marginTop: 4, color: '#333' },
-    footer: { display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 40 },
-    signBox: { width: 150, borderTop: '1pt solid #000', textAlign: 'center', paddingTop: 5 }
+    orgName: { fontSize: 20, fontWeight: 'bold', color: '#1a237e', marginBottom: 2 },
+    orgAddress: { fontSize: 9, color: '#555', marginBottom: 1 },
+    titleBox: { textAlign: 'center', marginBottom: 20, padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4 },
+    titleText: { fontSize: 14, fontWeight: 'bold', textTransform: 'uppercase', color: '#333', letterSpacing: 1 },
+    metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 },
+    metaLabel: { fontSize: 10, color: '#666' },
+    metaValue: { fontSize: 11, fontWeight: 'bold', color: '#111' },
+    detailsBox: { border: '0.5pt solid #ccc', padding: 20, marginBottom: 25, borderRadius: 2 },
+    detailRow: { flexDirection: 'row', marginBottom: 12 },
+    detailLabel: { width: 90, fontSize: 10, color: '#777', fontWeight: 'bold' },
+    detailValue: { flex: 1, fontSize: 11, color: '#222' },
+    amountBox: { marginTop: 15, paddingTop: 15, borderTopWidth: 1, borderTopColor: '#eee', flexDirection: 'column' },
+    amountLabel: { fontSize: 10, color: '#777', marginBottom: 5 },
+    amountNum: { fontSize: 20, fontWeight: 'bold', color: '#1a237e' },
+    amountWords: { fontSize: 10, fontStyle: 'italic', marginTop: 8, color: '#555' },
+    footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 50 },
+    signBox: { width: 160, borderTopWidth: 1, borderTopColor: '#ccc', textAlign: 'center', paddingTop: 8 }
 });
 
 interface Props {
@@ -70,8 +72,14 @@ export default function ReceiptDocument({ transaction, organization }: Props) {
                 </View>
 
                 <View style={styles.metaRow}>
-                    <Text style={styles.metaText}>Voucher No: {transaction.slNo}</Text>
-                    <Text style={styles.metaText}>Date: {formatDate(transaction.date)}</Text>
+                    <View>
+                        <Text style={styles.metaLabel}>Voucher No:</Text>
+                        <Text style={styles.metaValue}>{transaction.slNo}</Text>
+                    </View>
+                    <View style={{ textAlign: 'right' }}>
+                        <Text style={styles.metaLabel}>Date:</Text>
+                        <Text style={styles.metaValue}>{formatDate(transaction.date)}</Text>
+                    </View>
                 </View>
 
                 <View style={styles.detailsBox}>
@@ -93,8 +101,9 @@ export default function ReceiptDocument({ transaction, organization }: Props) {
                     </View>
 
                     <View style={styles.amountBox}>
-                        <Text style={styles.amountNum}>Amount: {formatINRPdf(transaction.amount)}</Text>
-                        <Text style={styles.amountWords}>({formatAmountInWords(transaction.amount)})</Text>
+                        <Text style={styles.amountLabel}>Total Amount (in numbers):</Text>
+                        <Text style={styles.amountNum}>{formatINRPdf(transaction.amount)}</Text>
+                        <Text style={styles.amountWords}>Rupees {formatAmountInWords(transaction.amount)} only.</Text>
                     </View>
                 </View>
 

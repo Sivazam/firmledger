@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField, Divider } from '@mui/material';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
 import { TransactionType } from '../../config/constants';
 import { usePartyStore } from '../../stores/partyStore';
 import dayjs from 'dayjs';
@@ -16,6 +17,7 @@ import { Stack } from '@mui/material';
 export default function PLReportPage() {
     const { transactions } = useTransactionStore();
     const { parties } = usePartyStore();
+    const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -94,6 +96,7 @@ export default function PLReportPage() {
                                     ['', '', 'By Other Income', (indirectIncome / 100).toFixed(2)],
                                     ['Net Profit', (netProfit / 100).toFixed(2), '', '']
                                 ]}
+                                organization={currentOrganization}
                             />
                         }
                         fileName="Profit_Loss_Report.pdf"

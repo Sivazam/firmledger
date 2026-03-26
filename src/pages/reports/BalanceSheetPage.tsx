@@ -10,11 +10,13 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { Stack } from '@mui/material';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
 import AmountDisplay from '../../components/transaction/AmountDisplay';
 
 export default function BalanceSheetPage() {
     const { parties } = usePartyStore();
     const { transactions } = useTransactionStore();
+    const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
@@ -75,6 +77,7 @@ export default function BalanceSheetPage() {
                                     (Math.abs(b.balance) / 100).toFixed(2),
                                     b.balance > 0 ? 'Cr' : 'Dr'
                                 ])}
+                                organization={currentOrganization}
                             />
                         }
                         fileName="Balance_Sheet_Report.pdf"

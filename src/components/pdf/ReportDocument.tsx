@@ -1,40 +1,65 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { TRANSACTION_TYPE_LABELS, TransactionType } from '../../config/constants';
+import type { Organization } from '../../types/organization.types';
 
 const styles = StyleSheet.create({
-    page: { padding: 30, fontSize: 10, fontFamily: 'Helvetica' },
-    title: { fontSize: 16, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-    table: { display: 'flex', width: 'auto', borderStyle: 'solid', borderWidth: 1, borderColor: '#bfbfbf' },
-    tableRow: { margin: 'auto', flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#bfbfbf' },
-    tableHeader: { backgroundColor: '#f0f0f0', fontWeight: 'bold' },
-    tableCell: { margin: 'auto', padding: 5, borderRightWidth: 1, borderRightColor: '#bfbfbf' },
+    page: { padding: 30, fontSize: 9, fontFamily: 'Helvetica', backgroundColor: '#fff' },
+    header: { flexDirection: 'row', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#1a237e', paddingBottom: 10 },
+    logoBox: { width: 50, height: 50, marginRight: 15 },
+    logo: { width: '100%', height: '100%', objectFit: 'contain' },
+    orgDetails: { flex: 1 },
+    orgName: { fontSize: 16, fontWeight: 'bold', color: '#1a237e', marginBottom: 2 },
+    orgAddress: { fontSize: 8, color: '#555' },
+    reportInfo: { textAlign: 'right', justifyContent: 'center' },
+    title: { fontSize: 14, fontWeight: 'bold', color: '#1a237e', marginBottom: 2 },
+    dateRange: { fontSize: 8, color: '#666' },
+    table: { display: 'flex', width: 'auto', borderStyle: 'solid', borderWidth: 0.5, borderColor: '#ccc' },
+    tableRow: { margin: 'auto', flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: '#eee' },
+    tableHeader: { backgroundColor: '#1a237e', color: '#fff', fontWeight: 'bold' },
+    tableCell: { margin: 'auto', padding: 4, borderRightWidth: 0.5, borderRightColor: '#eee' },
     lastCell: { borderRightWidth: 0 },
-    colSl: { width: '8%' },
-    colDate: { width: '12%' },
-    colType: { width: '13%' },
-    colFrom: { width: '18%' },
-    colTo: { width: '18%' },
-    colAmount: { width: '12%' },
-    colDesc: { width: '27%' },
-    amountText: { textAlign: 'right' }
+    colDate: { width: '10%' },
+    colType: { width: '15%' },
+    colFrom: { width: '20%' },
+    colTo: { width: '20%' },
+    colAmount: { width: '10%' },
+    colDesc: { width: '25%' },
+    amountText: { textAlign: 'right', fontWeight: 'bold' }
 });
 
-export default function ReportDocument({ title, transactions }: { title: string, transactions: any[] }) {
+export default function ReportDocument({ title, transactions, organization, dateRange }: { title: string, transactions: any[], organization: Organization | null, dateRange?: string }) {
     return (
         <Document>
             <Page size="A4" orientation="landscape" style={styles.page}>
-                <Text style={styles.title}>{title}</Text>
+                {/* Premium Header */}
+                <View style={styles.header}>
+                    {organization?.logoUrl && (
+                        <View style={styles.logoBox}>
+                            <Image src={organization.logoUrl} style={styles.logo} />
+                        </View>
+                    )}
+                    <View style={styles.orgDetails}>
+                        <Text style={styles.orgName}>{organization?.orgName || 'FirmLedger'}</Text>
+                        <Text style={styles.orgAddress}>{organization?.address || ''}</Text>
+                        <Text style={styles.orgAddress}>{organization?.city && organization?.pincode ? `${organization.city} - ${organization.pincode}` : ''}</Text>
+                    </View>
+                    <View style={styles.reportInfo}>
+                        <Text style={styles.title}>{title}</Text>
+                        {dateRange && <Text style={styles.dateRange}>{dateRange}</Text>}
+                        <Text style={styles.dateRange}>Generated on: {new Date().toLocaleDateString('en-GB')}</Text>
+                    </View>
+                </View>
                 
                 <View style={styles.table}>
                     {/* Header */}
                     <View style={[styles.tableRow, styles.tableHeader]}>
-                        <View style={[styles.tableCell, styles.colDate]}><Text>Date</Text></View>
-                        <View style={[styles.tableCell, styles.colType]}><Text>Type</Text></View>
-                        <View style={[styles.tableCell, styles.colFrom]}><Text>From Party</Text></View>
-                        <View style={[styles.tableCell, styles.colTo]}><Text>To Party</Text></View>
-                        <View style={[styles.tableCell, styles.colAmount]}><Text>Amount</Text></View>
-                        <View style={[styles.tableCell, styles.colDesc, styles.lastCell]}><Text>Description</Text></View>
+                        <View style={[styles.tableCell, styles.colDate]}><Text style={{ color: '#fff' }}>Date</Text></View>
+                        <View style={[styles.tableCell, styles.colType]}><Text style={{ color: '#fff' }}>Type</Text></View>
+                        <View style={[styles.tableCell, styles.colFrom]}><Text style={{ color: '#fff' }}>From Party</Text></View>
+                        <View style={[styles.tableCell, styles.colTo]}><Text style={{ color: '#fff' }}>To Party</Text></View>
+                        <View style={[styles.tableCell, styles.colAmount]}><Text style={{ color: '#fff' }}>Amount</Text></View>
+                        <View style={[styles.tableCell, styles.colDesc, styles.lastCell]}><Text style={{ color: '#fff' }}>Description</Text></View>
                     </View>
                     {/* Rows */}
                     {transactions.map((tx, index) => (

@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import AddIcon from '@mui/icons-material/Add';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
 import TransactionCard from '../../components/transaction/TransactionCard';
 import TransactionFilters from '../../components/transaction/TransactionFilters';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
@@ -24,6 +25,7 @@ import { formatINR } from '../../utils/formatters';
 export default function TransactionsListPage() {
     const { transactions, fetchTransactions, loading, initialized } = useTransactionStore();
     const { profile } = useAuthStore();
+    const { currentOrganization } = useOrganizationStore();
     const { sharePDF } = usePDF();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('');
@@ -99,7 +101,15 @@ export default function TransactionsListPage() {
     const handleExportPDF = async (isShare: boolean = false) => {
         if (filteredTransactions.length === 0) return;
         try {
-            const docText = <ReportDocument title={`Transactions Report (${fromDate} to ${toDate})`} transactions={filteredTransactions} />;
+            const dateRange = `${dayjs(fromDate).format('DD/MM/YYYY')} - ${dayjs(toDate).format('DD/MM/YYYY')}`;
+            const docText = (
+                <ReportDocument 
+                    title="Transactions Report" 
+                    transactions={filteredTransactions} 
+                    organization={currentOrganization}
+                    dateRange={dateRange}
+                />
+            );
             const blob = await pdf(docText).toBlob();
             const filename = `Transactions_${fromDate}_to_${toDate}.pdf`;
 
