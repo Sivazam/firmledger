@@ -4,7 +4,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import PeopleIcon from '@mui/icons-material/People';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import AddIcon from '@mui/icons-material/Add';
-import AssessmentIcon from '@mui/icons-material/Assessment';
+import PersonIcon from '@mui/icons-material/Person';
 import BusinessIcon from '@mui/icons-material/Business';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -26,8 +26,8 @@ export default function BottomNavigation() {
     const getActiveValue = () => {
         if (showAdminTabs) {
             if (currentPath.startsWith('/admin/dashboard') || currentPath === '/') return 'admin_home';
-            if (currentPath.startsWith('/admin/firms')) return 'firms';
-            if (currentPath.startsWith('/settings') || currentPath.startsWith('/reports')) return 'settings';
+            if (currentPath.startsWith('/admin/organizations')) return 'firms';
+            if (currentPath.startsWith('/settings/personal')) return 'profile';
             return 'admin_home';
         } else {
             if (currentPath === '/' || currentPath === '/dashboard') return 'home';
@@ -42,12 +42,13 @@ export default function BottomNavigation() {
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         switch (newValue) {
             case 'admin_home': navigate('/admin/dashboard'); break;
-            case 'firms': navigate('/admin/firms'); break;
+            case 'firms': navigate('/admin/organizations'); break;
             case 'home': navigate('/dashboard'); break;
             case 'parties': navigate('/parties'); break;
             case 'ledger': navigate('/transactions'); break;
             case 'reports': navigate('/reports'); break;
             case 'settings': navigate('/settings'); break;
+            case 'profile': navigate('/settings/personal'); break;
         }
     };
 
@@ -81,7 +82,7 @@ export default function BottomNavigation() {
                 )}
 
                 {showAdminTabs && (
-                    <BottomNavigationAction label="Firms" value="firms" icon={<BusinessIcon />} />
+                    <BottomNavigationAction label="Organizations" value="firms" icon={<BusinessIcon />} sx={{ minWidth: 0, flex: 1 }} />
                 )}
 
                 {!showAdminTabs && (
@@ -96,7 +97,11 @@ export default function BottomNavigation() {
                     <BottomNavigationAction label="Transactions" value="ledger" icon={<ReceiptIcon />} sx={{ minWidth: 0, flex: 1, ml: 2 }} />
                 )}
 
-                <BottomNavigationAction label="More" value="settings" icon={<MoreHorizIcon />} sx={{ minWidth: 0, flex: 1 }} />
+                {showAdminTabs ? (
+                    <BottomNavigationAction label="Profile" value="profile" icon={<PersonIcon />} sx={{ minWidth: 0, flex: 1 }} />
+                ) : (
+                    <BottomNavigationAction label="More" value="settings" icon={<MoreHorizIcon />} sx={{ minWidth: 0, flex: 1 }} />
+                )}
             </MuiBottomNavigation>
 
             {!showAdminTabs && (

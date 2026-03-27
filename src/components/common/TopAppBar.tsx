@@ -22,6 +22,12 @@ export default function TopAppBar({ showBack = false }: { title?: string, showBa
         navigate('/login');
     };
 
+    const displayTitle = React.useMemo(() => {
+        if (profile?.userType === 'super-admin') return 'Super Admin';
+        if (profile?.userType === 'admin') return 'Admin';
+        return currentOrganization?.orgName || 'Viswa Ledger';
+    }, [profile?.userType, currentOrganization?.orgName]);
+
     return (
         <AppBar position="fixed" elevation={1}>
             <Toolbar>
@@ -34,7 +40,7 @@ export default function TopAppBar({ showBack = false }: { title?: string, showBa
                     <Box 
                         component="img" 
                         src="/logo.svg" 
-                        alt="FirmLedger" 
+                        alt="Viswa Ledger" 
                         sx={{ height: 32, cursor: 'pointer' }} 
                         onClick={() => navigate('/')}
                     />
@@ -51,7 +57,7 @@ export default function TopAppBar({ showBack = false }: { title?: string, showBa
                             fontSize: { xs: '1rem', sm: '1.25rem' }
                         }}
                     >
-                        {currentOrganization?.orgName || 'FirmLedger'}
+                        {displayTitle}
                     </Typography>
                 </Box>
                 <IconButton color="inherit" onClick={() => setLogoutDialogOpen(true)}>

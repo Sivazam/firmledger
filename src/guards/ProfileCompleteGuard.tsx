@@ -4,9 +4,11 @@ import { useAuthStore } from '../stores/authStore';
 import { Box, CircularProgress } from '@mui/material';
 
 export default function ProfileCompleteGuard() {
-    const { profile, loading, initialized } = useAuthStore();
+    const { user, profile, loading, initialized } = useAuthStore();
 
-    if (!initialized || loading) {
+    // Show loading if we haven't initialized, or if we are actively loading,
+    // or if we have a user but are still waiting for their profile record.
+    if (!initialized || loading || (user && !profile)) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                 <CircularProgress />

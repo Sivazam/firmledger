@@ -26,7 +26,7 @@ export default function FirmDetailPage() {
     }, [org]);
 
     if (!org) {
-        return <Typography p={2}>Firm not found.</Typography>;
+        return <Typography p={2}>Organization not found.</Typography>;
     }
 
     const handleStatusChange = async (status: 'approved' | 'denied') => {
@@ -37,10 +37,10 @@ export default function FirmDetailPage() {
                 open: true,
                 variant: 'success',
                 title: 'Status Updated',
-                message: `Firm successfully ${status}.`,
+                message: `Organization successfully ${status}.` ,
                 onConfirm: () => {
                     setDialogConfig((prev: any) => ({ ...prev, open: false }));
-                    navigate('/admin/firms');
+                    navigate('/admin/organizations');
                 }
             });
         } catch (err) {
@@ -49,7 +49,7 @@ export default function FirmDetailPage() {
                 open: true,
                 variant: 'error',
                 title: 'Update Failed',
-                message: 'Failed to update firm status due to a network error.',
+                message: 'Failed to update organization status due to a network error.',
                 onConfirm: () => setDialogConfig((prev: any) => ({ ...prev, open: false }))
             });
         }
@@ -113,7 +113,7 @@ export default function FirmDetailPage() {
                 {org.status === 'denied' && (
                     <Box display="flex" gap={2} mt={4}>
                         <Button variant="contained" color="success" onClick={() => handleStatusChange('approved')}>
-                            Re-Approve Firm
+                            Re-Approve Organization
                         </Button>
                     </Box>
                 )}

@@ -33,10 +33,10 @@ export default function FirmManagementPage() {
 
     return (
         <Box p={2}>
-            <Typography variant="h5" mb={3}>Firm Management</Typography>
+            <Typography variant="h5" mb={3}>Organization Management</Typography>
 
             <List>
-                {orgs.map(org => (
+                {orgs.filter(o => !o.isOwnerAdmin).map(org => (
                     <ListItem
                         key={org.id}
                         sx={{
@@ -65,14 +65,14 @@ export default function FirmManagementPage() {
                             />
                         </Box>
                         <Box mt={2} width="100%" display="flex" justifyContent="flex-end">
-                            <Button variant="outlined" size="small" onClick={() => navigate(`/admin/firms/${org.id}`, { state: { org } })}>
+                            <Button variant="outlined" size="small" onClick={() => navigate(`/admin/organizations/${org.id}`, { state: { org } })}>
                                 View Details
                             </Button>
                         </Box>
                     </ListItem>
                 ))}
             </List>
-            {orgs.length === 0 && <Typography textAlign="center">No firms found.</Typography>}
+            {orgs.length === 0 && <Typography textAlign="center">No organizations found.</Typography>}
         </Box>
     );
 }

@@ -30,7 +30,7 @@ export default function SplashScreen() {
                         '100%': { transform: 'scale(0.95)', opacity: 0.85 },
                     }
                 }}
-                alt="Loading FirmLedger..."
+                alt="Loading Viswa Ledger..."
             />
             <Box
                 sx={{

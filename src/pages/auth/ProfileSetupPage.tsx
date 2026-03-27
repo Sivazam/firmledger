@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, TextField, Typography, Box, Alert } from '@mui/material';
+import { Button, TextField, Typography, Box, Alert, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { AuthService } from '../../services/auth.service';
@@ -20,14 +20,22 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileSetupPage() {
     const navigate = useNavigate();
-    const { user, profile, setProfile } = useAuthStore();
+    const { user, profile, setProfile, loading } = useAuthStore();
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
 
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     if (profile?.profileComplete) {
-        navigate('/setup-organization', { replace: true });
-        return null; // Return early
+        navigate('/', { replace: true });
+        return null;
     }
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProfileFormData>({

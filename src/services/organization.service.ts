@@ -8,6 +8,7 @@ export const OrganizationService = {
         await setDoc(doc(db, 'organizations', orgId), {
             ...orgData,
             id: orgId,
+            isOwnerAdmin: isAdmin,
             status: isAdmin ? 'approved' : 'pending',
             approvedBy: isAdmin ? 'system' : null,
             approvedAt: isAdmin ? serverTimestamp() : null,

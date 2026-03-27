@@ -1,14 +1,22 @@
 import React from 'react';
-import { Box, Typography, Button, Container } from '@mui/material';
+import { Box, Typography, Button, Container, CircularProgress } from '@mui/material';
 import { useAuthStore } from '../../stores/authStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
 import { AuthService } from '../../services/auth.service';
 import { useNavigate, Navigate } from 'react-router-dom';
 
 export default function PendingApprovalPage() {
-    const { profile } = useAuthStore();
+    const { profile, loading } = useAuthStore();
     const { currentOrganization, fetchOrganization } = useOrganizationStore();
     const navigate = useNavigate();
+
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     const handleLogout = async () => {
         await AuthService.logout();

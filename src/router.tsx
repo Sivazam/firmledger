@@ -73,7 +73,14 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const HomeRedirect = () => {
-    const { profile } = useAuthStore();
+    const { user, profile, loading, initialized } = useAuthStore();
+    
+    if (!initialized || loading || (user && !profile)) return (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+            <CircularProgress />
+        </Box>
+    );
+
     if (profile?.userType === 'admin') return <Navigate to="/admin/dashboard" replace />;
     if (profile?.userType === 'super-admin') return <Navigate to="/super-admin" replace />;
     return <Navigate to="/dashboard" replace />;
@@ -111,8 +118,8 @@ export const router = createBrowserRouter([
                                 element: <AdminGuard />,
                                 children: [
                                     { path: '/admin/dashboard', element: <AdminDashboardPage /> },
-                                    { path: '/admin/firms', element: <FirmManagementPage /> },
-                                    { path: '/admin/firms/:id', element: <FirmDetailPage /> },
+                                    { path: '/admin/organizations', element: <FirmManagementPage /> },
+                                    { path: '/admin/organizations/:id', element: <FirmDetailPage /> },
                                 ]
                             },
                             {

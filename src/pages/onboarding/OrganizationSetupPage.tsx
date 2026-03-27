@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, TextField, Typography, Box } from '@mui/material';
+import { Button, TextField, Typography, Box, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { OrganizationService } from '../../services/organization.service';
@@ -21,19 +21,27 @@ type OrgFormData = z.infer<typeof orgSchema>;
 
 export default function OrganizationSetupPage() {
     const navigate = useNavigate();
-    const { user, profile, setProfile } = useAuthStore();
+    const { user, profile, setProfile, loading } = useAuthStore();
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
 
-    if (profile?.organizationId) {
-        navigate('/dashboard', { replace: true });
-        return null;
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
     }
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<OrgFormData>({
         resolver: zodResolver(orgSchema)
     });
+
+    if (profile?.organizationId) {
+        navigate('/', { replace: true });
+        return null;
+    }
 
     const onSubmit = async (data: OrgFormData) => {
         if (!user || !profile) return;
@@ -51,8 +59,8 @@ export default function OrganizationSetupPage() {
                 logoUrl: null
             };
 
-            const isAdmin = profile.userType === 'admin';
-            await OrganizationService.createOrganization(orgId, orgData, isAdmin);
+            const isAnyAdmin = profile.userType === 'admin' || profile.userType === 'super-admin';
+            await OrganizationService.createOrganization(orgId, orgData, isAnyAdmin);
 
             setProfile({
                 ...profile,
@@ -62,11 +70,11 @@ export default function OrganizationSetupPage() {
             setDialogConfig({
                 open: true,
                 variant: 'success',
-                title: isAdmin ? 'Dashboard Unlocked' : 'Organization Setup Complete',
-                message: isAdmin ? 'Your firm has been instantly approved. You can now start using the platform.' : 'Your organization has been created and is pending approval from Harte Labs admin. We will notify you once approved.',
+                title: isAnyAdmin ? 'Dashboard Unlocked' : 'Organization Setup Complete',
+                message: isAnyAdmin ? 'Your firm has been instantly approved. You can now start using the platform.' : 'Your organization has been created and is pending approval from Harte Labs admin. We will notify you once approved.',
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
-                    if (isAdmin) {
+                    if (isAnyAdmin) {
                         navigate('/dashboard');
                     } else {
                         navigate('/pending-approval');

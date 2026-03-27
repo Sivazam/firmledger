@@ -86,7 +86,7 @@ export default function DashboardPage() {
     return (
         <Box>
             <Typography variant="h5" fontWeight="bold" mb={1}>Dashboard</Typography>
-            <Typography color="text.secondary" mb={4}>Welcome back to FirmLedger</Typography>
+            <Typography color="text.secondary" mb={4}>Welcome back to Viswa Ledger</Typography>
 
             <Grid container spacing={3}>
                 {/* 1. Cash Opening Balance */}

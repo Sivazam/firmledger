@@ -14,6 +14,7 @@ export interface Organization {
     status: OrganizationStatus;
     approvedBy: string | null;
     approvedAt: Timestamp | null;
+    isOwnerAdmin?: boolean;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 }

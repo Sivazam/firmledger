@@ -27,8 +27,6 @@ export default function SettingsPage() {
             <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
                 {!showAdminSettings && (
                     <>
-
-
                         <ListItem component="button" onClick={() => navigate('/reports')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
                             <ListItemIcon><AssessmentIcon color="secondary" /></ListItemIcon>
                             <ListItemText primary="Reports" secondary="View Ledger, Balance Sheet, and more" />

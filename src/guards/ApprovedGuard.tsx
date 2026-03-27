@@ -19,7 +19,8 @@ export default function ApprovedGuard() {
 
     if (!profile) return <Navigate to="/login" state={{ from: location }} replace />;
 
-    if (profile.userType === 'super-admin') return <Outlet />;
+    if (profile.userType === 'super-admin') return <Navigate to="/super-admin" replace />;
+    if (profile.userType === 'admin') return <Navigate to="/admin/dashboard" replace />;
 
     if (!profile.organizationId) {
         return <Navigate to="/setup-organization" replace />;
