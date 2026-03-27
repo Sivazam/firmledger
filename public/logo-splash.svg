@@ -19,7 +19,6 @@
     <path class="C-icon" d="M 52,52 L 72,52 L 72,64 A 8,8 0 0 1 64,72 L 52,72 Z" />
   </g>
 
-  <text x="106" y="60" class="C-text-bold">Firm</text>
+  <text x="106" y="60" class="C-text-bold">Viswa</text>
   <text x="106" y="104" class="C-text-light">Ledger</text>
-  <text x="108" y="128" class="C-text-sub">BY VISWA</text>
 </svg>

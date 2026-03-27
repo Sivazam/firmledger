@@ -17,7 +17,7 @@ export default function AuthLayout() {
             <Container maxWidth="sm">
                 <Box sx={{ textAlign: 'center', mb: 4 }}>
                     <Typography variant="h4" color="primary" fontWeight="bold">
-                        FirmLedger
+                        Viswa Ledger
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
                         Professional Client & Ledger Management

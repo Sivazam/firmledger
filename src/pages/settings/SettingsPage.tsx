@@ -11,9 +11,9 @@ import { useAuthStore } from '../../stores/authStore';
 
 export default function SettingsPage() {
     const navigate = useNavigate();
-    const { profile, isAdminMode } = useAuthStore();
+    const { profile } = useAuthStore();
     const isActuallyAdmin = profile?.userType === 'admin';
-    const showAdminSettings = isActuallyAdmin && isAdminMode;
+    const showAdminSettings = isActuallyAdmin;
 
     const handleLogout = async () => {
         await AuthService.logout();
@@ -27,11 +27,7 @@ export default function SettingsPage() {
             <List sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
                 {!showAdminSettings && (
                     <>
-                        <ListItem component="button" onClick={() => navigate('/transactions')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
-                            <ListItemIcon><ReceiptLongIcon color="primary" /></ListItemIcon>
-                            <ListItemText primary="All Transactions" secondary="View and manage all financial records" />
-                        </ListItem>
-                        <Divider />
+
 
                         <ListItem component="button" onClick={() => navigate('/reports')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
                             <ListItemIcon><AssessmentIcon color="secondary" /></ListItemIcon>

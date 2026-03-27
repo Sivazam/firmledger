@@ -10,10 +10,8 @@ interface AuthState {
     profile: UserProfile | null;
     loading: boolean;
     initialized: boolean;
-    isAdminMode: boolean;
     setUser: (user: FirebaseUser | null) => void;
     setProfile: (profile: UserProfile | null) => void;
-    setAdminMode: (mode: boolean) => void;
     init: () => void;
 }
 
@@ -22,11 +20,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     profile: null,
     loading: true,
     initialized: false,
-    isAdminMode: false,
 
     setUser: (user) => set({ user }),
     setProfile: (profile) => set({ profile }),
-    setAdminMode: (mode) => set({ isAdminMode: mode }),
 
     init: () => {
         onAuthStateChanged(auth, async (user) => {
@@ -35,12 +31,12 @@ export const useAuthStore = create<AuthState>((set) => ({
             if (user) {
                 try {
                     const profile = await AuthService.getUserProfile(user.uid);
-                    set({ profile, isAdminMode: profile?.userType === 'admin' });
+                    set({ profile });
                 } catch (error) {
                     console.error('Failed to fetch user profile:', error);
                 }
             } else {
-                set({ profile: null, isAdminMode: false });
+                set({ profile: null });
             }
             set({ loading: false, initialized: true });
         });

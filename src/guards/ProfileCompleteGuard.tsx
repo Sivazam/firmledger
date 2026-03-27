@@ -14,7 +14,7 @@ export default function ProfileCompleteGuard() {
         );
     }
 
-    if (!profile || (!profile.profileComplete && profile.userType !== 'super-admin')) {
+    if (!profile || (!profile.profileComplete && profile.userType !== 'super-admin' && profile.userType !== 'admin')) {
         return <Navigate to="/setup-profile" replace />;
     }
 

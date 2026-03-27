@@ -29,7 +29,7 @@ export default function DashboardPage() {
     }, [profile?.organizationId, partiesInit, txInit, fetchParties, fetchTransactions]);
 
     const stats = useMemo(() => {
-        const today = dayjs().startOf('day');
+        const today = dayjs.tz().startOf('day');
 
         const cashParty = parties.find(p => p.code === 'CASH');
         const baseBalance = cashParty ? (cashParty.balanceType === 'Debit' ? (cashParty.openingBalance || 0) : -(cashParty.openingBalance || 0)) : 0;
@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
         transactions.forEach(tx => {
             const txDateRaw = (tx.date as any).toDate ? (tx.date as any).toDate() : new Date(tx.date as any);
-            const txDate = dayjs(txDateRaw).startOf('day');
+            const txDate = dayjs.tz(txDateRaw).startOf('day');
             const isToday = txDate.isSame(today, 'day');
             const isBeforeToday = txDate.isBefore(today);
 
@@ -61,10 +61,6 @@ export default function DashboardPage() {
                 } else if (isBeforeToday) {
                     sumCpBeforeToday += tx.amount;
                 }
-            } else if (tx.type === TransactionType.BR) {
-                if (isToday) todaysReceipts += tx.amount;
-            } else if (tx.type === TransactionType.BP) {
-                if (isToday) todaysPayments += tx.amount;
             }
         });
 
@@ -75,14 +71,7 @@ export default function DashboardPage() {
             todaysReceipts,
             todaysPayments,
             dashboardOpeningBalance,
-            dashboardClosingBalance,
-            recentTransactions: [...transactions]
-                .sort((a, b) => {
-                    const dateA = (a.date as any).toDate ? (a.date as any).toDate().getTime() : new Date(a.date as any).getTime();
-                    const dateB = (b.date as any).toDate ? (b.date as any).toDate().getTime() : new Date(b.date as any).getTime();
-                    return dateB - dateA;
-                })
-                .slice(0, 5)
+            dashboardClosingBalance
         };
     }, [parties, transactions]);
 
@@ -168,21 +157,6 @@ export default function DashboardPage() {
                     </Card>
                 </Grid>
 
-                <Grid size={{ xs: 12 }}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mb={1}>
-                        <Typography variant="h6" fontWeight="bold">Recent Transactions</Typography>
-                        <Typography component={Link} to="/transactions" sx={{ color: 'primary.main', textDecoration: 'none', fontWeight: 600, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            View All <ArrowForwardIosIcon sx={{ fontSize: 12 }} />
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        {stats.recentTransactions.length > 0 ? (
-                            stats.recentTransactions.map(tx => <TransactionCard key={tx.id} tx={tx} />)
-                        ) : (
-                            <Typography color="text.secondary" textAlign="center" py={4}>No recent transactions</Typography>
-                        )}
-                    </Box>
-                </Grid>
             </Grid>
         </Box>
     );

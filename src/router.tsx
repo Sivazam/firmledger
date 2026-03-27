@@ -21,31 +21,50 @@ import PendingApprovalPage from './pages/onboarding/PendingApprovalPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import FirmManagementPage from './pages/admin/FirmManagementPage';
 import FirmDetailPage from './pages/admin/FirmDetailPage';
-const SuperAdminDashboardPage = lazy(() => import('./pages/super-admin/SuperAdminDashboardPage'));
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+    lazy(async () => {
+        const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+            window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+        );
+        try {
+            const component = await componentImport();
+            window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+            return component;
+        } catch (error: any) {
+            if (!pageHasAlreadyBeenForceRefreshed && (error?.message?.includes('fetch dynamically imported module') || error?.message?.includes('Importing a module script failed'))) {
+                window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+                window.location.reload();
+                return new Promise(() => {});
+            }
+            throw error;
+        }
+    });
+
+const SuperAdminDashboardPage = lazyWithRetry(() => import('./pages/super-admin/SuperAdminDashboardPage'));
 
 import { useAuthStore } from './stores/authStore';
 
-const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
-const PartiesListPage = lazy(() => import('./pages/party/PartiesListPage'));
-const AddPartyPage = lazy(() => import('./pages/party/AddPartyPage'));
-const EditPartyPage = lazy(() => import('./pages/party/EditPartyPage'));
+const DashboardPage = lazyWithRetry(() => import('./pages/dashboard/DashboardPage'));
+const PartiesListPage = lazyWithRetry(() => import('./pages/party/PartiesListPage'));
+const AddPartyPage = lazyWithRetry(() => import('./pages/party/AddPartyPage'));
+const EditPartyPage = lazyWithRetry(() => import('./pages/party/EditPartyPage'));
 
-const TransactionsListPage = lazy(() => import('./pages/transaction/TransactionsListPage'));
-const RecordTransactionPage = lazy(() => import('./pages/transaction/RecordTransactionPage'));
-const EditTransactionPage = lazy(() => import('./pages/transaction/EditTransactionPage'));
-const TransactionDetailPage = lazy(() => import('./pages/transaction/TransactionDetailPage'));
+const TransactionsListPage = lazyWithRetry(() => import('./pages/transaction/TransactionsListPage'));
+const RecordTransactionPage = lazyWithRetry(() => import('./pages/transaction/RecordTransactionPage'));
+const EditTransactionPage = lazyWithRetry(() => import('./pages/transaction/EditTransactionPage'));
+const TransactionDetailPage = lazyWithRetry(() => import('./pages/transaction/TransactionDetailPage'));
 
-const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'));
-const LedgerPage = lazy(() => import('./pages/reports/LedgerPage'));
-const BalanceSheetPage = lazy(() => import('./pages/reports/BalanceSheetPage'));
-const MonthlyReportPage = lazy(() => import('./pages/reports/MonthlyReportPage'));
-const ChecklistPage = lazy(() => import('./pages/reports/ChecklistPage'));
-const TradingReportPage = lazy(() => import('./pages/reports/TradingReportPage'));
-const PLReportPage = lazy(() => import('./pages/reports/PLReportPage'));
+const ReportsPage = lazyWithRetry(() => import('./pages/reports/ReportsPage'));
+const LedgerPage = lazyWithRetry(() => import('./pages/reports/LedgerPage'));
+const BalanceSheetPage = lazyWithRetry(() => import('./pages/reports/BalanceSheetPage'));
+const MonthlyReportPage = lazyWithRetry(() => import('./pages/reports/MonthlyReportPage'));
+const ChecklistPage = lazyWithRetry(() => import('./pages/reports/ChecklistPage'));
+const TradingReportPage = lazyWithRetry(() => import('./pages/reports/TradingReportPage'));
+const PLReportPage = lazyWithRetry(() => import('./pages/reports/PLReportPage'));
 
-const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
-const PersonalDetailsPage = lazy(() => import('./pages/settings/PersonalDetailsPage'));
-const OrganizationDetailsPage = lazy(() => import('./pages/settings/OrganizationDetailsPage'));
+const SettingsPage = lazyWithRetry(() => import('./pages/settings/SettingsPage'));
+const PersonalDetailsPage = lazyWithRetry(() => import('./pages/settings/PersonalDetailsPage'));
+const OrganizationDetailsPage = lazyWithRetry(() => import('./pages/settings/OrganizationDetailsPage'));
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
     <Suspense fallback={<Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>}>
@@ -54,8 +73,8 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const HomeRedirect = () => {
-    const { profile, isAdminMode } = useAuthStore();
-    if (profile?.userType === 'admin' && isAdminMode) return <Navigate to="/admin/dashboard" replace />;
+    const { profile } = useAuthStore();
+    if (profile?.userType === 'admin') return <Navigate to="/admin/dashboard" replace />;
     if (profile?.userType === 'super-admin') return <Navigate to="/super-admin" replace />;
     return <Navigate to="/dashboard" replace />;
 };

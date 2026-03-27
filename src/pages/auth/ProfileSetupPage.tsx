@@ -25,6 +25,11 @@ export default function ProfileSetupPage() {
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
 
+    if (profile?.profileComplete) {
+        navigate('/setup-organization', { replace: true });
+        return null; // Return early
+    }
+
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),
         defaultValues: {

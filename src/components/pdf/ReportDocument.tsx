@@ -19,10 +19,11 @@ const styles = StyleSheet.create({
     tableHeader: { backgroundColor: '#1a237e', color: '#fff', fontWeight: 'bold' },
     tableCell: { margin: 'auto', padding: 4, borderRightWidth: 0.5, borderRightColor: '#eee' },
     lastCell: { borderRightWidth: 0 },
+    colNo: { width: '10%' },
     colDate: { width: '10%' },
-    colType: { width: '15%' },
-    colFrom: { width: '20%' },
-    colTo: { width: '20%' },
+    colType: { width: '10%' },
+    colFrom: { width: '18%' },
+    colTo: { width: '17%' },
     colAmount: { width: '10%' },
     colDesc: { width: '25%' },
     amountText: { textAlign: 'right', fontWeight: 'bold' }
@@ -40,7 +41,7 @@ export default function ReportDocument({ title, transactions, organization, date
                         </View>
                     )}
                     <View style={styles.orgDetails}>
-                        <Text style={styles.orgName}>{organization?.orgName || 'FirmLedger'}</Text>
+                        <Text style={styles.orgName}>{organization?.orgName || 'Viswa Ledger'}</Text>
                         <Text style={styles.orgAddress}>{organization?.address || ''}</Text>
                         <Text style={styles.orgAddress}>{organization?.city && organization?.pincode ? `${organization.city} - ${organization.pincode}` : ''}</Text>
                     </View>
@@ -54,6 +55,7 @@ export default function ReportDocument({ title, transactions, organization, date
                 <View style={styles.table}>
                     {/* Header */}
                     <View style={[styles.tableRow, styles.tableHeader]}>
+                        <View style={[styles.tableCell, styles.colNo]}><Text style={{ color: '#fff' }}>Txn No</Text></View>
                         <View style={[styles.tableCell, styles.colDate]}><Text style={{ color: '#fff' }}>Date</Text></View>
                         <View style={[styles.tableCell, styles.colType]}><Text style={{ color: '#fff' }}>Type</Text></View>
                         <View style={[styles.tableCell, styles.colFrom]}><Text style={{ color: '#fff' }}>From Party</Text></View>
@@ -64,6 +66,7 @@ export default function ReportDocument({ title, transactions, organization, date
                     {/* Rows */}
                     {transactions.map((tx, index) => (
                         <View key={index} style={styles.tableRow}>
+                            <View style={[styles.tableCell, styles.colNo]}><Text>{tx.slNo}</Text></View>
                             <View style={[styles.tableCell, styles.colDate]}><Text>{tx.date ? (tx.date.toDate ? tx.date.toDate().toLocaleDateString('en-GB') : new Date(tx.date).toLocaleDateString('en-GB')) : ''}</Text></View>
                             <View style={[styles.tableCell, styles.colType]}><Text>{TRANSACTION_TYPE_LABELS[tx.type as TransactionType] || tx.type}</Text></View>
                             <View style={[styles.tableCell, styles.colFrom]}><Text>{tx.fromPartyName}</Text></View>

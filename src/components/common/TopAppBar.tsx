@@ -11,21 +11,11 @@ import ConfirmDialog from './ConfirmDialog';
 export default function TopAppBar({ showBack = false }: { title?: string, showBack?: boolean }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { profile, isAdminMode, setAdminMode } = useAuthStore();
+    const { profile } = useAuthStore();
     const { currentOrganization } = useOrganizationStore();
     const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
 
     const isSettings = location.pathname === '/settings';
-
-    const handleModeToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newMode = event.target.checked;
-        setAdminMode(newMode);
-        if (newMode) {
-            navigate('/admin/dashboard');
-        } else {
-            navigate('/dashboard');
-        }
-    };
 
     const handleLogout = async () => {
         await AuthService.logout();
@@ -64,13 +54,6 @@ export default function TopAppBar({ showBack = false }: { title?: string, showBa
                         {currentOrganization?.orgName || 'FirmLedger'}
                     </Typography>
                 </Box>
-                {profile?.userType === 'admin' && !isSettings && (
-                    <FormControlLabel
-                        control={<Switch checked={isAdminMode} onChange={handleModeToggle} color="default" />}
-                        label={isAdminMode ? "Admin Mode" : "Firm Mode"}
-                        sx={{ mr: 2, '& .MuiFormControlLabel-label': { fontSize: '0.875rem', fontWeight: 600 } }}
-                    />
-                )}
                 <IconButton color="inherit" onClick={() => setLogoutDialogOpen(true)}>
                     <LogoutIcon />
                 </IconButton>

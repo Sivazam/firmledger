@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 import { Box, CircularProgress } from '@mui/material';
 
 export default function AdminGuard() {
-    const { profile, loading, initialized, isAdminMode } = useAuthStore();
+    const { profile, loading, initialized } = useAuthStore();
 
     if (!initialized || loading) {
         return (
@@ -14,7 +14,7 @@ export default function AdminGuard() {
         );
     }
 
-    if (profile?.userType !== 'admin' || !isAdminMode) {
+    if (profile?.userType !== 'admin') {
         return <Navigate to="/" replace />;
     }
 

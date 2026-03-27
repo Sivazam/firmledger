@@ -25,6 +25,9 @@ export const transactionSchema = z.object({
     toPartyId: z.string().min(1, 'To Party is required'),
     description: z.string().min(3, 'Description is required'),
     amount: z.number().positive('Amount must be positive'),
+}).refine(data => data.fromPartyId !== data.toPartyId, {
+    message: "From Party and To Party cannot be the same",
+    path: ["toPartyId"]
 });
 
 export type TransactionFormData = z.infer<typeof transactionSchema>;

@@ -82,9 +82,11 @@ export default function PartyCard({ party }: { party: Party }) {
                         <IconButton onClick={() => navigate(`/parties/edit/${party.id}`)} color="primary">
                             <EditIcon />
                         </IconButton>
-                        <IconButton onClick={handleDeleteClick} color="error" disabled={isDeleting}>
-                            <DeleteIcon />
-                        </IconButton>
+                        {!party.isSystem && (
+                            <IconButton onClick={handleDeleteClick} color="error" disabled={isDeleting}>
+                                <DeleteIcon />
+                            </IconButton>
+                        )}
                     </Box>
                 </Box>
             </CardContent>

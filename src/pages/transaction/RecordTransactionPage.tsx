@@ -24,6 +24,7 @@ export default function RecordTransactionPage() {
     const { parties } = usePartyStore();
     const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
+    const [resetKey, setResetKey] = useState(0);
     const [dialogConfig, setDialogConfig] = useState<{ 
         open: boolean, 
         title: string, 
@@ -103,7 +104,7 @@ export default function RecordTransactionPage() {
                 message: `Successfully recorded transaction ${newTx.slNo} for ${formatINR(data.amount)}.`,
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
-                    navigate(-1);
+                    setResetKey(prev => prev + 1);
                 },
                 secondaryAction: {
                     label: 'Share Receipt',
@@ -128,7 +129,7 @@ export default function RecordTransactionPage() {
 
     return (
         <Box maxWidth={800} mx="auto">
-            <TransactionForm onSubmit={handleSubmit} isLoading={loading} />
+            <TransactionForm key={resetKey} onSubmit={handleSubmit} isLoading={loading} />
             <ConfirmDialog
                 open={dialogConfig.open}
                 title={dialogConfig.title}

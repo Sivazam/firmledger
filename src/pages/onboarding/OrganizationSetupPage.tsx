@@ -26,6 +26,11 @@ export default function OrganizationSetupPage() {
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
 
+    if (profile?.organizationId) {
+        navigate('/dashboard', { replace: true });
+        return null;
+    }
+
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<OrgFormData>({
         resolver: zodResolver(orgSchema)
     });

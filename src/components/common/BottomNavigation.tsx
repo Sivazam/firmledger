@@ -1,9 +1,9 @@
 import React from 'react';
-import { Paper, BottomNavigation as MuiBottomNavigation, BottomNavigationAction } from '@mui/material';
+import { Paper, BottomNavigation as MuiBottomNavigation, BottomNavigationAction, Box, Fab } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleIcon from '@mui/icons-material/People';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import BusinessIcon from '@mui/icons-material/Business';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -18,11 +18,10 @@ export default function BottomNavigation() {
     const currentPath = location.pathname;
     const isActuallyAdmin = profile?.userType === 'admin';
     const isSuperAdmin = profile?.userType === 'super-admin';
-    const { isAdminMode } = useAuthStore();
 
     if (isSuperAdmin) return null;
 
-    const showAdminTabs = isActuallyAdmin && isAdminMode;
+    const showAdminTabs = isActuallyAdmin;
 
     const getActiveValue = () => {
         if (showAdminTabs) {
@@ -33,8 +32,9 @@ export default function BottomNavigation() {
         } else {
             if (currentPath === '/' || currentPath === '/dashboard') return 'home';
             if (currentPath.startsWith('/parties')) return 'parties';
-            if (currentPath.startsWith('/transactions')) return 'new_tx';
-            if (currentPath.startsWith('/settings') || currentPath.startsWith('/reports')) return 'settings';
+            if (currentPath.startsWith('/transactions') && currentPath !== '/transactions/record') return 'ledger';
+            if (currentPath.startsWith('/reports')) return 'reports';
+            if (currentPath.startsWith('/settings')) return 'settings';
             return 'home';
         }
     };
@@ -45,14 +45,14 @@ export default function BottomNavigation() {
             case 'firms': navigate('/admin/firms'); break;
             case 'home': navigate('/dashboard'); break;
             case 'parties': navigate('/parties'); break;
-            case 'new_tx': navigate('/transactions/record'); break;
+            case 'ledger': navigate('/transactions'); break;
             case 'reports': navigate('/reports'); break;
             case 'settings': navigate('/settings'); break;
         }
     };
 
     return (
-        <Paper
+        <Box
             sx={{
                 position: 'fixed',
                 bottom: 0,
@@ -63,20 +63,21 @@ export default function BottomNavigation() {
                 backgroundColor: 'background.paper',
                 borderTop: '1px solid',
                 borderColor: 'divider',
-                boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
+                boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
+                borderTopLeftRadius: showAdminTabs ? 0 : 20,
+                borderTopRightRadius: showAdminTabs ? 0 : 20
             }}
-            elevation={0}
         >
             <MuiBottomNavigation
                 showLabels
                 value={getActiveValue()}
                 onChange={handleChange}
-                sx={{ height: 64 }}
+                sx={{ height: 65, backgroundColor: 'transparent' }}
             >
                 {showAdminTabs ? (
                     <BottomNavigationAction label="Home" value="admin_home" icon={<HomeIcon />} />
                 ) : (
-                    <BottomNavigationAction label="Home" value="home" icon={<HomeIcon />} />
+                    <BottomNavigationAction label="Home" value="home" icon={<HomeIcon />} sx={{ minWidth: 0, flex: 1 }} />
                 )}
 
                 {showAdminTabs && (
@@ -84,14 +85,44 @@ export default function BottomNavigation() {
                 )}
 
                 {!showAdminTabs && (
-                    <BottomNavigationAction label="Parties" value="parties" icon={<PeopleIcon />} />
-                )}
-                {!showAdminTabs && (
-                    <BottomNavigationAction label="New Tx" value="new_tx" icon={<AddCircleOutlineIcon />} />
+                    <BottomNavigationAction label="Parties" value="parties" icon={<PeopleIcon />} sx={{ minWidth: 0, flex: 1, mr: 2 }} />
                 )}
 
-                <BottomNavigationAction label="More" value="settings" icon={<MoreHorizIcon />} />
+                {!showAdminTabs && (
+                    <BottomNavigationAction disabled sx={{ minWidth: 0, padding: 0, flex: 0.5 }} />
+                )}
+
+                {!showAdminTabs && (
+                    <BottomNavigationAction label="Transactions" value="ledger" icon={<ReceiptIcon />} sx={{ minWidth: 0, flex: 1, ml: 2 }} />
+                )}
+
+                <BottomNavigationAction label="More" value="settings" icon={<MoreHorizIcon />} sx={{ minWidth: 0, flex: 1 }} />
             </MuiBottomNavigation>
-        </Paper>
+
+            {!showAdminTabs && (
+                <Box 
+                    sx={{ 
+                        position: 'absolute', 
+                        top: -24, 
+                        left: '50%', 
+                        transform: 'translateX(-50%)',
+                        zIndex: 1001 
+                    }}
+                >
+                    <Fab 
+                        color="primary" 
+                        onClick={() => navigate('/transactions/record')} 
+                        sx={{ 
+                            width: 60, 
+                            height: 60, 
+                            boxShadow: '0 4px 14px rgba(30, 64, 175, 0.4)',
+                            border: '4px solid #fff'
+                        }}
+                    >
+                        <AddIcon sx={{ fontSize: 32 }} />
+                    </Fab>
+                </Box>
+            )}
+        </Box>
     );
 }

@@ -43,7 +43,7 @@ export default function ReportPDF({ title, subtitle, headers, rows, organization
                         </View>
                     )}
                     <View style={styles.orgDetails}>
-                        <Text style={styles.orgName}>{organization?.orgName || 'FirmLedger'}</Text>
+                        <Text style={styles.orgName}>{organization?.orgName || 'Viswa Ledger'}</Text>
                         <Text style={styles.orgAddress}>{organization?.address || ''}</Text>
                         <Text style={styles.orgAddress}>{organization?.city && organization?.pincode ? `${organization.city} - ${organization.pincode}` : ''}</Text>
                     </View>

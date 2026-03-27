@@ -37,6 +37,7 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                 <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                         label="Party Code"
+                        disabled={initialData?.isSystem}
                         {...register('code', {
                             onChange: (e) => {
                                 const val = e.target.value.toUpperCase();
@@ -52,12 +53,13 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <TextField label="Party Name" {...register('name')} error={!!errors.name} helperText={errors.name?.message as any} fullWidth />
+                    <TextField label="Party Name" {...register('name')} disabled={initialData?.isSystem} error={!!errors.name} helperText={errors.name?.message as any} fullWidth />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 2 }}>
                     <TextField
                         select
                         label="Category"
+                        disabled={initialData?.isSystem}
                         {...register('category')}
                         error={!!errors.category}
                         helperText={errors.category?.message as any}

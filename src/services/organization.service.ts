@@ -21,22 +21,34 @@ export const OrganizationService = {
                 updatedAt: serverTimestamp()
             });
 
-            // Create default CASH party
-            const cashPartyId = 'party_cash'; // or use a random ID, but 'CASH' as code is important
-            await setDoc(doc(db, 'organizations', orgId, 'parties', cashPartyId), {
-                id: cashPartyId,
-                code: 'CASH',
-                name: 'Cash in Hand',
-                category: 'CASH',
-                address: 'System Default',
-                town: orgData.city || 'Local',
-                phoneNumber: '0000000000',
-                openingBalance: 0,
-                balanceType: 'Debit',
-                isSystem: true,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            });
+            // Create default system parties
+            const systemParties = [
+                { id: 'party_cash', code: 'CASH', name: 'Cash in Hand', category: 'CASH' },
+                { id: 'party_sale', code: 'SALE', name: 'SALES', category: 'Trading' },
+                { id: 'party_purc', code: 'PURC', name: 'PURCHASE', category: 'Trading' },
+                { id: 'party_sret', code: 'SRET', name: 'SALES RETURN', category: 'Trading' },
+                { id: 'party_pret', code: 'PRET', name: 'PURCHASE RETURN', category: 'Trading' },
+                { id: 'party_disc', code: 'DISC', name: 'DISCOUNT', category: 'P & L' }
+            ];
+
+            const partyPromises = systemParties.map(party => 
+                setDoc(doc(db, 'organizations', orgId, 'parties', party.id), {
+                    id: party.id,
+                    code: party.code,
+                    name: party.name,
+                    category: party.category,
+                    address: 'System Default',
+                    town: orgData.city || 'Local',
+                    phoneNumber: '0000000000',
+                    openingBalance: 0,
+                    balanceType: 'Debit',
+                    isSystem: true,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                })
+            );
+
+            await Promise.all(partyPromises);
         }
     },
 

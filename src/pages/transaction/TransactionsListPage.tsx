@@ -29,8 +29,8 @@ export default function TransactionsListPage() {
     const { sharePDF } = usePDF();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('');
-    const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
-    const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
+    const [fromDate, setFromDate] = useState(dayjs.tz().startOf('month').format('YYYY-MM-DD'));
+    const [toDate, setToDate] = useState(dayjs.tz().format('YYYY-MM-DD'));
     const [showReport, setShowReport] = useState(false);
     
     const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
@@ -45,9 +45,11 @@ export default function TransactionsListPage() {
     }, [profile?.organizationId, initialized, fetchTransactions]);
 
     const filteredTransactions = transactions.filter(tx => {
-        const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
-        const isWithinDate = txDate.isAfter(dayjs(fromDate).subtract(1, 'day')) && 
-                             txDate.isBefore(dayjs(toDate).add(1, 'day'));
+        const txDate = tx.date && (tx.date as any).toDate ? dayjs.tz((tx.date as any).toDate()) : dayjs.tz(tx.date as any);
+        const start = dayjs.tz(fromDate).startOf('day');
+        const end = dayjs.tz(toDate).endOf('day');
+        const isWithinDate = (txDate.isSame(start, 'day') || txDate.isAfter(start)) && 
+                             (txDate.isSame(end, 'day') || txDate.isBefore(end));
         
         const matchSearch = tx.slNo.toString().includes(searchTerm) ||
             tx.fromPartyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,10 +63,11 @@ export default function TransactionsListPage() {
     const handleExportExcel = async (isShare: boolean = false) => {
         if (filteredTransactions.length === 0) return;
         
-        const headers = ['Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
+        const headers = ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
         const rows = filteredTransactions.map(tx => {
             const date = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY');
             return [
+                tx.slNo,
                 date,
                 TRANSACTION_TYPE_LABELS[tx.type] || tx.type,
                 tx.fromPartyName,
@@ -189,6 +192,7 @@ export default function TransactionsListPage() {
                     <Table size="small" stickyHeader>
                         <TableHead>
                             <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Txn No</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Date</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Type</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>From Party</TableCell>
@@ -200,6 +204,9 @@ export default function TransactionsListPage() {
                         <TableBody>
                             {filteredTransactions.map((tx) => (
                                 <TableRow key={tx.id} hover>
+                                    <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 'bold', color: 'primary.main' }}>
+                                        {tx.slNo}
+                                    </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                         {tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY')}
                                     </TableCell>
@@ -238,14 +245,6 @@ export default function TransactionsListPage() {
                 <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
                 <MenuItem onClick={() => { handleExportPDF(true); setShareAnchor(null); }}>PDF</MenuItem>
             </Menu>
-
-            {!showReport && (
-                <FloatingActionButton
-                    key="transactions-fab"
-                    icon={<AddIcon />}
-                    onClick={() => navigate('/transactions/record')}
-                />
-            )}
         </Box>
     );
 }

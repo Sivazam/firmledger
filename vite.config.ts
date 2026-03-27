@@ -10,8 +10,8 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'icons/*'],
       manifestFilename: 'manifest.json',
       manifest: {
-        name: 'FirmLedger Accounts',
-        short_name: 'FirmLedger',
+        name: 'Viswa Ledger',
+        short_name: 'Viswa Ledger',
         description: 'Professional Client & Ledger Management',
         theme_color: '#FFFFFF',
         background_color: '#F5F5F5',
