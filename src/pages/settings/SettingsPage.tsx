@@ -8,10 +8,13 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../../services/auth.service';
 import { useAuthStore } from '../../stores/authStore';
+import { useOrganizationStore } from '../../stores/organizationStore';
+import { getFinancialYearBounds } from '../../utils/dateUtils';
 
 export default function SettingsPage() {
     const navigate = useNavigate();
     const { profile } = useAuthStore();
+    const { currentOrganization } = useOrganizationStore();
     const isActuallyAdmin = profile?.userType === 'admin';
     const showAdminSettings = isActuallyAdmin;
 
@@ -51,6 +54,18 @@ export default function SettingsPage() {
                     </>
                 )}
             </List>
+
+            {!showAdminSettings && currentOrganization && currentOrganization.createdAt && (
+                <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: 2, mt: 3, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="subtitle2" color="text.secondary">Active Subscription Period</Typography>
+                    <Typography variant="body1" fontWeight="bold" color="text.primary" sx={{ mt: 0.5 }}>
+                        {currentOrganization.subscriptionLabel || getFinancialYearBounds((currentOrganization.createdAt as any).toDate ? (currentOrganization.createdAt as any).toDate() : currentOrganization.createdAt).label}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        {currentOrganization.subscriptionDescription || getFinancialYearBounds((currentOrganization.createdAt as any).toDate ? (currentOrganization.createdAt as any).toDate() : currentOrganization.createdAt).description}
+                    </Typography>
+                </Box>
+            )}
 
             <Box mt={6} textAlign="center">
                 <Typography variant="body2" color="text.secondary">

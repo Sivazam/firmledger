@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, TextField, Typography, Box, CircularProgress } from '@mui/material';
+import { Button, TextField, Typography, Box, CircularProgress, RadioGroup, FormControlLabel, Radio, FormControl } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { OrganizationService } from '../../services/organization.service';
 import { VALIDATION_PATTERNS } from '../../config/constants';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { getFinancialYearBounds, generateFinancialYearOptions } from '../../utils/dateUtils';
 
 const orgSchema = z.object({
     orgName: z.string().min(2, 'Organization Name is required'),
@@ -22,6 +23,8 @@ type OrgFormData = z.infer<typeof orgSchema>;
 export default function OrganizationSetupPage() {
     const navigate = useNavigate();
     const { user, profile, setProfile, loading } = useAuthStore();
+    const fyOptions = React.useMemo(() => generateFinancialYearOptions(), []);
+    const [selectedFyIndex, setSelectedFyIndex] = useState(0);
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
@@ -53,10 +56,15 @@ export default function OrganizationSetupPage() {
             //     logoUrl = await OrganizationService.uploadLogo(orgId, logoFile);
             // }
 
+            const selectedFy = fyOptions[selectedFyIndex];
             const orgData = {
                 ...data,
                 ownerId: user.uid,
-                logoUrl: null
+                logoUrl: null,
+                subscriptionStart: selectedFy.startDate,
+                subscriptionEnd: selectedFy.endDate,
+                subscriptionLabel: selectedFy.label,
+                subscriptionDescription: selectedFy.description
             };
 
             const isAnyAdmin = profile.userType === 'admin' || profile.userType === 'super-admin';
@@ -130,6 +138,32 @@ export default function OrganizationSetupPage() {
                 error={!!errors.gstNumber}
                 helperText={errors.gstNumber?.message}
             />
+
+            <FormControl component="fieldset" margin="normal" sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: 2, mt: 1, border: '1px solid', borderColor: 'divider', width: '100%' }}>
+                <Typography variant="subtitle2" color="text.secondary" mb={1}>Select Initial Subscription Period</Typography>
+                <RadioGroup
+                    value={selectedFyIndex}
+                    onChange={(e) => setSelectedFyIndex(Number(e.target.value))}
+                >
+                    {fyOptions.map((opt, idx) => (
+                        <FormControlLabel
+                            key={idx}
+                            value={idx}
+                            control={<Radio />}
+                            label={
+                                <Box ml={1}>
+                                    <Typography variant="body1" fontWeight="bold" color="text.primary">{opt.label}</Typography>
+                                    <Typography variant="body2" color="text.secondary">{opt.description}</Typography>
+                                </Box>
+                            }
+                            sx={{ mb: 1, alignItems: 'flex-start', mt: 0.5 }}
+                        />
+                    ))}
+                </RadioGroup>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    You can only record transactions within these dates.
+                </Typography>
+            </FormControl>
 
             {/*
             <Box>

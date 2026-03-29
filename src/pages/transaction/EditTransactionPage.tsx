@@ -9,6 +9,7 @@ import { usePartyStore } from '../../stores/partyStore';
 import { OrganizationService } from '../../services/organization.service';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
+import dayjs from 'dayjs';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 export default function EditTransactionPage() {
@@ -28,7 +29,7 @@ export default function EditTransactionPage() {
 
     const initialData = {
         ...transaction,
-        date: transaction.date.toDate(),
+        date: dayjs((transaction.date as any)?.toDate?.() || transaction.date).format('YYYY-MM-DD'),
         amount: transaction.amount / 100
     };
 
@@ -75,6 +76,7 @@ export default function EditTransactionPage() {
                 message: 'Failed to update transaction due to a network error.',
                 onConfirm: () => setDialogConfig(prev => ({ ...prev, open: false }))
             });
+            throw err;
         } finally {
             setLoading(false);
         }

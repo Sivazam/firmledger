@@ -122,6 +122,7 @@ export default function RecordTransactionPage() {
                 message: 'Failed to record transaction due to a network error.',
                 onConfirm: () => setDialogConfig(prev => ({ ...prev, open: false }))
             });
+            throw err;
         } finally {
             setLoading(false);
         }

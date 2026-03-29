@@ -16,6 +16,7 @@ export interface Party {
     gstNumber: string;
     openingBalance: number; // in paisa
     balanceType: 'Credit' | 'Debit';
+    isBank?: boolean;
     isSystem?: boolean;
     createdAt: Timestamp;
     updatedAt: Timestamp;

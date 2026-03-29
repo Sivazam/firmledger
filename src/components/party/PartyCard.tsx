@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Box, IconButton, Button } from '@mui/material';
+import { Card, CardContent, Typography, Box, IconButton, Button, Chip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Party } from '../../types/party.types';
@@ -7,12 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { PartyService } from '../../services/party.service';
 import { usePartyStore } from '../../stores/partyStore';
+import { useTransactionStore } from '../../stores/transactionStore';
 import ConfirmDialog from './../common/ConfirmDialog';
 
 export default function PartyCard({ party }: { party: Party }) {
     const navigate = useNavigate();
     const { profile } = useAuthStore();
     const { removePartyLocal } = usePartyStore();
+    const { transactions } = useTransactionStore();
 
     const [isDeleting, setIsDeleting] = useState(false);
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error' | 'confirm', onConfirm: () => void, onCancel?: () => void }>({
@@ -20,6 +22,19 @@ export default function PartyCard({ party }: { party: Party }) {
     });
 
     const handleDeleteClick = () => {
+        const hasTransactions = transactions.some(tx => tx.fromPartyId === party.id || tx.toPartyId === party.id);
+
+        if (hasTransactions) {
+            setDialogConfig({
+                open: true,
+                variant: 'error',
+                title: 'Cannot Delete Party',
+                message: `Transactions have been recorded with ${party.name} (${party.code}), so it cannot be deleted.`,
+                onConfirm: () => setDialogConfig(prev => ({ ...prev, open: false }))
+            });
+            return;
+        }
+
         setDialogConfig({
             open: true,
             variant: 'confirm',
@@ -67,7 +82,12 @@ export default function PartyCard({ party }: { party: Party }) {
             <CardContent sx={{ '&:last-child': { pb: 2 } }}>
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start">
                     <Box>
-                        <Typography variant="h6" color="primary">{party.name}</Typography>
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <Typography variant="h6" color="primary">{party.name}</Typography>
+                            {party.isBank && (
+                                <Chip label="Bank" size="small" color="info" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }} />
+                            )}
+                        </Box>
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                             {party.code} • {party.town}
                         </Typography>

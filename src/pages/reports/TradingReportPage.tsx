@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField, Menu, MenuItem, Stack } from '@mui/material';
 import { useTransactionStore } from '../../stores/transactionStore';
-import { useAuthStore } from '../../stores/authStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
 import { TransactionType } from '../../config/constants';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { usePDF } from '../../hooks/usePDF';
 import ReportPDF from '../../components/pdf/ReportPDF';
 import { ReportExportService } from '../../utils/reportExport';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Stack } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import ShareIcon from '@mui/icons-material/Share';
 
 export default function TradingReportPage() {
     const { transactions } = useTransactionStore();
@@ -19,6 +17,10 @@ export default function TradingReportPage() {
     const navigate = useNavigate();
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
+    
+    const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
+    const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
+    const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
 
     const filtered = transactions.filter(tx => {
         const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
@@ -35,59 +37,71 @@ export default function TradingReportPage() {
     const netPurchases = purchases - purchaseReturn;
     const grossProfit = netSales - netPurchases;
 
+    const handleExportPdf = async (isShare: boolean = false) => {
+        const blob = await generatePDFBlob(
+            <ReportPDF 
+                title="Trading Account" 
+                subtitle={`${fromDate} to ${toDate}`}
+                headers={['Particulars (Dr)', 'Amount (Dr)', 'Particulars (Cr)', 'Amount (Cr)']}
+                rows={[
+                    ['To Purchases', (purchases / 100).toFixed(2), 'By Sales', (sales / 100).toFixed(2)],
+                    ['Less: Purchase Return', (purchaseReturn / 100).toFixed(2), 'Less: Sales Return', (salesReturn / 100).toFixed(2)],
+                    ['Net Purchases', (netPurchases / 100).toFixed(2), 'Net Sales', (netSales / 100).toFixed(2)],
+                    ['Gross Profit c/o', (grossProfit / 100).toFixed(2), '', '']
+                ]}
+                organization={currentOrganization}
+            />
+        );
+        
+        const filename = `Trading_Account_${new Date().getTime()}.pdf`;
+        if (isShare) {
+            await sharePDF(blob, filename);
+        } else {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    const handleExportExcel = (isShare: boolean = false) => {
+        const headers = ['Debit_Particulars', 'Debit_Amount', 'Credit_Particulars', 'Credit_Amount'];
+        const csvData = [
+            { Debit_Particulars: 'To Purchases', Debit_Amount: (purchases / 100).toFixed(2), Credit_Particulars: 'By Sales', Credit_Amount: (sales / 100).toFixed(2) },
+            { Debit_Particulars: 'Less: Purchase Return', Debit_Amount: (purchaseReturn / 100).toFixed(2), Credit_Particulars: 'Less: Sales Return', Credit_Amount: (salesReturn / 100).toFixed(2) },
+            { Debit_Particulars: 'Net Purchases', Debit_Amount: (netPurchases / 100).toFixed(2), Credit_Particulars: 'Net Sales', Credit_Amount: (netSales / 100).toFixed(2) },
+            { Debit_Particulars: 'Gross Profit c/o', Debit_Amount: (grossProfit / 100).toFixed(2), Credit_Particulars: '', Credit_Amount: '' }
+        ];
+        ReportExportService.exportToCSV('Trading_Account', csvData, headers, isShare);
+    };
+
     return (
         <Box p={2}>
             <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h5" fontWeight="bold">Trading Account</Typography>
                 <Stack direction="row" spacing={1}>
-                    <Button
+                    <Button 
+                        variant="outlined" 
                         size="small"
-                        variant="outlined"
-                        startIcon={<FileDownloadIcon />}
-                        onClick={() => {
-                            const headers = ['Debit_Particulars', 'Debit_Amount', 'Credit_Particulars', 'Credit_Amount'];
-                            const rows = [
-                                { Debit_Particulars: 'To Purchases', Debit_Amount: (purchases / 100).toFixed(2), Credit_Particulars: 'By Sales', Credit_Amount: (sales / 100).toFixed(2) },
-                                { Debit_Particulars: 'Less: Purchase Return', Debit_Amount: (purchaseReturn / 100).toFixed(2), Credit_Particulars: 'Less: Sales Return', Credit_Amount: (salesReturn / 100).toFixed(2) },
-                                { Debit_Particulars: 'Net Purchases', Debit_Amount: (netPurchases / 100).toFixed(2), Credit_Particulars: 'Net Sales', Credit_Amount: (netSales / 100).toFixed(2) },
-                                { Debit_Particulars: 'Gross Profit c/o', Debit_Amount: (grossProfit / 100).toFixed(2), Credit_Particulars: '', Credit_Amount: '' }
-                            ];
-                            ReportExportService.exportToCSV('Trading_Account_Report', rows, headers);
-                        }}
+                        startIcon={<DownloadIcon />}
+                        onClick={(e) => setDownloadAnchor(e.currentTarget)}
+                        disabled={isGenerating}
                     >
-                        Excel (CSV)
+                        Download
                     </Button>
-                    <PDFDownloadLink
-                        document={
-                            <ReportPDF 
-                                title="Trading Account" 
-                                subtitle={`${fromDate} to ${toDate}`}
-                                headers={['Particulars (Dr)', 'Amount (Dr)', 'Particulars (Cr)', 'Amount (Cr)']}
-                                rows={[
-                                    ['To Purchases', (purchases / 100).toFixed(2), 'By Sales', (sales / 100).toFixed(2)],
-                                    ['Less: Purchase Return', (purchaseReturn / 100).toFixed(2), 'Less: Sales Return', (salesReturn / 100).toFixed(2)],
-                                    ['Net Purchases', (netPurchases / 100).toFixed(2), 'Net Sales', (netSales / 100).toFixed(2)],
-                                    ['Gross Profit c/o', (grossProfit / 100).toFixed(2), '', '']
-                                ]}
-                                organization={currentOrganization}
-                            />
-                        }
-                        fileName="Trading_Account_Report.pdf"
-                        style={{ textDecoration: 'none' }}
+                    <Button 
+                        variant="outlined" 
+                        size="small"
+                        color="secondary"
+                        startIcon={<ShareIcon />}
+                        onClick={(e) => setShareAnchor(e.currentTarget)}
+                        disabled={isGenerating}
                     >
-                        {({ loading }) => (
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                color="error"
-                                startIcon={<PictureAsPdfIcon />}
-                                disabled={loading}
-                            >
-                                {loading ? '...' : 'PDF'}
-                            </Button>
-                        )}
-                    </PDFDownloadLink>
+                        Share
+                    </Button>
                 </Stack>
             </Box>
 
@@ -158,6 +172,24 @@ export default function TradingReportPage() {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Menu
+                anchorEl={downloadAnchor}
+                open={Boolean(downloadAnchor)}
+                onClose={() => setDownloadAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(); setDownloadAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPdf(); setDownloadAnchor(null); }}>PDF</MenuItem>
+            </Menu>
+
+            <Menu
+                anchorEl={shareAnchor}
+                open={Boolean(shareAnchor)}
+                onClose={() => setShareAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPdf(true); setShareAnchor(null); }}>PDF</MenuItem>
+            </Menu>
         </Box>
     );
 }

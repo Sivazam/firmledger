@@ -1,27 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Chip, Button } from '@mui/material';
-import { AdminService } from '../../services/admin.service';
-import type { Organization } from '../../types/organization.types';
-import { useNavigate } from 'react-router-dom';
+import { Box, Typography, List, ListItem, ListItemText, Chip, Button, CircularProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useAdminStore } from '../../stores/adminStore';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function FirmManagementPage() {
-    const [orgs, setOrgs] = useState<Organization[]>([]);
+    const { organizations: orgs, loading, initialized, fetchOrganizations } = useAdminStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'denied'>(
+        location.state?.statusFilter || 'all'
+    );
 
     useEffect(() => {
-        fetchFirms();
-    }, []);
-
-    const fetchFirms = async () => {
-        try {
-            const data = await AdminService.getAllOrganizations();
-            // sort by created date descending
-            data.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
-            setOrgs(data);
-        } catch (err) {
-            console.error(err);
+        if (!initialized) {
+            fetchOrganizations();
         }
-    };
+    }, [initialized, fetchOrganizations]);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -31,12 +26,45 @@ export default function FirmManagementPage() {
         }
     };
 
+    const filteredOrgs = orgs.filter(o => {
+        if (o.isOwnerAdmin) return false;
+        if (statusFilter === 'all') return true;
+        return o.status === statusFilter;
+    });
+
     return (
         <Box p={2}>
-            <Typography variant="h5" mb={3}>Organization Management</Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h5">Organization Management</Typography>
+                <Button variant="outlined" size="small" onClick={() => fetchOrganizations()} disabled={loading}>
+                    Refresh
+                </Button>
+            </Box>
+
+            <Box mb={3}>
+                <ToggleButtonGroup
+                    value={statusFilter}
+                    exclusive
+                    onChange={(e, newLevel) => {
+                        if (newLevel !== null) setStatusFilter(newLevel);
+                    }}
+                    size="small"
+                >
+                    <ToggleButton value="all">All</ToggleButton>
+                    <ToggleButton value="pending">Pending</ToggleButton>
+                    <ToggleButton value="approved">Approved</ToggleButton>
+                    <ToggleButton value="denied">Denied</ToggleButton>
+                </ToggleButtonGroup>
+            </Box>
+
+            {loading && !initialized ? (
+                <Box display="flex" justifyContent="center" p={4}>
+                    <CircularProgress />
+                </Box>
+            ) : (
 
             <List>
-                {orgs.filter(o => !o.isOwnerAdmin).map(org => (
+                {filteredOrgs.map(org => (
                     <ListItem
                         key={org.id}
                         sx={{
@@ -72,7 +100,10 @@ export default function FirmManagementPage() {
                     </ListItem>
                 ))}
             </List>
-            {orgs.length === 0 && <Typography textAlign="center">No organizations found.</Typography>}
+            )}
+            {!loading && initialized && filteredOrgs.length === 0 && (
+                <Typography textAlign="center" color="text.secondary" p={4}>No organizations found.</Typography>
+            )}
         </Box>
     );
 }

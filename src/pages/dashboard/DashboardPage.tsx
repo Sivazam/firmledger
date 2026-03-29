@@ -28,6 +28,14 @@ export default function DashboardPage() {
         }
     }, [profile?.organizationId, partiesInit, txInit, fetchParties, fetchTransactions]);
 
+    const getFirstName = (name: string) => {
+        const parts = name.trim().split(/\s+/);
+        if (parts.length > 1 && parts[0].length === 1) {
+            return parts[1];
+        }
+        return parts[0] || 'User';
+    };
+
     const stats = useMemo(() => {
         const today = dayjs.tz().startOf('day');
 
@@ -85,8 +93,21 @@ export default function DashboardPage() {
 
     return (
         <Box>
-            <Typography variant="h5" fontWeight="bold" mb={1}>Dashboard</Typography>
-            <Typography color="text.secondary" mb={4}>Welcome back to Viswa Ledger</Typography>
+        <Box mb={3}>
+            <Typography 
+                variant="h4" 
+                sx={{ 
+                    fontWeight: 800, 
+                    color: 'text.primary',
+                    letterSpacing: '-0.04em'
+                }}
+            >
+                Good {dayjs().hour() < 12 ? 'Morning' : dayjs().hour() < 17 ? 'Afternoon' : 'Evening'}, 
+                <Box component="span" sx={{ color: 'primary.main', ml: 1.5 }}>
+                    {getFirstName(profile?.displayName || 'User')}
+                </Box>
+            </Typography>
+        </Box>
 
             <Grid container spacing={3}>
                 {/* 1. Cash Opening Balance */}
@@ -146,7 +167,7 @@ export default function DashboardPage() {
                         <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Box>
                                 <Typography variant="body2" sx={{ opacity: 0.8 }} textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Closing Balance</Typography>
-                                <Typography variant="h4" fontWeight="900">
+                                <Typography variant="h5" fontWeight="800">
                                     {formatINR(stats.dashboardClosingBalance)}
                                 </Typography>
                             </Box>

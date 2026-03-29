@@ -61,6 +61,7 @@ const MonthlyReportPage = lazyWithRetry(() => import('./pages/reports/MonthlyRep
 const ChecklistPage = lazyWithRetry(() => import('./pages/reports/ChecklistPage'));
 const TradingReportPage = lazyWithRetry(() => import('./pages/reports/TradingReportPage'));
 const PLReportPage = lazyWithRetry(() => import('./pages/reports/PLReportPage'));
+const TrialBalancePage = lazyWithRetry(() => import('./pages/reports/TrialBalancePage'));
 
 const SettingsPage = lazyWithRetry(() => import('./pages/settings/SettingsPage'));
 const PersonalDetailsPage = lazyWithRetry(() => import('./pages/settings/PersonalDetailsPage'));
@@ -150,6 +151,7 @@ export const router = createBrowserRouter([
                                     { path: '/reports/checklist', element: <SuspenseWrapper><ChecklistPage /></SuspenseWrapper> },
                                     { path: '/reports/trading', element: <SuspenseWrapper><TradingReportPage /></SuspenseWrapper> },
                                     { path: '/reports/pl', element: <SuspenseWrapper><PLReportPage /></SuspenseWrapper> },
+                                    { path: '/reports/trial-balance', element: <SuspenseWrapper><TrialBalancePage /></SuspenseWrapper> },
                                 ]
                             },
 

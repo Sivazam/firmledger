@@ -15,6 +15,10 @@ export interface Organization {
     approvedBy: string | null;
     approvedAt: Timestamp | null;
     isOwnerAdmin?: boolean;
+    subscriptionStart?: string;
+    subscriptionEnd?: string;
+    subscriptionLabel?: string;
+    subscriptionDescription?: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 }

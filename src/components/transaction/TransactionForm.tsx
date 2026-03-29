@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { Box, Button, TextField, Grid } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
+import { useBlocker } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { transactionSchema } from '../../utils/validators';
 import type { TransactionFormData } from '../../utils/validators';
@@ -10,6 +11,9 @@ import TransactionTypeSelect from './TransactionTypeSelect';
 import PartySelector from '../party/PartySelector';
 import { usePartyStore } from '../../stores/partyStore';
 import type { Party } from '../../types/party.types';
+import { useOrganizationStore } from '../../stores/organizationStore';
+import { getFinancialYearBounds } from '../../utils/dateUtils';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 interface Props {
     initialData?: any;
@@ -19,9 +23,55 @@ interface Props {
 
 export default function TransactionForm({ initialData, onSubmit, isLoading }: Props) {
     const { parties } = usePartyStore();
+    const { currentOrganization } = useOrganizationStore();
+    
+    // Prevent closing tab/window while saving
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isLoading) {
+                e.preventDefault();
+                e.returnValue = ''; // Required for some browsers
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isLoading]);
 
-    const { control, handleSubmit, watch, setValue, register, formState: { errors } } = useForm<any>({
-        resolver: zodResolver(transactionSchema),
+    const hasSubmittedRef = React.useRef(false);
+
+    // Prevent navigation within the app ONLY while actively saving
+    const blocker = useBlocker(({ nextLocation }) => {
+        return isLoading; 
+    });
+
+    const fyParams = React.useMemo(() => {
+        if (currentOrganization?.subscriptionStart && currentOrganization?.subscriptionEnd) {
+            return {
+                startDate: currentOrganization.subscriptionStart,
+                endDate: currentOrganization.subscriptionEnd,
+                label: currentOrganization.subscriptionLabel || 'Active Subscription'
+            };
+        }
+        if (currentOrganization?.createdAt) {
+            const d = (currentOrganization.createdAt as any).toDate ? (currentOrganization.createdAt as any).toDate() : currentOrganization.createdAt;
+            return getFinancialYearBounds(d);
+        }
+        return getFinancialYearBounds();
+    }, [currentOrganization]);
+
+    const boundedSchema = React.useMemo(() => {
+        return transactionSchema.refine((data) => {
+            const d = dayjs(data.date);
+            return (d.isSame(fyParams.startDate, 'day') || d.isAfter(fyParams.startDate, 'day')) && 
+                   (d.isSame(fyParams.endDate, 'day') || d.isBefore(fyParams.endDate, 'day'));
+        }, {
+            message: `Date must be within your subscription period (${fyParams.startDate} to ${fyParams.endDate})`,
+            path: ["date"]
+        });
+    }, [fyParams]);
+
+    const { control, handleSubmit, watch, setValue, register, reset, formState: { errors, isDirty } } = useForm<any>({
+        resolver: zodResolver(boundedSchema),
         defaultValues: initialData || {
             date: dayjs.tz().format('YYYY-MM-DD'),
             type: TransactionType.CR,
@@ -41,6 +91,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
     // Initialize from/to party states for editing
     useEffect(() => {
         if (initialData && parties.length > 0) {
+            reset(initialData); // Ensure all fields are filled
             if (initialData.fromPartyId) {
                 const p = parties.find(x => x.id === initialData.fromPartyId);
                 if (p) setFromParty(p);
@@ -50,7 +101,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                 if (p) setToParty(p);
             }
         }
-    }, [initialData?.id, parties]); 
+    }, [initialData?.id, parties, reset]); 
 
     useEffect(() => {
         if (initialData || parties.length === 0) return;
@@ -62,10 +113,10 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         if (isTypeSwitched) {
             setFromParty(null);
             setToParty(null);
-            setValue('fromPartyId', '');
-            setValue('toPartyId', '');
-            setValue('description', '');
-            setValue('amount', '' as any);
+            setValue('fromPartyId', '', { shouldDirty: false });
+            setValue('toPartyId', '', { shouldDirty: false });
+            setValue('description', '', { shouldDirty: false });
+            setValue('amount', '' as any, { shouldDirty: false });
         }
 
         const cashParty = parties.find(p => p.code === 'CASH');
@@ -75,25 +126,32 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         const pretParty = parties.find(p => p.code === 'PRET');
 
         if (selectedType === TransactionType.CR && cashParty) {
-            setToParty(cashParty); setValue('toPartyId', cashParty.id);
+            setToParty(cashParty); setValue('toPartyId', cashParty.id, { shouldDirty: false });
         } else if (selectedType === TransactionType.CP && cashParty) {
-            setFromParty(cashParty); setValue('fromPartyId', cashParty.id);
+            setFromParty(cashParty); setValue('fromPartyId', cashParty.id, { shouldDirty: false });
         } else if (selectedType === TransactionType.SI && saleParty) {
-            setToParty(saleParty); setValue('toPartyId', saleParty.id);
+            setFromParty(saleParty); setValue('fromPartyId', saleParty.id, { shouldDirty: false });
         } else if (selectedType === TransactionType.PI && purcParty) {
-            setFromParty(purcParty); setValue('fromPartyId', purcParty.id);
+            setToParty(purcParty); setValue('toPartyId', purcParty.id, { shouldDirty: false });
         } else if (selectedType === TransactionType.SR && sretParty) {
-            setFromParty(sretParty); setValue('fromPartyId', sretParty.id);
+            setToParty(sretParty); setValue('toPartyId', sretParty.id, { shouldDirty: false });
         } else if (selectedType === TransactionType.PR && pretParty) {
-            setToParty(pretParty); setValue('toPartyId', pretParty.id);
+            setFromParty(pretParty); setValue('fromPartyId', pretParty.id, { shouldDirty: false });
         }
     }, [selectedType, parties, setValue, initialData]);
 
-    const handleFormSubmit = (data: TransactionFormData) => {
-        onSubmit({
-            ...data,
-            amount: Math.round(Number(data.amount) * 100)
-        });
+    const handleFormSubmit = async (data: TransactionFormData) => {
+        try {
+            hasSubmittedRef.current = true;
+            await onSubmit({
+                ...data,
+                amount: Math.round(Number(data.amount) * 100)
+            });
+            reset(); // Clear isDirty state after successful save
+        } catch (err) {
+            hasSubmittedRef.current = false;
+            console.error("Submission error in form:", err);
+        }
     };
 
     const renderPartyField = (role: 'from' | 'to') => {
@@ -102,10 +160,10 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         const label = isFrom ? 'From Party' : 'To Party';
 
         const isCashFixed = (selectedType === TransactionType.CR && !isFrom) || (selectedType === TransactionType.CP && isFrom);
-        const isSaleFixed = selectedType === TransactionType.SI && !isFrom;
-        const isPurcFixed = selectedType === TransactionType.PI && isFrom;
-        const isSretFixed = selectedType === TransactionType.SR && isFrom;
-        const isPretFixed = selectedType === TransactionType.PR && !isFrom;
+        const isSaleFixed = selectedType === TransactionType.SI && isFrom;
+        const isPurcFixed = selectedType === TransactionType.PI && !isFrom;
+        const isSretFixed = selectedType === TransactionType.SR && !isFrom;
+        const isPretFixed = selectedType === TransactionType.PR && isFrom;
 
         if (isCashFixed) return <TextField label={label} value="Cash in Hand (CASH)" disabled fullWidth size="small" />;
         if (isSaleFixed) return <TextField label={label} value="SALES (SALE)" disabled fullWidth size="small" />;
@@ -129,6 +187,11 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                             if (p.code === 'PURC' && !isPurcFixed) return false;
                             if (p.code === 'SRET' && !isSretFixed) return false;
                             if (p.code === 'PRET' && !isPretFixed) return false;
+
+                            // Enforce Bank rules
+                            if (selectedType === TransactionType.BR && !isFrom && !p.isBank) return false; // Receiver must be a bank
+                            if (selectedType === TransactionType.BP && isFrom && !p.isBank) return false; // Giver must be a bank
+
                             return true;
                         }}
                         onChange={(p) => {
@@ -162,6 +225,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         type="date"
                         fullWidth
                         InputLabelProps={{ shrink: true }}
+                        inputProps={{ min: fyParams.startDate, max: fyParams.endDate }}
                         {...register('date', {
                             onChange: (e) => {
                                 if (e.target.value) {
@@ -169,7 +233,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                                 }
                             }
                         })}
-                        onFocus={(e) => (e.target as any).showPicker?.()}
+                        onClick={(e) => (e.target as any).showPicker?.()}
                         error={!!errors.date}
                         helperText={errors.date?.message as any}
                     />
@@ -209,6 +273,16 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
             <Button type="submit" variant="contained" size="large" disabled={isLoading} sx={{ mt: 2, color: 'white' }}>
                 {isLoading ? 'Saving...' : 'Save Transaction'}
             </Button>
+            <ConfirmDialog
+                open={blocker.state === 'blocked'}
+                variant="error"
+                title="Save in Progress"
+                message="Transaction is being recorded. This alert is to prevent the interruption of the save process. Are you sure you want to leave?"
+                confirmText="Leave Anyway"
+                cancelText="Stay and Save"
+                onConfirm={() => blocker.state === 'blocked' && blocker.proceed()}
+                onCancel={() => blocker.state === 'blocked' && blocker.reset()}
+            />
         </Box>
     );
 }

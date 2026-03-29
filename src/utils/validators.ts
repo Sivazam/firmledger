@@ -14,6 +14,7 @@ export const partySchema = z.object({
     category: z.enum(['CASH', 'BANK', 'CUSTOMER', 'SUPPLIER', 'REVENUE', 'EXPENSE', 'CAPITAL', 'OTHER', 'Trading', 'P & L', 'Balance Sheet']),
     openingBalance: z.number().default(0),
     balanceType: z.enum(['Credit', 'Debit']).default('Debit'),
+    isBank: z.boolean().default(false).optional(),
 });
 
 export type PartyFormData = z.infer<typeof partySchema>;

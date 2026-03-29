@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TextField, Button, Box, Grid, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
+import { TextField, Button, Box, Grid, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Typography, Switch } from '@mui/material';
 import { partySchema } from '../../utils/validators';
 import type { PartyFormData } from '../../utils/validators';
 import type { Party } from '../../types/party.types';
@@ -23,13 +23,24 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
         resolver: zodResolver(partySchema),
         defaultValues: initialData ? {
             ...initialData,
-            openingBalance: (initialData.openingBalance || 0) / 100
+            openingBalance: initialData.balanceType === 'Credit' 
+                ? -((initialData.openingBalance || 0) / 100)
+                : (initialData.openingBalance || 0) / 100
         } : {
             code: '', name: '', category: 'CUSTOMER', fatherName: '', address: '', town: '', phoneNumber: '', aadharNumber: '', panNumber: '', gstNumber: '',
             openingBalance: 0,
-            balanceType: 'Debit'
+            balanceType: 'Debit',
+            isBank: false
         }
     });
+
+    const watchedBalance = watch('openingBalance');
+
+    React.useEffect(() => {
+        const val = Number(watchedBalance);
+        if (isNaN(val)) return;
+        setValue('balanceType', val < 0 ? 'Credit' : 'Debit');
+    }, [watchedBalance, setValue]);
 
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -97,37 +108,37 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                     <TextField
                         label="Opening Balance (₹)"
                         type="number"
-                        inputProps={{ inputMode: 'numeric', step: "0.01" }}
+                        inputProps={{ step: "0.01" }}
                         {...register('openingBalance', { valueAsNumber: true })}
                         error={!!errors.openingBalance}
-                        helperText={errors.openingBalance?.message as any}
+                        helperText={errors.openingBalance ? (errors.openingBalance?.message as any) : "Use a minus sign (-) for Credit/Negative balances (e.g., -500)"}
                         fullWidth
                     />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <Box sx={{ ml: { sm: 2 } }}>
-                        <FormControl component="fieldset" error={!!errors.balanceType}>
-                            <FormLabel component="legend">Balance Type</FormLabel>
+                    <Box sx={{ ml: { sm: 2 }, mt: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                            Auto-detected Type: <strong>{watch('balanceType')}</strong>
+                        </Typography>
+                    </Box>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <FormControlLabel
+                        control={
                             <Controller
-                                name="balanceType"
+                                name="isBank"
                                 control={control}
                                 render={({ field }) => (
-                                    <RadioGroup
-                                        {...field}
-                                        row
-                                    >
-                                        <FormControlLabel value="Debit" control={<Radio size="small" />} label="Debit" />
-                                        <FormControlLabel value="Credit" control={<Radio size="small" />} label="Credit" />
-                                    </RadioGroup>
+                                    <Switch
+                                        checked={field.value || false}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                        disabled={initialData?.isSystem}
+                                    />
                                 )}
                             />
-                            {errors.balanceType && (
-                                <Typography variant="caption" color="error">
-                                    {(errors.balanceType as any).message}
-                                </Typography>
-                            )}
-                        </FormControl>
-                    </Box>
+                        }
+                        label="Is this a Bank Account?"
+                    />
                 </Grid>
             </Grid>
 

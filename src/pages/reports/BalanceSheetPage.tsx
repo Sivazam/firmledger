@@ -1,17 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Button, Grid, TextField } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Button, Grid, TextField, Menu, MenuItem, Stack } from '@mui/material';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import ReportPDF from '../../components/pdf/ReportPDF';
-import { ReportExportService } from '../../utils/reportExport';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Stack } from '@mui/material';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
 import AmountDisplay from '../../components/transaction/AmountDisplay';
+import { usePDF } from '../../hooks/usePDF';
+import ReportPDF from '../../components/pdf/ReportPDF';
+import { ReportExportService } from '../../utils/reportExport';
+import DownloadIcon from '@mui/icons-material/Download';
+import ShareIcon from '@mui/icons-material/Share';
 
 export default function BalanceSheetPage() {
     const { parties } = usePartyStore();
@@ -20,6 +19,10 @@ export default function BalanceSheetPage() {
     const navigate = useNavigate();
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
+    
+    const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
+    const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
+    const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
 
     const balances = useMemo(() => {
         const filteredTxs = transactions.filter(tx => {
@@ -42,59 +45,73 @@ export default function BalanceSheetPage() {
     const totalCredit = balances.filter(b => b.balance > 0).reduce((acc, curr) => acc + curr.balance, 0);
     const totalDebit = balances.filter(b => b.balance < 0).reduce((acc, curr) => acc + Math.abs(curr.balance), 0);
 
+    const handleExportPdf = async (isShare: boolean = false) => {
+        if (balances.length === 0) return;
+        const blob = await generatePDFBlob(
+            <ReportPDF 
+                title="Balance Sheet" 
+                subtitle={`${fromDate} to ${toDate}`}
+                headers={['Party Name', 'Code', 'Balance', 'Type']}
+                rows={balances.map(b => [
+                    b.party.name,
+                    b.party.code,
+                    (Math.abs(b.balance) / 100).toFixed(2),
+                    b.balance > 0 ? 'Cr' : 'Dr'
+                ])}
+                organization={currentOrganization}
+            />
+        );
+        
+        const filename = `Balance_Sheet_${new Date().getTime()}.pdf`;
+        if (isShare) {
+            await sharePDF(blob, filename);
+        } else {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    const handleExportExcel = (isShare: boolean = false) => {
+        if (balances.length === 0) return;
+        const headers = ['Party', 'Code', 'Balance', 'Type'];
+        const csvData = balances.map(b => ({
+            Party: b.party.name,
+            Code: b.party.code,
+            Balance: (Math.abs(b.balance) / 100).toFixed(2),
+            Type: b.balance > 0 ? 'Cr' : 'Dr'
+        }));
+        ReportExportService.exportToCSV('Balance_Sheet', csvData, headers, isShare);
+    };
+
     return (
         <Box p={2}>
             <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h5" fontWeight="bold">Balance Sheet</Typography>
                 <Stack direction="row" spacing={1}>
-                    <Button
+                    <Button 
+                        variant="outlined" 
                         size="small"
-                        variant="outlined"
-                        startIcon={<FileDownloadIcon />}
-                        onClick={() => {
-                            const headers = ['Party', 'Code', 'Balance', 'Type'];
-                            const rows = balances.map(b => ({
-                                Party: b.party.name,
-                                Code: b.party.code,
-                                Balance: (Math.abs(b.balance) / 100).toFixed(2),
-                                Type: b.balance > 0 ? 'Cr' : 'Dr'
-                            }));
-                            ReportExportService.exportToCSV('Balance_Sheet_Report', rows, headers);
-                        }}
+                        startIcon={<DownloadIcon />}
+                        onClick={(e) => setDownloadAnchor(e.currentTarget)}
+                        disabled={isGenerating || balances.length === 0}
                     >
-                        Excel (CSV)
+                        Download
                     </Button>
-                    <PDFDownloadLink
-                        document={
-                            <ReportPDF 
-                                title="Balance Sheet" 
-                                subtitle={`${fromDate} to ${toDate}`}
-                                headers={['Party Name', 'Code', 'Balance', 'Type']}
-                                rows={balances.map(b => [
-                                    b.party.name,
-                                    b.party.code,
-                                    (Math.abs(b.balance) / 100).toFixed(2),
-                                    b.balance > 0 ? 'Cr' : 'Dr'
-                                ])}
-                                organization={currentOrganization}
-                            />
-                        }
-                        fileName="Balance_Sheet_Report.pdf"
-                        style={{ textDecoration: 'none' }}
+                    <Button 
+                        variant="outlined" 
+                        size="small"
+                        color="secondary"
+                        startIcon={<ShareIcon />}
+                        onClick={(e) => setShareAnchor(e.currentTarget)}
+                        disabled={isGenerating || balances.length === 0}
                     >
-                        {({ loading }) => (
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                color="error"
-                                startIcon={<PictureAsPdfIcon />}
-                                disabled={loading}
-                            >
-                                {loading ? '...' : 'PDF'}
-                            </Button>
-                        )}
-                    </PDFDownloadLink>
+                        Share
+                    </Button>
                 </Stack>
             </Box>
 
@@ -167,6 +184,24 @@ export default function BalanceSheetPage() {
                     </TableBody>
                 </Table>
             </Paper>
+
+            <Menu
+                anchorEl={downloadAnchor}
+                open={Boolean(downloadAnchor)}
+                onClose={() => setDownloadAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(); setDownloadAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPdf(); setDownloadAnchor(null); }}>PDF</MenuItem>
+            </Menu>
+
+            <Menu
+                anchorEl={shareAnchor}
+                open={Boolean(shareAnchor)}
+                onClose={() => setShareAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPdf(true); setShareAnchor(null); }}>PDF</MenuItem>
+            </Menu>
         </Box>
     );
 }

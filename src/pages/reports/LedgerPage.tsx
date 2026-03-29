@@ -9,6 +9,13 @@ import PartySelector from '../../components/party/PartySelector';
 import type { Party  } from '../../types/party.types';
 import { formatDate } from '../../utils/formatters';
 import AmountDisplay from '../../components/transaction/AmountDisplay';
+import { usePDF } from '../../hooks/usePDF';
+import LedgerDocument from '../../components/pdf/LedgerDocument';
+import type { LedgerEntry } from '../../components/pdf/LedgerDocument';
+import { ReportExportService } from '../../utils/reportExport';
+import { Menu, MenuItem, Stack, IconButton, Divider } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import ShareIcon from '@mui/icons-material/Share';
 
 export default function LedgerPage() {
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
@@ -17,6 +24,10 @@ export default function LedgerPage() {
   const { transactions } = useTransactionStore();
   const { currentOrganization } = useOrganizationStore();
   const navigate = useNavigate();
+  const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
+  
+  const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
+  const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
 
   const ledgerEntries = useMemo(() => {
     if (!selectedParty) return [];
@@ -35,8 +46,19 @@ export default function LedgerPage() {
         return da - db;
     });
     
-    let runningBalance = 0; 
-    return partyTxs.map(tx => {
+    let runningBalance = (selectedParty.balanceType === 'Debit' ? 1 : -1) * (selectedParty.openingBalance || 0);
+    
+    const openingEntry = {
+        id: 'opening',
+        date: null,
+        type: 'OP',
+        description: 'Opening Balance',
+        debit: selectedParty.balanceType === 'Debit' ? selectedParty.openingBalance : 0,
+        credit: selectedParty.balanceType === 'Credit' ? selectedParty.openingBalance : 0,
+        balance: runningBalance
+    };
+
+    const mappedEntries = partyTxs.map(tx => {
       const isFromParty = tx.fromPartyId === selectedParty.id; // Credit
       const isToParty = tx.toPartyId === selectedParty.id;     // Debit
 
@@ -46,15 +68,84 @@ export default function LedgerPage() {
       if (isFromParty) credit = tx.amount;
       if (isToParty) debit = tx.amount;
 
-      runningBalance += credit - debit;
+      runningBalance += debit - credit;
 
       return { ...tx, debit, credit, balance: runningBalance };
     });
-  }, [selectedParty, transactions]);
+
+    return [openingEntry, ...mappedEntries] as LedgerEntry[];
+  }, [selectedParty, transactions, fromDate, toDate]);
+
+  const handleExportPdf = async (isShare: boolean = false) => {
+    if (!selectedParty || ledgerEntries.length === 0) return;
+    const dateRangeStr = `${dayjs(fromDate).format('DD/MM/YYYY')} to ${dayjs(toDate).format('DD/MM/YYYY')}`;
+    
+    const blob = await generatePDFBlob(
+      <LedgerDocument 
+        title="Party Ledger Statement"
+        partyName={selectedParty.name}
+        partyCode={selectedParty.code}
+        dateRange={dateRangeStr}
+        entries={ledgerEntries}
+        organization={currentOrganization}
+      />
+    );
+    
+    if (isShare) {
+        await sharePDF(blob, `${selectedParty.name}_Ledger_${new Date().getTime()}.pdf`);
+    } else {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${selectedParty.name}_Ledger_${new Date().getTime()}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleExportExcel = (isShare: boolean = false) => {
+    if (!selectedParty || ledgerEntries.length === 0) return;
+    const headers = ['Type', 'Date', 'Description', 'Debit', 'Credit', 'Balance'];
+    const csvData = ledgerEntries.map(e => ({
+      Type: e.type,
+      Date: e.id === 'opening' ? 'Opening' : (e.date ? dayjs(e.date).format('DD/MM/YYYY') : '-'),
+      Description: e.description,
+      Debit: e.debit / 100,
+      Credit: e.credit / 100,
+      Balance: Math.abs(e.balance) / 100 + (e.balance !== 0 ? (e.balance > 0 ? ' Dr' : ' Cr') : '')
+    }));
+
+    ReportExportService.exportToCSV(`${selectedParty.name}_Ledger_${new Date().getTime()}`, csvData, headers, isShare);
+  };
 
   return (
     <Box p={2}>
-      <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Button onClick={() => navigate(-1)}>&larr; Back</Button>
+        {selectedParty && ledgerEntries.length > 0 && (
+          <Stack direction="row" spacing={1}>
+            <Button 
+                variant="outlined" 
+                size="small"
+                startIcon={<DownloadIcon />}
+                onClick={(e) => setDownloadAnchor(e.currentTarget)}
+                disabled={isGenerating}
+            >
+                Download
+            </Button>
+            <Button 
+                variant="outlined" 
+                size="small"
+                color="secondary"
+                startIcon={<ShareIcon />}
+                onClick={(e) => setShareAnchor(e.currentTarget)}
+                disabled={isGenerating}
+            >
+                Share
+            </Button>
+          </Stack>
+        )}
+      </Box>
       <Typography variant="h5" mb={3}>Party Ledger</Typography>
       
       <Grid container spacing={2} mb={3}>
@@ -74,8 +165,8 @@ export default function LedgerPage() {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Date</TableCell>
                 <TableCell>Type</TableCell>
+                <TableCell>Date</TableCell>
                 <TableCell>Desc</TableCell>
                 <TableCell align="right">Debit</TableCell>
                 <TableCell align="right">Credit</TableCell>
@@ -85,17 +176,32 @@ export default function LedgerPage() {
             <TableBody>
               {ledgerEntries.map(entry => (
                 <TableRow key={entry.id}>
-                  <TableCell>{formatDate(entry.date)}</TableCell>
-                  <TableCell>{entry.type}</TableCell>
-                  <TableCell>{entry.description}</TableCell>
-                  <TableCell align="right">{entry.debit > 0 ? <AmountDisplay amount={entry.debit} /> : '-'}</TableCell>
-                  <TableCell align="right">{entry.credit > 0 ? <AmountDisplay amount={entry.credit} /> : '-'}</TableCell>
+                  <TableCell><strong>{entry.type}</strong></TableCell>
+                  <TableCell>
+                    {entry.id === 'opening' ? <strong>Opening Balance</strong> : (entry.date ? formatDate(entry.date) : '-')}
+                  </TableCell>
+                  <TableCell>
+                    {entry.description}
+                  </TableCell>
+                  <TableCell align="right">
+                    {entry.id === 'opening' ? (
+                      selectedParty?.balanceType === 'Debit' ? <AmountDisplay amount={entry.debit} /> : '-'
+                    ) : (
+                      entry.debit > 0 ? <AmountDisplay amount={entry.debit} /> : '-'
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    {entry.id === 'opening' ? (
+                      selectedParty?.balanceType === 'Credit' ? <AmountDisplay amount={entry.credit} /> : '-'
+                    ) : (
+                      entry.credit > 0 ? <AmountDisplay amount={entry.credit} /> : '-'
+                    )}
+                  </TableCell>
                   <TableCell align="right">
                     <AmountDisplay 
                       amount={Math.abs(entry.balance)} 
                       color={entry.balance >= 0 ? 'success.main' : 'error.main'} 
                     />
-                    {entry.balance >= 0 ? ' (Cr)' : ' (Dr)'}
                   </TableCell>
                 </TableRow>
               ))}
@@ -108,6 +214,24 @@ export default function LedgerPage() {
           </Table>
         </Paper>
       )}
+
+      <Menu
+        anchorEl={downloadAnchor}
+        open={Boolean(downloadAnchor)}
+        onClose={() => setDownloadAnchor(null)}
+      >
+        <MenuItem onClick={() => { handleExportExcel(); setDownloadAnchor(null); }}>Excel</MenuItem>
+        <MenuItem onClick={() => { handleExportPdf(); setDownloadAnchor(null); }}>PDF</MenuItem>
+      </Menu>
+
+      <Menu
+        anchorEl={shareAnchor}
+        open={Boolean(shareAnchor)}
+        onClose={() => setShareAnchor(null)}
+      >
+        <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
+        <MenuItem onClick={() => { handleExportPdf(true); setShareAnchor(null); }}>PDF</MenuItem>
+      </Menu>
     </Box>
   );
 }

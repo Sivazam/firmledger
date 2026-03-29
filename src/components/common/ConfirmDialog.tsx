@@ -45,7 +45,15 @@ export default function ConfirmDialog({
     };
 
     return (
-        <Dialog open={open} onClose={onCancel || onConfirm} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 2, p: 1, textAlign: 'center' } }}>
+        <Dialog 
+            open={open} 
+            onClose={onCancel || onConfirm} 
+            maxWidth="xs" 
+            fullWidth 
+            disableRestoreFocus
+            disableEnforceFocus={false}
+            PaperProps={{ sx: { borderRadius: 2, p: 1, textAlign: 'center' } }}
+        >
             <DialogContent>
                 <Box display="flex" flexDirection="column" alignItems="center" pt={2}>
                     {getIcon()}

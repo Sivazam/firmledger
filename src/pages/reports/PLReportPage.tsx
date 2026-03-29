@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField, Divider } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField, Divider, Menu, MenuItem, Stack } from '@mui/material';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
@@ -7,12 +7,11 @@ import { TransactionType } from '../../config/constants';
 import { usePartyStore } from '../../stores/partyStore';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { usePDF } from '../../hooks/usePDF';
 import ReportPDF from '../../components/pdf/ReportPDF';
 import { ReportExportService } from '../../utils/reportExport';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Stack } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import ShareIcon from '@mui/icons-material/Share';
 
 export default function PLReportPage() {
     const { transactions } = useTransactionStore();
@@ -21,6 +20,10 @@ export default function PLReportPage() {
     const navigate = useNavigate();
     const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
+    
+    const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
+    const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
+    const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
 
     const filtered = transactions.filter(tx => {
         const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
@@ -63,57 +66,69 @@ export default function PLReportPage() {
 
     const netProfit = grossProfit + indirectIncome - expenses;
 
+    const handleExportPdf = async (isShare: boolean = false) => {
+        const blob = await generatePDFBlob(
+            <ReportPDF 
+                title="Profit & Loss Account" 
+                subtitle={`${fromDate} to ${toDate}`}
+                headers={['Particulars (Dr)', 'Amount (Dr)', 'Particulars (Cr)', 'Amount (Cr)']}
+                rows={[
+                    ['To Indirect Expenses', (expenses / 100).toFixed(2), 'By Gross Profit b/f', (grossProfit / 100).toFixed(2)],
+                    ['', '', 'By Other Income', (indirectIncome / 100).toFixed(2)],
+                    ['Net Profit', (netProfit / 100).toFixed(2), '', '']
+                ]}
+                organization={currentOrganization}
+            />
+        );
+        
+        const filename = `Profit_Loss_${new Date().getTime()}.pdf`;
+        if (isShare) {
+            await sharePDF(blob, filename);
+        } else {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    const handleExportExcel = (isShare: boolean = false) => {
+        const headers = ['Particulars_Debit', 'Amount_Dr', 'Particulars_Credit', 'Amount_Cr'];
+        const csvData = [
+            { Particulars_Debit: 'To Indirect Expenses', Amount_Dr: (expenses / 100).toFixed(2), Particulars_Credit: 'By Gross Profit b/f', Amount_Cr: (grossProfit / 100).toFixed(2) },
+            { Particulars_Debit: '', Amount_Dr: '', Particulars_Credit: 'By Other Income', Amount_Cr: (indirectIncome / 100).toFixed(2) },
+            { Particulars_Debit: 'Net Profit', Amount_Dr: (netProfit / 100).toFixed(2), Particulars_Credit: '', Amount_Cr: '' }
+        ];
+        ReportExportService.exportToCSV('Profit_Loss', csvData, headers, isShare);
+    };
+
     return (
         <Box p={2}>
             <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h5" fontWeight="bold">Profit & Loss Account</Typography>
                 <Stack direction="row" spacing={1}>
-                    <Button
+                    <Button 
+                        variant="outlined" 
                         size="small"
-                        variant="outlined"
-                        startIcon={<FileDownloadIcon />}
-                        onClick={() => {
-                            const headers = ['Particulars_Debit', 'Amount_Dr', 'Particulars_Credit', 'Amount_Cr'];
-                            const rows = [
-                                { Particulars_Debit: 'To Indirect Expenses', Amount_Dr: (expenses / 100).toFixed(2), Particulars_Credit: 'By Gross Profit b/f', Amount_Cr: (grossProfit / 100).toFixed(2) },
-                                { Particulars_Debit: '', Amount_Dr: '', Particulars_Credit: 'By Other Income', Amount_Cr: (indirectIncome / 100).toFixed(2) },
-                                { Particulars_Debit: 'Net Profit', Amount_Dr: (netProfit / 100).toFixed(2), Particulars_Credit: '', Amount_Cr: '' }
-                            ];
-                            ReportExportService.exportToCSV('Profit_Loss_Report', rows, headers);
-                        }}
+                        startIcon={<DownloadIcon />}
+                        onClick={(e) => setDownloadAnchor(e.currentTarget)}
+                        disabled={isGenerating}
                     >
-                        Excel (CSV)
+                        Download
                     </Button>
-                    <PDFDownloadLink
-                        document={
-                            <ReportPDF 
-                                title="Profit & Loss Account" 
-                                subtitle={`${fromDate} to ${toDate}`}
-                                headers={['Particulars (Dr)', 'Amount (Dr)', 'Particulars (Cr)', 'Amount (Cr)']}
-                                rows={[
-                                    ['To Indirect Expenses', (expenses / 100).toFixed(2), 'By Gross Profit b/f', (grossProfit / 100).toFixed(2)],
-                                    ['', '', 'By Other Income', (indirectIncome / 100).toFixed(2)],
-                                    ['Net Profit', (netProfit / 100).toFixed(2), '', '']
-                                ]}
-                                organization={currentOrganization}
-                            />
-                        }
-                        fileName="Profit_Loss_Report.pdf"
-                        style={{ textDecoration: 'none' }}
+                    <Button 
+                        variant="outlined" 
+                        size="small"
+                        color="secondary"
+                        startIcon={<ShareIcon />}
+                        onClick={(e) => setShareAnchor(e.currentTarget)}
+                        disabled={isGenerating}
                     >
-                        {({ loading }) => (
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                color="error"
-                                startIcon={<PictureAsPdfIcon />}
-                                disabled={loading}
-                            >
-                                {loading ? '...' : 'PDF'}
-                            </Button>
-                        )}
-                    </PDFDownloadLink>
+                        Share
+                    </Button>
                 </Stack>
             </Box>
 
@@ -181,6 +196,24 @@ export default function PLReportPage() {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            <Menu
+                anchorEl={downloadAnchor}
+                open={Boolean(downloadAnchor)}
+                onClose={() => setDownloadAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(); setDownloadAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPdf(); setDownloadAnchor(null); }}>PDF</MenuItem>
+            </Menu>
+
+            <Menu
+                anchorEl={shareAnchor}
+                open={Boolean(shareAnchor)}
+                onClose={() => setShareAnchor(null)}
+            >
+                <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
+                <MenuItem onClick={() => { handleExportPdf(true); setShareAnchor(null); }}>PDF</MenuItem>
+            </Menu>
         </Box>
     );
 }

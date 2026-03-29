@@ -1,4 +1,4 @@
-import { doc, getDocs, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, getDocs, updateDoc, collection, serverTimestamp, query, where } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Organization, OrganizationStatus  } from '../types/organization.types';
 
@@ -7,20 +7,12 @@ export const AdminService = {
         const snap = await getDocs(collection(db, 'organizations'));
         const orgs = snap.docs.map(doc => doc.data() as Organization);
         
-        // Fetch all user profiles to determine roles accurately
-        const usersSnap = await getDocs(collection(db, 'users'));
-        const userRoles = new Map<string, string>();
-        usersSnap.forEach(doc => {
-            userRoles.set(doc.id, doc.data().userType);
-        });
+        // Efficiently fetch ONLY admin/super-admin users to catch legacy organizations mapping
+        const q = query(collection(db, 'users'), where('userType', 'in', ['admin', 'super-admin']));
+        const adminsSnap = await getDocs(q);
+        const adminUserIds = new Set(adminsSnap.docs.map(d => d.id));
 
-        // Filter out any organization where the owner is an admin or super-admin
-        return orgs.filter(org => {
-            if (org.isOwnerAdmin === true) return false;
-            const role = userRoles.get(org.ownerId);
-            if (role === 'admin' || role === 'super-admin') return false;
-            return true;
-        });
+        return orgs.filter(org => org.isOwnerAdmin !== true && !adminUserIds.has(org.ownerId));
     },
 
     async updateOrganizationStatus(orgId: string, status: OrganizationStatus, adminId: string) {

@@ -5,6 +5,8 @@ import theme from './config/theme';
 import { router } from './router';
 import { useAuthStore } from './stores/authStore';
 import { useOrganizationStore } from './stores/organizationStore';
+import { usePartyStore } from './stores/partyStore';
+import { useTransactionStore } from './stores/transactionStore';
 
 import SplashScreen from './components/common/SplashScreen';
 import AutoUpdater from './components/common/AutoUpdater';
@@ -29,6 +31,16 @@ function App() {
       return () => unsub();
     }
   }, [profile?.organizationId, subscribeToOrganization]);
+  
+  const { fetchParties } = usePartyStore();
+  const { fetchTransactions } = useTransactionStore();
+  
+  useEffect(() => {
+      if (profile?.organizationId) {
+          fetchParties(profile.organizationId);
+          fetchTransactions(profile.organizationId);
+      }
+  }, [profile?.organizationId, fetchParties, fetchTransactions]);
 
   useEffect(() => {
     const backfillSystemParties = async () => {
