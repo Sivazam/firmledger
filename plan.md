@@ -3,7 +3,7 @@
 ## TL;DR
 A mobile-first PWA for Indian firms to record financial transactions (Receipts, Payments, Journal, Sales, Purchase, Sales Return, Purchase Return) between parties, with admin-managed multi-tenant firm isolation, PDF receipt sharing, and accounting reports. Built with **React + Vite + TypeScript**, **MUI (Material UI)** for native mobile feel, **Zustand** for state, **Firebase** (Auth, Firestore, Storage) for backend, hosted on **Vercel**.
 
----
+
 
 ## Tech Stack Decisions
 
