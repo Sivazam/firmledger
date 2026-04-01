@@ -21,6 +21,8 @@ export default function TradingReportPage() {
     const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
     const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
     const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
+    const [closingStock, setClosingStock] = useState<number | null>(null);
+    const [closingStockInput, setClosingStockInput] = useState<string>('');
 
     const filtered = transactions.filter(tx => {
         const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
@@ -35,7 +37,7 @@ export default function TradingReportPage() {
 
     const netSales = sales - salesReturn;
     const netPurchases = purchases - purchaseReturn;
-    const grossProfit = netSales - netPurchases;
+    const grossProfit = netSales + (closingStock || 0) - netPurchases;
 
     const handleExportPdf = async (isShare: boolean = false) => {
         const blob = await generatePDFBlob(
@@ -47,6 +49,7 @@ export default function TradingReportPage() {
                     ['To Purchases', (purchases / 100).toFixed(2), 'By Sales', (sales / 100).toFixed(2)],
                     ['Less: Purchase Return', (purchaseReturn / 100).toFixed(2), 'Less: Sales Return', (salesReturn / 100).toFixed(2)],
                     ['Net Purchases', (netPurchases / 100).toFixed(2), 'Net Sales', (netSales / 100).toFixed(2)],
+                    ['', '', 'By Closing Stock', ((closingStock || 0) / 100).toFixed(2)],
                     ['Gross Profit c/o', (grossProfit / 100).toFixed(2), '', '']
                 ]}
                 organization={currentOrganization}
@@ -72,10 +75,41 @@ export default function TradingReportPage() {
             { Debit_Particulars: 'To Purchases', Debit_Amount: (purchases / 100).toFixed(2), Credit_Particulars: 'By Sales', Credit_Amount: (sales / 100).toFixed(2) },
             { Debit_Particulars: 'Less: Purchase Return', Debit_Amount: (purchaseReturn / 100).toFixed(2), Credit_Particulars: 'Less: Sales Return', Credit_Amount: (salesReturn / 100).toFixed(2) },
             { Debit_Particulars: 'Net Purchases', Debit_Amount: (netPurchases / 100).toFixed(2), Credit_Particulars: 'Net Sales', Credit_Amount: (netSales / 100).toFixed(2) },
+            { Debit_Particulars: '', Debit_Amount: '', Credit_Particulars: 'By Closing Stock', Credit_Amount: ((closingStock || 0) / 100).toFixed(2) },
             { Debit_Particulars: 'Gross Profit c/o', Debit_Amount: (grossProfit / 100).toFixed(2), Credit_Particulars: '', Credit_Amount: '' }
         ];
         ReportExportService.exportToCSV('Trading_Account', csvData, headers, isShare);
     };
+
+    if (closingStock === null) {
+        return (
+            <Box p={3} maxWidth={400} mx="auto" mt={5}>
+                <Typography variant="h5" mb={2}>Closing Stock</Typography>
+                <Typography variant="body2" color="text.secondary" mb={3}>
+                    Please enter the closing stock value to generate the Trading Account report.
+                </Typography>
+                <TextField
+                    fullWidth
+                    label="Closing Stock Value (₹)"
+                    type="number"
+                    inputProps={{ min: "0", inputMode: "numeric", pattern: "[0-9]*" }}
+                    value={closingStockInput}
+                    onChange={e => setClosingStockInput(e.target.value)}
+                    autoFocus
+                />
+                <Stack direction="row" spacing={2} mt={3}>
+                    <Button variant="outlined" onClick={() => navigate(-1)} fullWidth>Go Back</Button>
+                    <Button 
+                        variant="contained" 
+                        onClick={() => setClosingStock(Math.round(Number(closingStockInput) * 100) || 0)} 
+                        fullWidth
+                    >
+                        View Report
+                    </Button>
+                </Stack>
+            </Box>
+        );
+    }
 
     return (
         <Box p={2}>
@@ -160,6 +194,12 @@ export default function TradingReportPage() {
                             <TableCell align="right" sx={{ fontWeight: 'bold' }}>{(netPurchases / 100).toFixed(2)}</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Net Sales</TableCell>
                             <TableCell align="right" sx={{ fontWeight: 'bold' }}>{(netSales / 100).toFixed(2)}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>By Closing Stock</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{((closingStock || 0) / 100).toFixed(2)}</TableCell>
                         </TableRow>
                         <TableRow sx={{ bgcolor: 'action.hover' }}>
                             <TableCell sx={{ fontWeight: 'bold' }}>Gross Profit c/o</TableCell>

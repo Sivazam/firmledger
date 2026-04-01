@@ -8,8 +8,8 @@ export default function ReportsPage() {
     const reports = [
         { title: 'Ledger', description: 'Party-wise transaction ledger', path: '/reports/ledger' },
         { title: 'Trading Account', description: 'Gross profit/loss calculation', path: '/reports/trading' },
-        { title: 'Profit & Loss', description: 'Net profit/loss calculation', path: '/reports/pl' },
-        { title: 'Balance Sheet', description: 'Overall summary of all parties', path: '/reports/balance-sheet' },
+        // { title: 'Profit & Loss', description: 'Net profit/loss calculation', path: '/reports/pl' },
+        // { title: 'Balance Sheet', description: 'Overall summary of all parties', path: '/reports/balance-sheet' },
         { title: 'Trial Balance', description: 'View current balances of all parties', path: '/reports/trial-balance' },
         { title: 'Monthly Report', description: 'Month-wise aggregation', path: '/reports/monthly' },
         { title: 'Audit Checklist', description: 'Transaction counts and totals', path: '/reports/checklist' },
