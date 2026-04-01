@@ -56,7 +56,8 @@ export default function RecordTransactionPage() {
                 date: Timestamp.fromDate(data.date),
                 fromPartyName,
                 toPartyName,
-                createdBy: profile.uid
+                createdBy: profile.uid,
+                createdBy_name: profile.displayName
             });
 
             addTransactionLocal(newTx);

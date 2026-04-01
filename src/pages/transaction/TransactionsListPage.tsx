@@ -21,12 +21,15 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import ShareIcon from '@mui/icons-material/Share';
 import { formatINR } from '../../utils/formatters';
+import { Chip } from '@mui/material';
 
 export default function TransactionsListPage() {
     const { transactions, fetchTransactions, loading, initialized } = useTransactionStore();
     const { profile } = useAuthStore();
-    const { currentOrganization } = useOrganizationStore();
+    const { currentOrganization, orgMemberCount } = useOrganizationStore();
     const { sharePDF } = usePDF();
+    // Show attribution only when the org has more than 1 approved member
+    const isMultiUser = orgMemberCount > 1;
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('');
     const [fromDate, setFromDate] = useState(dayjs.tz().startOf('month').format('YYYY-MM-DD'));
@@ -63,18 +66,21 @@ export default function TransactionsListPage() {
     const handleExportExcel = async (isShare: boolean = false) => {
         if (filteredTransactions.length === 0) return;
         
-        const headers = ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
+        const headers = isMultiUser
+            ? ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Created By', 'Amount', 'Description']
+            : ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
         const rows = filteredTransactions.map(tx => {
             const date = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY');
-            return [
+            const base = [
                 tx.slNo,
                 date,
                 TRANSACTION_TYPE_LABELS[tx.type] || tx.type,
                 tx.fromPartyName,
                 tx.toPartyName,
-                tx.amount / 100,
-                tx.description.replace(/,/g, ' ') // Simple CSV escape
             ];
+            if (isMultiUser) base.push(tx.createdBy_name || '-');
+            base.push(tx.amount / 100, tx.description.replace(/,/g, ' '));
+            return base;
         });
 
         const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
@@ -111,6 +117,7 @@ export default function TransactionsListPage() {
                     transactions={filteredTransactions} 
                     organization={currentOrganization}
                     dateRange={dateRange}
+                    isMultiUser={isMultiUser}
                 />
             );
             const blob = await pdf(docText).toBlob();
@@ -197,6 +204,7 @@ export default function TransactionsListPage() {
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Type</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>From Party</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>To Party</TableCell>
+                                {isMultiUser && <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Created By</TableCell>}
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }} align="right">Amount</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Description</TableCell>
                             </TableRow>
@@ -213,6 +221,19 @@ export default function TransactionsListPage() {
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{TRANSACTION_TYPE_LABELS[tx.type] || tx.type}</TableCell>
                                     <TableCell sx={{ minWidth: 150 }}>{tx.fromPartyName}</TableCell>
                                     <TableCell sx={{ minWidth: 150 }}>{tx.toPartyName}</TableCell>
+                                    {isMultiUser && (
+                                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                            {tx.createdBy_name ? (
+                                                <Chip 
+                                                    label={tx.createdBy_name} 
+                                                    size="small" 
+                                                    variant="outlined" 
+                                                    color={tx.createdBy === currentOrganization?.ownerId ? "primary" : "secondary"}
+                                                    sx={{ fontWeight: 600 }}
+                                                />
+                                            ) : '-'}
+                                        </TableCell>
+                                    )}
                                     <TableCell align="right" sx={{ fontWeight: 'bold' }}>{formatINR(tx.amount)}</TableCell>
                                     <TableCell sx={{ minWidth: 200 }}>{tx.description}</TableCell>
                                 </TableRow>
@@ -221,7 +242,14 @@ export default function TransactionsListPage() {
                     </Table>
                 </TableContainer>
             ) : filteredTransactions.length > 0 ? (
-                filteredTransactions.map(tx => <TransactionCard key={tx.id} tx={tx} />)
+                filteredTransactions.map(tx => (
+                    <TransactionCard 
+                        key={tx.id} 
+                        tx={tx} 
+                        isMultiUser={isMultiUser} 
+                        ownerId={currentOrganization?.ownerId} 
+                    />
+                ))
             ) : (
                 <Typography textAlign="center" color="text.secondary" mt={4}>
                     No transactions found.

@@ -52,7 +52,10 @@ export default function EditTransactionPage() {
                 ...data,
                 date: Timestamp.fromDate(data.date),
                 fromPartyName,
-                toPartyName
+                toPartyName,
+                // Preserve original creator — edits do NOT change who first recorded the transaction
+                createdBy: transaction.createdBy,
+                createdBy_name: transaction.createdBy_name,
             };
 
             await TransactionService.updateTransaction(profile.organizationId, transaction.id, updateData);

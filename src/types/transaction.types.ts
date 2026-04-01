@@ -13,6 +13,7 @@ export interface Transaction {
     description: string;
     amount: number; // in paisa
     createdBy: string;
+    createdBy_name?: string;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 }

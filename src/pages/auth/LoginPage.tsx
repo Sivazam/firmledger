@@ -29,6 +29,7 @@ export default function LoginPage() {
             let emailToUse = cleanIdentifier;
             // If no @ symbol, assume it's a username
             if (!cleanIdentifier.includes('@')) {
+                console.log(`[LoginPage] Attempting username lookup for: "${cleanIdentifier.toLowerCase()}"`);
                 emailToUse = await AuthService.getEmailFromUsername(cleanIdentifier.toLowerCase());
             }
 

@@ -11,6 +11,7 @@ export interface UserProfile {
     city: string;
     pincode: string;
     userType: UserType;
+    status?: 'pending' | 'approved' | 'denied';
     organizationId: string | null;
     profileComplete: boolean;
     createdAt: Timestamp;

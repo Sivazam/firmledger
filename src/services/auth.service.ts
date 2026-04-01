@@ -32,9 +32,11 @@ export const AuthService = {
 
     async getEmailFromUsername(username: string): Promise<string> {
         const cleanUsername = username.trim().toLowerCase();
+        console.log(`[AuthService] Looking up email for username: "${cleanUsername}"`);
         const userDoc = doc(db, 'usernames', cleanUsername);
         const snap = await getDoc(userDoc);
         if (!snap.exists()) {
+            console.error(`[AuthService] Username NOT FOUND: "${cleanUsername}"`);
             throw new Error('Username not found.');
         }
         return snap.data().email;

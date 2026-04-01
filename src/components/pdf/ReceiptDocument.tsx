@@ -108,7 +108,13 @@ export default function ReceiptDocument({ transaction, organization }: Props) {
                 </View>
 
                 <View style={styles.footer}>
-                    <View />
+                    <View>
+                        {transaction.createdBy_name && (
+                            <Text style={{ fontSize: 8, color: '#777', marginTop: 10 }}>
+                                Recorded by: {transaction.createdBy_name}
+                            </Text>
+                        )}
+                    </View>
                     <View style={styles.signBox}>
                         <Text style={{ fontSize: 10 }}>Authorized Signatory</Text>
                     </View>

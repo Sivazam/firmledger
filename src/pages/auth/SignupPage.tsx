@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, TextField, Typography, Box, Link as MuiLink, Alert } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { AuthService } from '../../services/auth.service';
@@ -10,6 +10,7 @@ import { InputAdornment, IconButton } from '@mui/material';
 
 export default function SignupPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -46,7 +47,8 @@ export default function SignupPage() {
             await AuthService.registerWithUsername(cleanUsername, cleanEmail, uid);
 
             // Navigate to profile setup
-            navigate('/setup-profile');
+            const inviteCode = searchParams.get('invite');
+            navigate(`/setup-profile${inviteCode ? `?invite=${inviteCode}` : ''}`);
         } catch (err: any) {
             console.error(err);
             let message = err.message || 'Failed to create account';

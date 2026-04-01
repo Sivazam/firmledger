@@ -21,6 +21,7 @@ import PendingApprovalPage from './pages/onboarding/PendingApprovalPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import FirmManagementPage from './pages/admin/FirmManagementPage';
 import FirmDetailPage from './pages/admin/FirmDetailPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
 const lazyWithRetry = (componentImport: () => Promise<any>) =>
     lazy(async () => {
         const pageHasAlreadyBeenForceRefreshed = JSON.parse(
@@ -66,6 +67,7 @@ const TrialBalancePage = lazyWithRetry(() => import('./pages/reports/TrialBalanc
 const SettingsPage = lazyWithRetry(() => import('./pages/settings/SettingsPage'));
 const PersonalDetailsPage = lazyWithRetry(() => import('./pages/settings/PersonalDetailsPage'));
 const OrganizationDetailsPage = lazyWithRetry(() => import('./pages/settings/OrganizationDetailsPage'));
+const ManageMembersPage = lazyWithRetry(() => import('./pages/settings/ManageMembersPage'));
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
     <Suspense fallback={<Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>}>
@@ -84,6 +86,12 @@ const HomeRedirect = () => {
 
     if (profile?.userType === 'admin') return <Navigate to="/admin/dashboard" replace />;
     if (profile?.userType === 'super-admin') return <Navigate to="/super-admin" replace />;
+    
+    // Efficiency: Bypass /dashboard hop and go straight to pending screen
+    if (profile?.status === 'pending' || profile?.status === 'denied') {
+        return <Navigate to="/pending-approval" replace />;
+    }
+
     return <Navigate to="/dashboard" replace />;
 };
 
@@ -121,6 +129,7 @@ export const router = createBrowserRouter([
                                     { path: '/admin/dashboard', element: <AdminDashboardPage /> },
                                     { path: '/admin/organizations', element: <FirmManagementPage /> },
                                     { path: '/admin/organizations/:id', element: <FirmDetailPage /> },
+                                    { path: '/admin/users', element: <SuspenseWrapper><UserManagementPage /></SuspenseWrapper> },
                                 ]
                             },
                             {
@@ -158,6 +167,7 @@ export const router = createBrowserRouter([
                             { path: '/settings', element: <SuspenseWrapper><SettingsPage /></SuspenseWrapper> },
                             { path: '/settings/personal', element: <SuspenseWrapper><PersonalDetailsPage /></SuspenseWrapper> },
                             { path: '/settings/organization', element: <SuspenseWrapper><OrganizationDetailsPage /></SuspenseWrapper> },
+                            { path: '/settings/members', element: <SuspenseWrapper><ManageMembersPage /></SuspenseWrapper> },
                         ]
                     }
                 ]

@@ -42,7 +42,8 @@ export default function TrialBalancePage() {
         }
 
         return targetParties.map(party => {
-            let opening = party.balanceType === 'Debit' ? (party.openingBalance || 0) : -(party.openingBalance || 0);
+            // Static Opening Balance from Profile
+            const staticOpening = party.balanceType === 'Debit' ? (party.openingBalance || 0) : -(party.openingBalance || 0);
             
             let periodDebit = 0;
             let periodCredit = 0;
@@ -54,10 +55,8 @@ export default function TrialBalancePage() {
                 
                 const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
                 
-                if (txDate.isBefore(start)) {
-                    if (isTo) opening += tx.amount;
-                    if (isFrom) opening -= tx.amount;
-                } else if (!txDate.isBefore(start) && !txDate.isAfter(end)) {
+                // Track movements strictly within the selected range
+                if ((txDate.isSame(start, 'day') || txDate.isAfter(start)) && !txDate.isAfter(end)) {
                     if (isTo) periodDebit += tx.amount;
                     if (isFrom) periodCredit += tx.amount;
                 }
@@ -68,10 +67,10 @@ export default function TrialBalancePage() {
                 code: party.code,
                 name: party.name,
                 category: party.category,
-                openingBalance: opening,
+                openingBalance: staticOpening,
                 debit: periodDebit,
                 credit: periodCredit,
-                closingBalance: opening + periodDebit - periodCredit
+                closingBalance: staticOpening + periodDebit - periodCredit
             };
         }).sort((a, b) => a.name.localeCompare(b.name));
     }, [parties, transactions, fromDate, toDate, selectedCategory]);
@@ -117,11 +116,13 @@ export default function TrialBalancePage() {
                 party_code: e.code,
                 party_name: e.name,
                 category: e.category,
-                opening_balance: e.openingBalance !== 0 ? (Math.abs(e.openingBalance) / 100) + (e.openingBalance > 0 ? ' Dr' : ' Cr') : ''
+                opening_balance: e.openingBalance !== 0 
+                    ? (Math.abs(e.openingBalance) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 }) + (e.openingBalance > 0 ? ' Dr' : ' Cr') 
+                    : '0.00'
             };
             if (SHOW_TOTAL_ACTIVITY) {
-                row.total_debit = e.debit > 0 ? e.debit / 100 : '';
-                row.total_credit = e.credit > 0 ? e.credit / 100 : '';
+                row.total_debit = e.debit > 0 ? e.debit / 100 : 0;
+                row.total_credit = e.credit > 0 ? e.credit / 100 : 0;
             }
             row.debit = e.closingBalance > 0 ? e.closingBalance / 100 : '';
             row.credit = e.closingBalance < 0 ? Math.abs(e.closingBalance) / 100 : '';
@@ -130,7 +131,9 @@ export default function TrialBalancePage() {
         
         const totalsRow: any = {
             party_code: '', party_name: 'TOTALS', category: '',
-            opening_balance: totalOpening !== 0 ? (Math.abs(totalOpening) / 100) + (totalOpening > 0 ? ' Dr' : ' Cr') : ''
+            opening_balance: totalOpening !== 0 
+                ? (Math.abs(totalOpening) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 }) + (totalOpening > 0 ? ' Dr' : ' Cr') 
+                : '0.00'
         };
         if (SHOW_TOTAL_ACTIVITY) {
             totalsRow.total_debit = totalDebit / 100;
@@ -218,14 +221,17 @@ export default function TrialBalancePage() {
                                 <TableCell>{entry.name}</TableCell>
                                 <TableCell>{entry.category}</TableCell>
                                 <TableCell align="right">
-                                    {entry.openingBalance !== 0 && (
-                                        <Box display="inline-flex" alignItems="center" gap={0.5}>
-                                            <AmountDisplay amount={Math.abs(entry.openingBalance)} color={entry.openingBalance > 0 ? 'success.main' : 'error.main'} />
+                                    <Box display="inline-flex" alignItems="center" gap={0.5}>
+                                        <AmountDisplay 
+                                            amount={Math.abs(entry.openingBalance)} 
+                                            color={entry.openingBalance === 0 ? 'text.secondary' : (entry.openingBalance > 0 ? 'success.main' : 'error.main')} 
+                                        />
+                                        {entry.openingBalance !== 0 && (
                                             <Typography component="span" variant="body2" color={entry.openingBalance > 0 ? 'success.main' : 'error.main'}>
                                                 {entry.openingBalance > 0 ? 'Dr' : 'Cr'}
                                             </Typography>
-                                        </Box>
-                                    )}
+                                        )}
+                                    </Box>
                                 </TableCell>
                                 {SHOW_TOTAL_ACTIVITY && (
                                     <>
@@ -249,14 +255,19 @@ export default function TrialBalancePage() {
                             <TableRow sx={{ backgroundColor: 'action.hover' }}>
                                 <TableCell colSpan={3} align="right"><strong>Totals:</strong></TableCell>
                                 <TableCell align="right">
-                                    {totalOpening !== 0 && (
-                                        <Box display="inline-flex" alignItems="center" gap={0.5}>
-                                            <strong><AmountDisplay amount={Math.abs(totalOpening)} color={totalOpening > 0 ? 'success.main' : 'error.main'} /></strong>
+                                    <Box display="inline-flex" alignItems="center" gap={0.5}>
+                                        <strong>
+                                            <AmountDisplay 
+                                                amount={Math.abs(totalOpening)} 
+                                                color={totalOpening === 0 ? 'text.primary' : (totalOpening > 0 ? 'success.main' : 'error.main')} 
+                                            />
+                                        </strong>
+                                        {totalOpening !== 0 && (
                                             <Typography component="span" variant="body2" color={totalOpening > 0 ? 'success.main' : 'error.main'} sx={{ fontWeight: 'bold' }}>
                                                 {totalOpening > 0 ? 'Dr' : 'Cr'}
                                             </Typography>
-                                        </Box>
-                                    )}
+                                        )}
+                                    </Box>
                                 </TableCell>
                                 {SHOW_TOTAL_ACTIVITY && (
                                     <>

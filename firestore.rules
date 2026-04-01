@@ -2,49 +2,64 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // --- Core Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // A Global Admin is someone with 'admin' or 'super-admin' userType
+    function isGlobalAdmin() {
+      return isSignedIn() && (getUserData().userType == 'admin' || getUserData().userType == 'super-admin');
+    }
+
+    function isMemberOf(orgId) {
+      return isSignedIn() && (getUserData().status == 'approved') && getUserData().organizationId == orgId;
+    }
+
+    // --- User Management Rules ---
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow read, update: if isSuperAdmin();
-      allow read: if isAdmin();
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      
+      // Allow approved members to see others in the same firm (for Name Chips)
+      allow read: if isMemberOf(resource.data.organizationId);
+
+      // Global Admins can read and update ALL users for approval/management
+      allow read, update: if isGlobalAdmin();
     }
 
     match /usernames/{username} {
       allow read: if true;
-      allow create: if request.auth != null && !exists(/databases/$(database)/documents/usernames/$(username));
+      allow create: if isSignedIn() && !exists(/databases/$(database)/documents/usernames/$(username));
     }
 
+    // --- Organization Data Rules ---
     match /organizations/{orgId} {
-      allow read: if request.auth != null && (resource.data.ownerId == request.auth.uid || isAdmin() || isSuperAdmin());
-      allow create: if request.auth != null && orgId == request.auth.uid && request.resource.data.ownerId == request.auth.uid;
-      allow update: if request.auth != null && (resource.data.ownerId == request.auth.uid || isAdmin());
+      // Global Admins can see all organizations. 
+      // Members can only see their own organization.
+      allow read: if isGlobalAdmin() || isMemberOf(orgId);
+      
+      allow create: if isSignedIn() && orgId == request.auth.uid;
+      
+      // Global Admins can update any organization status. 
+      // Owners can update their own settings.
+      allow update: if isGlobalAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
 
+      // Shared access for Parties, Transactions, and Counters
       match /parties/{partyId} {
-        allow read, write: if request.auth != null && getOrg(orgId).ownerId == request.auth.uid;
-        allow read: if isAdmin();
+        allow read, write: if isGlobalAdmin() || isMemberOf(orgId);
       }
 
       match /transactions/{transactionId} {
-        allow read, write: if request.auth != null && getOrg(orgId).ownerId == request.auth.uid;
-        allow read: if isAdmin();
+        allow read, write: if isGlobalAdmin() || isMemberOf(orgId);
       }
     }
 
     match /counters/{orgId} {
-      allow read, write: if request.auth != null && getOrg(orgId).ownerId == request.auth.uid;
-    }
-
-    function isAdmin() {
-      return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
-    }
-
-    function isSuperAdmin() {
-      return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'super-admin';
-    }
-
-    function getOrg(orgId) {
-      return get(/databases/$(database)/documents/organizations/$(orgId)).data;
+      allow read, write: if isGlobalAdmin() || isMemberOf(orgId);
     }
   }
 }

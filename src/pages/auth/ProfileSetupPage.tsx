@@ -3,10 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, TextField, Typography, Box, Alert, CircularProgress } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { AuthService } from '../../services/auth.service';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 
 const profileSchema = z.object({
     displayName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -20,10 +22,23 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfileSetupPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const inviteCode = searchParams.get('invite');
+    const [invitedOrgName, setInvitedOrgName] = useState<string | null>(null);
+
     const { user, profile, setProfile, loading } = useAuthStore();
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
+
+    React.useEffect(() => {
+        if (inviteCode) {
+            getDoc(doc(db, 'organizations', inviteCode)).then(snap => {
+                if (snap.exists()) setInvitedOrgName(snap.data().orgName);
+                else setInvitedOrgName('Unknown Organization');
+            }).catch(console.error);
+        }
+    }, [inviteCode]);
 
     if (loading) {
         return (
@@ -56,7 +71,8 @@ export default function ProfileSetupPage() {
                 ...data,
                 email: user.email || '',
                 userType: 'user' as const,
-                organizationId: null,
+                organizationId: inviteCode || null,
+                status: (inviteCode ? 'pending' : 'approved') as 'pending' | 'approved',
                 profileComplete: true
             };
 
@@ -66,8 +82,12 @@ export default function ProfileSetupPage() {
             const newProfile = await AuthService.getUserProfile(user.uid);
             setProfile(newProfile);
 
-            // Navigate to org setup
-            navigate('/setup-organization');
+            if (inviteCode) {
+                // Sent to approval screen immediately
+                navigate('/pending-approval');
+            } else {
+                navigate('/setup-organization');
+            }
         } catch (error) {
             console.error(error);
             setDialogConfig({
@@ -86,6 +106,13 @@ export default function ProfileSetupPage() {
             <Typography variant="body2" textAlign="center" color="text.secondary" mb={2}>
                 Please provide your personal details to continue.
             </Typography>
+
+            {inviteCode && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                    You have been invited to join <strong>{invitedOrgName || 'this organization'}</strong>. 
+                    Completing your profile will send an approval request to the system administrator.
+                </Alert>
+            )}
 
             <TextField
                 label="Full Name"

@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getCountFromServer, onSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import type { Organization } from '../types/organization.types';
@@ -63,5 +63,33 @@ export const OrganizationService = {
         const storageRef = ref(storage, `logos/${orgId}/${file.name}`);
         await uploadBytes(storageRef, file);
         return getDownloadURL(storageRef);
+    },
+
+    /**
+     * Returns how many users (active or deactivated) belong to this org.
+     * If > 1, the UI shows attribution chips on transactions.
+     */
+    async getOrgMemberCount(orgId: string): Promise<number> {
+        const q = query(
+            collection(db, 'users'),
+            where('organizationId', '==', orgId),
+            where('status', '==', 'approved')
+        );
+        const snap = await getCountFromServer(q);
+        return snap.data().count;
+    },
+
+    /**
+     * Listens for changes in the organization's approved member list.
+     */
+    subscribeToOrgMembers(orgId: string, callback: (count: number) => void): () => void {
+        const q = query(
+            collection(db, 'users'),
+            where('organizationId', '==', orgId),
+            where('status', '==', 'approved')
+        );
+        return onSnapshot(q, (snap) => {
+            callback(snap.size);
+        });
     }
 };

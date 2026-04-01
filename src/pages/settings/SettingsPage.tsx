@@ -5,6 +5,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import GroupIcon from '@mui/icons-material/Group';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../../services/auth.service';
 import { useAuthStore } from '../../stores/authStore';
@@ -17,6 +18,8 @@ export default function SettingsPage() {
     const { currentOrganization } = useOrganizationStore();
     const isActuallyAdmin = profile?.userType === 'admin';
     const showAdminSettings = isActuallyAdmin;
+    // Only the org owner can manage team members (invited staff cannot manage other members)
+    const isOrgOwner = !isActuallyAdmin && profile?.uid === currentOrganization?.ownerId;
 
     const handleLogout = async () => {
         await AuthService.logout();
@@ -49,6 +52,17 @@ export default function SettingsPage() {
                         <ListItem component="button" onClick={() => navigate('/settings/organization')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
                             <ListItemIcon><BusinessIcon /></ListItemIcon>
                             <ListItemText primary="Organization Details" secondary="Update firm address, logo and GST" />
+                        </ListItem>
+                        <Divider />
+                    </>
+                )}
+
+                {/* Team Members — owner only, not shown to invited members */}
+                {isOrgOwner && (
+                    <>
+                        <ListItem component="button" onClick={() => navigate('/settings/members')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
+                            <ListItemIcon><GroupIcon color="secondary" /></ListItemIcon>
+                            <ListItemText primary="Team Members" secondary="View, deactivate or reactivate your invited staff" />
                         </ListItem>
                         <Divider />
                     </>

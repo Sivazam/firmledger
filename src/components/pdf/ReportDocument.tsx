@@ -29,7 +29,25 @@ const styles = StyleSheet.create({
     amountText: { textAlign: 'right', fontWeight: 'bold' }
 });
 
-export default function ReportDocument({ title, transactions, organization, dateRange }: { title: string, transactions: any[], organization: Organization | null, dateRange?: string }) {
+export default function ReportDocument({ 
+    title, transactions, organization, dateRange, isMultiUser = false 
+}: { 
+    title: string, 
+    transactions: any[], 
+    organization: Organization | null, 
+    dateRange?: string,
+    isMultiUser?: boolean
+}) {
+    // Dynamic column widths
+    const colNo = '8%';
+    const colDate = '10%';
+    const colType = '10%';
+    const colFrom = isMultiUser ? '15%' : '18%';
+    const colTo = isMultiUser ? '15%' : '18%';
+    const colUser = '12%';
+    const colAmount = '10%';
+    const colDesc = isMultiUser ? '20%' : '26%';
+
     return (
         <Document>
             <Page size="A4" orientation="landscape" style={styles.page}>
@@ -43,7 +61,9 @@ export default function ReportDocument({ title, transactions, organization, date
                     <View style={styles.orgDetails}>
                         <Text style={styles.orgName}>{organization?.orgName || 'Viswa Ledger'}</Text>
                         <Text style={styles.orgAddress}>{organization?.address || ''}</Text>
-                        <Text style={styles.orgAddress}>{organization?.city && organization?.pincode ? `${organization.city} - ${organization.pincode}` : ''}</Text>
+                        <Text style={styles.orgAddress}>
+                            {organization?.city && organization?.pincode ? `${organization.city} - ${organization.pincode}` : ''}
+                        </Text>
                     </View>
                     <View style={styles.reportInfo}>
                         <Text style={styles.title}>{title}</Text>
@@ -55,30 +75,35 @@ export default function ReportDocument({ title, transactions, organization, date
                 <View style={styles.table}>
                     {/* Header */}
                     <View style={[styles.tableRow, styles.tableHeader]}>
-                        <View style={[styles.tableCell, styles.colNo]}><Text style={{ color: '#fff' }}>Txn No</Text></View>
-                        <View style={[styles.tableCell, styles.colDate]}><Text style={{ color: '#fff' }}>Date</Text></View>
-                        <View style={[styles.tableCell, styles.colType]}><Text style={{ color: '#fff' }}>Type</Text></View>
-                        <View style={[styles.tableCell, styles.colFrom]}><Text style={{ color: '#fff' }}>From Party</Text></View>
-                        <View style={[styles.tableCell, styles.colTo]}><Text style={{ color: '#fff' }}>To Party</Text></View>
-                        <View style={[styles.tableCell, styles.colAmount]}><Text style={{ color: '#fff' }}>Amount</Text></View>
-                        <View style={[styles.tableCell, styles.colDesc, styles.lastCell]}><Text style={{ color: '#fff' }}>Description</Text></View>
+                        <View style={[styles.tableCell, { width: colNo }]}><Text style={{ color: '#fff' }}>Txn No</Text></View>
+                        <View style={[styles.tableCell, { width: colDate }]}><Text style={{ color: '#fff' }}>Date</Text></View>
+                        <View style={[styles.tableCell, { width: colType }]}><Text style={{ color: '#fff' }}>Type</Text></View>
+                        <View style={[styles.tableCell, { width: colFrom }]}><Text style={{ color: '#fff' }}>From Party</Text></View>
+                        <View style={[styles.tableCell, { width: colTo }]}><Text style={{ color: '#fff' }}>To Party</Text></View>
+                        {isMultiUser && (
+                            <View style={[styles.tableCell, { width: colUser }]}><Text style={{ color: '#fff' }}>Created By</Text></View>
+                        )}
+                        <View style={[styles.tableCell, { width: colAmount }]}><Text style={{ color: '#fff' }}>Amount</Text></View>
+                        <View style={[styles.tableCell, { width: colDesc, borderRightWidth: 0 }]}><Text style={{ color: '#fff' }}>Description</Text></View>
                     </View>
                     {/* Rows */}
                     {transactions.map((tx, index) => (
                         <View key={index} style={styles.tableRow}>
-                            <View style={[styles.tableCell, styles.colNo]}><Text>{tx.slNo}</Text></View>
-                            <View style={[styles.tableCell, styles.colDate]}><Text>{tx.date ? (tx.date.toDate ? tx.date.toDate().toLocaleDateString('en-GB') : new Date(tx.date).toLocaleDateString('en-GB')) : ''}</Text></View>
-                            <View style={[styles.tableCell, styles.colType]}><Text>{TRANSACTION_TYPE_LABELS[tx.type as TransactionType] || tx.type}</Text></View>
-                            <View style={[styles.tableCell, styles.colFrom]}><Text>{tx.fromPartyName}</Text></View>
-                            <View style={[styles.tableCell, styles.colTo]}><Text>{tx.toPartyName}</Text></View>
-                            <View style={[styles.tableCell, styles.colAmount]}><Text style={styles.amountText}>{(tx.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</Text></View>
-                            <View style={[styles.tableCell, styles.colDesc, styles.lastCell]}><Text>{tx.description}</Text></View>
+                            <View style={[styles.tableCell, { width: colNo }]}><Text>{tx.slNo}</Text></View>
+                            <View style={[styles.tableCell, { width: colDate }]}><Text>{tx.date ? (tx.date.toDate ? tx.date.toDate().toLocaleDateString('en-GB') : new Date(tx.date).toLocaleDateString('en-GB')) : ''}</Text></View>
+                            <View style={[styles.tableCell, { width: colType }]}><Text>{TRANSACTION_TYPE_LABELS[tx.type as TransactionType] || tx.type}</Text></View>
+                            <View style={[styles.tableCell, { width: colFrom }]}><Text>{tx.fromPartyName}</Text></View>
+                            <View style={[styles.tableCell, { width: colTo }]}><Text>{tx.toPartyName}</Text></View>
+                            {isMultiUser && (
+                                <View style={[styles.tableCell, { width: colUser }]}><Text>{tx.createdBy_name || '-'}</Text></View>
+                            )}
+                            <View style={[styles.tableCell, { width: colAmount }]}><Text style={styles.amountText}>{(tx.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</Text></View>
+                            <View style={[styles.tableCell, { width: colDesc, borderRightWidth: 0 }]}><Text>{tx.description}</Text></View>
                         </View>
                     ))}
                 </View>
-
-                {/* Footer or total can be added here if needed */}
             </Page>
         </Document>
     );
 }
+

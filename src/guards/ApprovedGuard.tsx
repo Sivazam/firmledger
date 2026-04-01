@@ -9,7 +9,12 @@ export default function ApprovedGuard() {
     const { currentOrganization, loading: orgLoading, initialized: orgInit } = useOrganizationStore();
     const location = useLocation();
 
-    if (!authInit || authLoading || (profile && !orgInit)) {
+    // Only wait for organization init if the user is ALREADY approved at the profile level.
+    // If they are pending, organization data won't load (intentional security measure) 
+    // and we should proceed to the redirect logic.
+    const shouldWaitForOrg = profile && profile.status === 'approved' && !orgInit;
+
+    if (!authInit || authLoading || shouldWaitForOrg) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                 <CircularProgress />
@@ -26,7 +31,7 @@ export default function ApprovedGuard() {
         return <Navigate to="/setup-organization" replace />;
     }
 
-    if (currentOrganization?.status !== 'approved') {
+    if (currentOrganization?.status !== 'approved' || profile.status === 'pending') {
         return <Navigate to="/pending-approval" replace />;
     }
 

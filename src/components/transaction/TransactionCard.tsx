@@ -1,12 +1,19 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
-import type { Transaction  } from '../../types/transaction.types';
+import type { Transaction } from '../../types/transaction.types';
 import { formatDate } from '../../utils/formatters';
 import AmountDisplay from './AmountDisplay';
 import { useNavigate } from 'react-router-dom';
 
-export default function TransactionCard({ tx }: { tx: Transaction }) {
+interface Props {
+    tx: Transaction;
+    isMultiUser?: boolean;  // when true, show "by <name>" attribution
+    ownerId?: string;       // to differentiate colors
+}
+
+export default function TransactionCard({ tx, isMultiUser = false, ownerId }: Props) {
     const navigate = useNavigate();
+    const isOwner = tx.createdBy === ownerId;
 
     const getTypeColor = (type: string) => {
         switch (type) {
@@ -35,7 +42,17 @@ export default function TransactionCard({ tx }: { tx: Transaction }) {
                 <Typography variant="body1" noWrap>
                     {tx.fromPartyName} &rarr; {tx.toPartyName}
                 </Typography>
-                <Box display="flex" justifyContent="flex-end" mt={1}>
+                <Box display="flex" justifyContent={isMultiUser && tx.createdBy_name ? 'space-between' : 'flex-end'} alignItems="center" mt={1}>
+                    {/* Only show attribution when this org actually has multiple members */}
+                    {isMultiUser && tx.createdBy_name && (
+                        <Chip 
+                            label={tx.createdBy_name} 
+                            size="small" 
+                            variant="outlined" 
+                            color={isOwner ? "primary" : "secondary"}
+                            sx={{ height: 20, fontSize: '0.65rem', fontWeight: 600 }}
+                        />
+                    )}
                     <AmountDisplay amount={tx.amount} color={getTypeColor(tx.type) === 'success' ? 'success.main' : 'error.main'} />
                 </Box>
             </CardContent>

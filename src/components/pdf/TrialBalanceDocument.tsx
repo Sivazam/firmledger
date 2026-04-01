@@ -90,8 +90,10 @@ export default function TrialBalanceDocument({ entries, organization, dateRange,
                             <View style={[styles.tableCell, styles.colCategory]}><Text>{entry.category}</Text></View>
                             
                             <View style={[styles.tableCell, styles.colAmount]}>
-                                <Text style={[styles.amountText, { color: entry.openingBalance < 0 ? 'red' : 'green' }]}>
-                                    {entry.openingBalance !== 0 ? formatAmount(Math.abs(entry.openingBalance)) + (entry.openingBalance > 0 ? ' Dr' : ' Cr') : ''}
+                                <Text style={[styles.amountText, { color: entry.openingBalance === 0 ? '#555' : (entry.openingBalance < 0 ? 'red' : 'green') }]}>
+                                    {entry.openingBalance !== 0 
+                                        ? formatAmount(Math.abs(entry.openingBalance)) + (entry.openingBalance > 0 ? ' Dr' : ' Cr') 
+                                        : '0.00'}
                                 </Text>
                             </View>
                             {showTotalActivity && (
@@ -122,8 +124,10 @@ export default function TrialBalanceDocument({ entries, organization, dateRange,
                         <View style={[styles.tableCell, styles.colName]}><Text>Totals</Text></View>
                         <View style={[styles.tableCell, styles.colCategory]} />
                         <View style={[styles.tableCell, styles.colAmount]}>
-                            <Text style={[styles.amountText, { color: totalOpening < 0 ? 'red' : 'green' }]}>
-                                {totalOpening !== 0 ? formatAmount(Math.abs(totalOpening)) + (totalOpening > 0 ? ' Dr' : ' Cr') : ''}
+                            <Text style={[styles.amountText, { color: totalOpening === 0 ? '#000' : (totalOpening < 0 ? 'red' : 'green') }]}>
+                                {totalOpening !== 0 
+                                    ? formatAmount(Math.abs(totalOpening)) + (totalOpening > 0 ? ' Dr' : ' Cr') 
+                                    : '0.00'}
                             </Text>
                         </View>
                         {showTotalActivity && (

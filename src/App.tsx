@@ -5,6 +5,7 @@ import theme from './config/theme';
 import { router } from './router';
 import { useAuthStore } from './stores/authStore';
 import { useOrganizationStore } from './stores/organizationStore';
+import { OrganizationService } from './services/organization.service';
 import { usePartyStore } from './stores/partyStore';
 import { useTransactionStore } from './stores/transactionStore';
 
@@ -13,7 +14,7 @@ import AutoUpdater from './components/common/AutoUpdater';
 
 function App() {
   const { init, initialized, profile } = useAuthStore();
-  const { subscribeToOrganization, currentOrganization } = useOrganizationStore();
+  const { subscribeToOrganization, currentOrganization, setOrgMemberCount } = useOrganizationStore();
   const [showSplash, setShowSplash] = React.useState(true);
 
   useEffect(() => {
@@ -26,25 +27,31 @@ function App() {
   }, [init]);
 
   useEffect(() => {
-    if (profile?.organizationId) {
+    if (profile?.organizationId && profile?.status === 'approved') {
       const unsub = subscribeToOrganization(profile.organizationId);
-      return () => unsub();
+      const unsubMembers = OrganizationService.subscribeToOrgMembers(profile.organizationId, (count) => {
+        setOrgMemberCount(count);
+      });
+      return () => {
+        unsub();
+        unsubMembers();
+      };
     }
-  }, [profile?.organizationId, subscribeToOrganization]);
+  }, [profile?.organizationId, profile?.status, subscribeToOrganization, setOrgMemberCount]);
   
   const { fetchParties } = usePartyStore();
   const { fetchTransactions } = useTransactionStore();
   
   useEffect(() => {
-      if (profile?.organizationId) {
+      if (profile?.organizationId && profile?.status === 'approved') {
           fetchParties(profile.organizationId);
           fetchTransactions(profile.organizationId);
       }
-  }, [profile?.organizationId, fetchParties, fetchTransactions]);
+  }, [profile?.organizationId, profile?.status, fetchParties, fetchTransactions]);
 
   useEffect(() => {
     const backfillSystemParties = async () => {
-      if (profile?.organizationId && currentOrganization) {
+      if (profile?.organizationId && profile?.status === 'approved' && currentOrganization) {
         try {
           const { db } = await import('./config/firebase');
           const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
@@ -86,7 +93,7 @@ function App() {
       }
     };
     backfillSystemParties();
-  }, [profile?.organizationId, currentOrganization]);
+  }, [profile?.organizationId, profile?.status, currentOrganization]);
   if (showSplash || !initialized) {
     return (
       <ThemeProvider theme={theme}>
