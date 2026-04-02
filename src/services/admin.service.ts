@@ -17,10 +17,11 @@ export const AdminService = {
         return allOrgs.filter(org => !systemAdminIds.has(org.ownerId) && org.isOwnerAdmin !== true);
     },
 
-    async updateOrganizationStatus(orgId: string, status: OrganizationStatus, ownerId: string, adminId: string) {
+    async updateOrganizationStatus(orgId: string, status: OrganizationStatus, ownerId: string, adminId: string, hasBusinessTransactions: boolean = false) {
         // Update Organization Status
         await updateDoc(doc(db, 'organizations', orgId), {
             status,
+            hasBusinessTransactions,
             approvedBy: adminId,
             approvedAt: serverTimestamp(),
             updatedAt: serverTimestamp()

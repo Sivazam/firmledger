@@ -54,10 +54,10 @@ function App() {
       if (profile?.organizationId && profile?.status === 'approved' && currentOrganization) {
         try {
           const { db } = await import('./config/firebase');
-          const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+          const { doc, getDoc, setDoc, updateDoc, serverTimestamp } = await import('firebase/firestore');
           
           const systemParties = [
-            { id: 'party_cash', code: 'CASH', name: 'Cash in Hand', category: 'CASH' },
+            { id: 'party_cash', code: 'CASH', name: 'Cash in Hand', category: 'Balance Sheet' },
             { id: 'party_sale', code: 'SALE', name: 'SALES', category: 'Trading' },
             { id: 'party_purc', code: 'PURC', name: 'PURCHASE', category: 'Trading' },
             { id: 'party_sret', code: 'SRET', name: 'SALES RETURN', category: 'Trading' },
@@ -85,6 +85,13 @@ function App() {
                     updatedAt: serverTimestamp()
                 });
                 console.log(`Backfilled ${party.code} party for org:`, profile.organizationId);
+              } else if (party.id === 'party_cash' && snap.data().category === 'CASH') {
+                 // Repair existing Cash party category
+                 await updateDoc(partyRef, {
+                   category: 'Balance Sheet',
+                   updatedAt: serverTimestamp()
+                 });
+                 console.log(`Repaired ${party.code} party category for org:`, profile.organizationId);
               }
           }
         } catch (e) {

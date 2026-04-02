@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, Paper, Divider, Chip, Avatar, Stack, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Paper, Divider, Chip, Avatar, Stack, CircularProgress, FormControlLabel, Switch } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { AdminService } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
@@ -20,6 +20,7 @@ export default function FirmDetailPage() {
     const [members, setMembers] = useState<UserProfile[]>([]);
     const [membersLoading, setMembersLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [isBusinessEnabled, setIsBusinessEnabled] = useState(!!org.hasBusinessTransactions);
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error' | 'confirm', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'confirm', onConfirm: () => { }
     });
@@ -53,7 +54,7 @@ export default function FirmDetailPage() {
     const handleOrgStatusChange = async (status: 'approved' | 'denied') => {
         if (!user) return;
         try {
-            await AdminService.updateOrganizationStatus(org.id, status, org.ownerId, user.uid);
+            await AdminService.updateOrganizationStatus(org.id, status, org.ownerId, user.uid, isBusinessEnabled);
             setDialogConfig({
                 open: true, variant: 'success', title: 'Status Updated',
                 message: `Organization successfully ${status}.`,
@@ -133,12 +134,33 @@ export default function FirmDetailPage() {
                     </Box>
                 )}
 
+                {/* Business Transactions Toggle */}
+                <Box mb={2}>
+                    <FormControlLabel
+                        control={
+                            <Switch 
+                                checked={isBusinessEnabled} 
+                                onChange={(e) => setIsBusinessEnabled(e.target.checked)} 
+                                color="primary"
+                            />
+                        }
+                        label={
+                            <Typography variant="body2" fontWeight="bold">
+                                Enable Business Transactions (Sales, Purchase, etc.)
+                            </Typography>
+                        }
+                    />
+                </Box>
+
                 {/* Org status actions */}
                 <Box display="flex" gap={2} mb={3} flexWrap="wrap">
                     {org.status === 'pending' && <>
                         <Button variant="contained" color="success" onClick={() => handleOrgStatusChange('approved')}>Approve</Button>
                         <Button variant="contained" color="error" onClick={() => handleOrgStatusChange('denied')}>Deny</Button>
                     </>}
+                    {org.status === 'approved' && (
+                        <Button variant="outlined" color="primary" onClick={() => handleOrgStatusChange('approved')}>Update Features</Button>
+                    )}
                     {org.status === 'approved' && (
                         <Button variant="outlined" color="error" onClick={() => handleOrgStatusChange('denied')}>Revoke Approval</Button>
                     )}

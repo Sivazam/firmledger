@@ -24,7 +24,7 @@ export const OrganizationService = {
 
             // Create default system parties
             const systemParties = [
-                { id: 'party_cash', code: 'CASH', name: 'Cash in Hand', category: 'CASH' },
+                { id: 'party_cash', code: 'CASH', name: 'Cash in Hand', category: 'Balance Sheet' },
                 { id: 'party_sale', code: 'SALE', name: 'SALES', category: 'Trading' },
                 { id: 'party_purc', code: 'PURC', name: 'PURCHASE', category: 'Trading' },
                 { id: 'party_sret', code: 'SRET', name: 'SALES RETURN', category: 'Trading' },

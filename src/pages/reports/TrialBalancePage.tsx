@@ -24,7 +24,6 @@ export default function TrialBalancePage() {
     const navigate = useNavigate();
 
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
-    const [fromDate, setFromDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
     const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'));
     
     const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
@@ -32,7 +31,6 @@ export default function TrialBalancePage() {
     const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
 
     const reportEntries: TrialBalanceEntry[] = useMemo(() => {
-        const start = dayjs(fromDate).startOf('day');
         const end = dayjs(toDate).endOf('day');
 
         // Filter parties if a category is selected, else process all
@@ -45,8 +43,8 @@ export default function TrialBalancePage() {
             // Static Opening Balance from Profile
             const staticOpening = party.balanceType === 'Debit' ? (party.openingBalance || 0) : -(party.openingBalance || 0);
             
-            let periodDebit = 0;
-            let periodCredit = 0;
+            let totalDebitUntilDate = 0;
+            let totalCreditUntilDate = 0;
 
             transactions.forEach(tx => {
                 const isFrom = tx.fromPartyId === party.id;
@@ -55,10 +53,10 @@ export default function TrialBalancePage() {
                 
                 const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
                 
-                // Track movements strictly within the selected range
-                if ((txDate.isSame(start, 'day') || txDate.isAfter(start)) && !txDate.isAfter(end)) {
-                    if (isTo) periodDebit += tx.amount;
-                    if (isFrom) periodCredit += tx.amount;
+                // Track all movements from start until the selected date
+                if (!txDate.isAfter(end)) {
+                    if (isTo) totalDebitUntilDate += tx.amount;
+                    if (isFrom) totalCreditUntilDate += tx.amount;
                 }
             });
 
@@ -68,12 +66,12 @@ export default function TrialBalancePage() {
                 name: party.name,
                 category: party.category,
                 openingBalance: staticOpening,
-                debit: periodDebit,
-                credit: periodCredit,
-                closingBalance: staticOpening + periodDebit - periodCredit
+                debit: totalDebitUntilDate,
+                credit: totalCreditUntilDate,
+                closingBalance: staticOpening + totalDebitUntilDate - totalCreditUntilDate
             };
         }).sort((a, b) => a.name.localeCompare(b.name));
-    }, [parties, transactions, fromDate, toDate, selectedCategory]);
+    }, [parties, transactions, toDate, selectedCategory]);
 
     const totalOpening = reportEntries.reduce((sum, e) => sum + e.openingBalance, 0);
     const totalDebit = reportEntries.reduce((sum, e) => sum + e.debit, 0);
@@ -82,12 +80,12 @@ export default function TrialBalancePage() {
     const totalClosingCredit = reportEntries.reduce((sum, e) => sum + (e.closingBalance < 0 ? Math.abs(e.closingBalance) : 0), 0);
 
     const handleExportPdf = async (isShare: boolean = false) => {
-        const dateRangeStr = `${dayjs(fromDate).format('DD/MM/YYYY')} to ${dayjs(toDate).format('DD/MM/YYYY')}`;
+        const asOfStr = `As of ${dayjs(toDate).format('DD/MM/YYYY')}`;
         const blob = await generatePDFBlob(
             <TrialBalanceDocument 
                 entries={reportEntries} 
                 organization={currentOrganization} 
-                dateRange={dateRangeStr} 
+                dateRange={asOfStr} 
                 showTotalActivity={SHOW_TOTAL_ACTIVITY}
             />
         );
@@ -177,7 +175,7 @@ export default function TrialBalancePage() {
             <Typography variant="h5" mb={3}>Trial Balance / Party Balances</Typography>
             
             <Grid container spacing={2} mb={3}>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControl fullWidth size="small">
                         <InputLabel>Category</InputLabel>
                         <Select
@@ -192,11 +190,8 @@ export default function TrialBalancePage() {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 4 }}>
-                    <TextField label="From" type="date" fullWidth size="small" value={fromDate} onChange={e => { setFromDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
-                </Grid>
-                <Grid size={{ xs: 6, sm: 4 }}>
-                    <TextField label="To" type="date" fullWidth size="small" value={toDate} onChange={e => { setToDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField label="To Date" type="date" fullWidth size="small" value={toDate} onChange={e => { setToDate(e.target.value); if(e.target.value) (e.target as any).blur(); }} onFocus={(e) => (e.target as any).showPicker?.()} InputLabelProps={{ shrink: true }} />
                 </Grid>
             </Grid>
 

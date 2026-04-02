@@ -12,6 +12,7 @@ export interface Organization {
     gstNumber: string;
     logoUrl: string | null;
     status: OrganizationStatus;
+    hasBusinessTransactions?: boolean;
     approvedBy: string | null;
     approvedAt: Timestamp | null;
     isOwnerAdmin?: boolean;
