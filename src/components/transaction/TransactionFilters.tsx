@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, TextField, MenuItem, InputAdornment, Grid, Select, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { TransactionType, TRANSACTION_TYPE_LABELS } from '../../config/constants';
+import { useOrganizationStore } from '../../stores/organizationStore';
 
 interface Props {
     searchTerm: string;
@@ -16,6 +17,13 @@ interface Props {
     hasTransactions: boolean;
 }
 
+const BUSINESS_TYPES = [
+    TransactionType.SI,
+    TransactionType.PI,
+    TransactionType.SR,
+    TransactionType.PR
+];
+
 export default function TransactionFilters({
     searchTerm, setSearchTerm,
     selectedType, setSelectedType,
@@ -24,7 +32,14 @@ export default function TransactionFilters({
     onGenerateReport,
     hasTransactions
 }: Props) {
-    const types = Object.values(TransactionType);
+    const { currentOrganization } = useOrganizationStore();
+    
+    const types = Object.values(TransactionType).filter(type => {
+        if (BUSINESS_TYPES.includes(type as TransactionType)) {
+            return !!currentOrganization?.hasBusinessTransactions;
+        }
+        return true;
+    });
 
     return (
         <Box mb={3}>
@@ -43,11 +58,11 @@ export default function TransactionFilters({
                     size="small"
                     displayEmpty
                     sx={{ 
-                        minWidth: { xs: '100%', sm: 120 }, 
+                        minWidth: { xs: '100%', sm: 140 }, 
                         bgcolor: 'background.paper' 
                     }}
                 >
-                    <MenuItem value="">All Types</MenuItem>
+                    <MenuItem value="">All Records</MenuItem>
                     {types.map(type => (
                         <MenuItem key={type} value={type}>
                             {type} - {TRANSACTION_TYPE_LABELS[type]}
