@@ -1,20 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
-import { Box, Typography, Grid, Card, CardContent, CircularProgress } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, CircularProgress, Paper } from '@mui/material';
 import { useAuthStore } from '../../stores/authStore';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { TransactionType } from '../../config/constants';
 import { formatINR } from '../../utils/formatters';
 import dayjs from 'dayjs';
-import PeopleIcon from '@mui/icons-material/People';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import HistoryIcon from '@mui/icons-material/History';
-import TransactionCard from '../../components/transaction/TransactionCard';
-import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
     const { profile } = useAuthStore();
@@ -28,17 +19,8 @@ export default function DashboardPage() {
         }
     }, [profile?.organizationId, partiesInit, txInit, fetchParties, fetchTransactions]);
 
-    const getFirstName = (name: string) => {
-        const parts = name.trim().split(/\s+/);
-        if (parts.length > 1 && parts[0].length === 1) {
-            return parts[1];
-        }
-        return parts[0] || 'User';
-    };
-
     const stats = useMemo(() => {
         const today = dayjs.tz().startOf('day');
-
         const cashParty = parties.find(p => p.code === 'CASH');
         const baseBalance = cashParty ? (cashParty.balanceType === 'Debit' ? (cashParty.openingBalance || 0) : -(cashParty.openingBalance || 0)) : 0;
 
@@ -56,19 +38,11 @@ export default function DashboardPage() {
             const isBeforeToday = txDate.isBefore(today);
 
             if (tx.type === TransactionType.CR) {
-                if (isToday) {
-                    todaysReceipts += tx.amount;
-                    sumCrToday += tx.amount;
-                } else if (isBeforeToday) {
-                    sumCrBeforeToday += tx.amount;
-                }
+                if (isToday) { todaysReceipts += tx.amount; sumCrToday += tx.amount; }
+                else if (isBeforeToday) { sumCrBeforeToday += tx.amount; }
             } else if (tx.type === TransactionType.CP) {
-                if (isToday) {
-                    todaysPayments += tx.amount;
-                    sumCpToday += tx.amount;
-                } else if (isBeforeToday) {
-                    sumCpBeforeToday += tx.amount;
-                }
+                if (isToday) { todaysPayments += tx.amount; sumCpToday += tx.amount; }
+                else if (isBeforeToday) { sumCpBeforeToday += tx.amount; }
             }
         });
 
@@ -76,10 +50,8 @@ export default function DashboardPage() {
         const dashboardClosingBalance = dashboardOpeningBalance + sumCrToday - sumCpToday;
 
         return {
-            todaysReceipts,
-            todaysPayments,
-            dashboardOpeningBalance,
-            dashboardClosingBalance
+            todaysReceipts, todaysPayments,
+            dashboardOpeningBalance, dashboardClosingBalance
         };
     }, [parties, transactions]);
 
@@ -91,94 +63,59 @@ export default function DashboardPage() {
         );
     }
 
+    const CardItem = ({ label, value, color }: { label: string, value: string, color: string }) => (
+        <Card sx={{ 
+            borderRadius: 2.5, 
+            boxShadow: 'none', 
+            border: '1px solid #E2E8F0', 
+            borderLeft: `4px solid ${color}`,
+            transition: 'all 0.18s ease',
+            '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
+        }}>
+            <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="body2" fontWeight="700" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                    {label}
+                </Typography>
+                <Typography variant="h6" fontWeight="900" color={color}>
+                    {value}
+                </Typography>
+            </CardContent>
+        </Card>
+    );
+
     return (
         <Box>
-        <Box mb={3}>
-            <Typography 
-                variant="h4" 
-                sx={{ 
-                    fontWeight: 800, 
-                    color: 'text.primary',
-                    letterSpacing: '-0.04em'
-                }}
-            >
-                Good {dayjs().hour() < 12 ? 'Morning' : dayjs().hour() < 17 ? 'Afternoon' : 'Evening'}, 
-                <Box component="span" sx={{ color: 'primary.main', ml: 1.5 }}>
-                    {getFirstName(profile?.displayName || 'User')}
-                </Box>
-            </Typography>
-        </Box>
+            <Box mb={2}>
+                <Typography variant="caption" fontWeight="800" sx={{ color: 'primary.main', opacity: 0.8, letterSpacing: '0.05em' }}>
+                    USER - {profile?.displayName || 'GUEST'}
+                </Typography>
+            </Box>
 
-            <Grid container spacing={3}>
-                {/* 1. Cash Opening Balance */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <Card sx={{ borderLeft: 6, borderColor: 'info.main' }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box>
-                                <Typography variant="body2" color="text.secondary" textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Opening Balance</Typography>
-                                <Typography variant="h5" fontWeight="800" color="info.main">
-                                    {formatINR(stats.dashboardOpeningBalance)}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ bgcolor: 'rgba(3, 169, 244, 0.15)', p: 1, borderRadius: 2 }}>
-                                <HistoryIcon sx={{ fontSize: 32, color: 'info.main' }} />
-                            </Box>
-                        </CardContent>
-                    </Card>
+            <Grid container spacing={1.5}>
+                <Grid size={{ xs: 12 }}>
+                    <CardItem label="Cash Opening Balance" value={formatINR(stats.dashboardOpeningBalance)} color="#1565c0" />
                 </Grid>
-
-                {/* 2. Todays Receipts */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <Card>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box>
-                                <Typography variant="body2" color="text.secondary" textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Today's Receipts</Typography>
-                                <Typography variant="h5" fontWeight="800" color="success.main">
-                                    {formatINR(stats.todaysReceipts)}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ bgcolor: 'rgba(76, 175, 80, 0.15)', p: 1, borderRadius: 2 }}>
-                                <TrendingUpIcon sx={{ fontSize: 32, color: 'success.main' }} />
-                            </Box>
-                        </CardContent>
-                    </Card>
+                <Grid size={{ xs: 12 }}>
+                    <CardItem label="Today's Receipts" value={formatINR(stats.todaysReceipts)} color="#2e7d32" />
                 </Grid>
-
-                {/* 3. Todays Payments */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <Card>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box>
-                                <Typography variant="body2" color="text.secondary" textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Today's Payments</Typography>
-                                <Typography variant="h5" fontWeight="800" color="error.main">
-                                    {formatINR(stats.todaysPayments)}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ bgcolor: 'rgba(211, 47, 47, 0.15)', p: 1, borderRadius: 2 }}>
-                                <TrendingDownIcon sx={{ fontSize: 32, color: 'error.main' }} />
-                            </Box>
-                        </CardContent>
-                    </Card>
+                <Grid size={{ xs: 12 }}>
+                    <CardItem label="Today's Payments" value={formatINR(stats.todaysPayments)} color="#c62828" />
                 </Grid>
-
-                {/* 4. Cash Closing Balance */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <Card sx={{ borderLeft: 6, borderColor: 'primary.main', bgcolor: 'primary.light', color: 'primary.contrastText', backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Box>
-                                <Typography variant="body2" sx={{ opacity: 0.8 }} textTransform="uppercase" fontWeight="700" fontSize="0.7rem" gutterBottom>Cash Closing Balance</Typography>
-                                <Typography variant="h5" fontWeight="800">
-                                    {formatINR(stats.dashboardClosingBalance)}
-                                </Typography>
-                            </Box>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.2)' }}>
-                                <AccountBalanceWalletIcon sx={{ fontSize: 36, color: 'white' }} />
-                            </Box>
-                        </CardContent>
-                    </Card>
+                <Grid size={{ xs: 12 }}>
+                    <CardItem label="Cash Closing Balance" value={formatINR(stats.dashboardClosingBalance)} color="#6a1b9a" />
                 </Grid>
-
             </Grid>
+
+            <Box mt={3}>
+                <Typography variant="subtitle2" fontWeight="900" color="text.primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    Todays Reminders
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderStyle: 'dashed', bgcolor: '#F8FAFC', textAlign: 'center', borderColor: '#CBD5E1' }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight="700" sx={{ fontSize: '0.7rem' }}>
+                        Coming soon feature - Manage your tasks here.
+                    </Typography>
+                </Paper>
+            </Box>
         </Box>
     );
 }

@@ -16,6 +16,8 @@ export default function SettingsPage() {
     const navigate = useNavigate();
     const { profile } = useAuthStore();
     const { currentOrganization } = useOrganizationStore();
+
+
     const isActuallyAdmin = profile?.userType === 'admin';
     const showAdminSettings = isActuallyAdmin;
     // Only the org owner can manage team members (invited staff cannot manage other members)
@@ -41,16 +43,16 @@ export default function SettingsPage() {
                     </>
                 )}
 
-                <ListItem component="button" onClick={() => navigate('/settings/personal')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
-                    <ListItemIcon><PersonIcon /></ListItemIcon>
-                    <ListItemText primary="Personal Details" secondary="Update your profile, address and contact info" />
+                <ListItem component="button" onClick={() => navigate('/settings/security')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
+                    <ListItemIcon><PersonIcon color="secondary" /></ListItemIcon>
+                    <ListItemText primary="Security" secondary="Change your password and manage account security" />
                 </ListItem>
                 <Divider />
 
                 {!showAdminSettings && (
                     <>
                         <ListItem component="button" onClick={() => navigate('/settings/organization')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
-                            <ListItemIcon><BusinessIcon /></ListItemIcon>
+                            <ListItemIcon><BusinessIcon color="secondary" /></ListItemIcon>
                             <ListItemText primary="Organization Details" secondary="Update firm address, logo and GST" />
                         </ListItem>
                         <Divider />
@@ -62,7 +64,7 @@ export default function SettingsPage() {
                     <>
                         <ListItem component="button" onClick={() => navigate('/settings/members')} sx={{ textAlign: 'left', width: '100%', border: 'none', background: 'none' }}>
                             <ListItemIcon><GroupIcon color="secondary" /></ListItemIcon>
-                            <ListItemText primary="Team Members" secondary="View, deactivate or reactivate your invited staff" />
+                            <ListItemText primary="Team Members" secondary="Directly create or manage your staff members" />
                         </ListItem>
                         <Divider />
                     </>

@@ -6,15 +6,18 @@ interface TransactionState {
     transactions: Transaction[];
     loading: boolean;
     initialized: boolean;
+    closingStock: number | null;
     fetchTransactions: (orgId: string) => Promise<void>;
     addTransactionLocal: (tx: Transaction) => void;
     updateTransactionLocal: (txId: string, data: Partial<Transaction>) => void;
+    setClosingStock: (val: number | null) => void;
 }
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
     transactions: [],
     loading: false,
     initialized: false,
+    closingStock: null,
 
     fetchTransactions: async (orgId: string) => {
         set({ loading: true });
@@ -46,5 +49,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
             if (da !== db) return da - db;
             return String(b.slNo).localeCompare(String(a.slNo), undefined, { numeric: true });
         }) });
-    }
+    },
+
+    setClosingStock: (val) => set({ closingStock: val })
 }));

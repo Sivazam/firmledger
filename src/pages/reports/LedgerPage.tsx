@@ -16,6 +16,7 @@ import { ReportExportService } from '../../utils/reportExport';
 import { Menu, MenuItem, Stack, IconButton, Divider } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import ShareIcon from '@mui/icons-material/Share';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function LedgerPage() {
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
@@ -32,33 +33,56 @@ export default function LedgerPage() {
   const ledgerEntries = useMemo(() => {
     if (!selectedParty) return [];
     
-    // Sort transactions chronologically (oldest first)
-    const partyTxs = transactions.filter(t => {
+    // 1. Separate transactions into "Pre-Period" (before From Date) and "In-Period"
+    const startOfPeriod = dayjs(fromDate).startOf('day');
+    const endOfPeriod = dayjs(toDate).endOf('day');
+
+    const prePeriodTxs: any[] = [];
+    const periodTxs: any[] = [];
+
+    transactions.forEach(t => {
       const isParty = t.fromPartyId === selectedParty.id || t.toPartyId === selectedParty.id;
-      if (!isParty) return false;
-      
+      if (!isParty) return;
+
       const txDate = t.date && (t.date as any).toDate ? dayjs((t.date as any).toDate()) : dayjs(t.date as any);
-      return txDate.isAfter(dayjs(fromDate).subtract(1, 'day')) && 
-             txDate.isBefore(dayjs(toDate).add(1, 'day'));
-    }).sort((a, b) => {
-        const da = a.date && (a.date as any).toDate ? a.date.toDate().getTime() : new Date(a.date as any).getTime();
-        const db = b.date && (b.date as any).toDate ? b.date.toDate().getTime() : new Date(b.date as any).getTime();
-        return da - db;
+      
+      if (txDate.isBefore(startOfPeriod)) {
+        prePeriodTxs.push(t);
+      } else if (!txDate.isAfter(endOfPeriod)) {
+        periodTxs.push(t);
+      }
     });
+
+    // 2. Calculate the "Cumulative Opening Balance" (Opening Profile + all Pre-Period activity)
+    let cumulativeOpeningBalance = (selectedParty.balanceType === 'Debit' ? 1 : -1) * (selectedParty.openingBalance || 0);
     
-    let runningBalance = (selectedParty.balanceType === 'Debit' ? 1 : -1) * (selectedParty.openingBalance || 0);
+    prePeriodTxs.forEach(tx => {
+      const isFromParty = tx.fromPartyId === selectedParty.id; // Credit
+      const isToParty = tx.toPartyId === selectedParty.id;     // Debit
+      if (isToParty) cumulativeOpeningBalance += tx.amount;
+      if (isFromParty) cumulativeOpeningBalance -= tx.amount;
+    });
+
+    let runningBalance = cumulativeOpeningBalance;
     
     const openingEntry = {
         id: 'opening',
         date: null,
         type: 'OP',
         description: 'Opening Balance',
-        debit: selectedParty.balanceType === 'Debit' ? selectedParty.openingBalance : 0,
-        credit: selectedParty.balanceType === 'Credit' ? selectedParty.openingBalance : 0,
-        balance: runningBalance
+        debit: cumulativeOpeningBalance > 0 ? Math.abs(cumulativeOpeningBalance) : 0,
+        credit: cumulativeOpeningBalance < 0 ? Math.abs(cumulativeOpeningBalance) : 0,
+        balance: cumulativeOpeningBalance
     };
 
-    const mappedEntries = partyTxs.map(tx => {
+    // 3. Sort period transactions chronologically
+    const sortedPeriodTxs = [...periodTxs].sort((a, b) => {
+        const da = a.date && (a.date as any).toDate ? a.date.toDate().getTime() : new Date(a.date as any).getTime();
+        const db = b.date && (b.date as any).toDate ? b.date.toDate().getTime() : new Date(b.date as any).getTime();
+        return da - db;
+    });
+
+    const mappedEntries = sortedPeriodTxs.map(tx => {
       const isFromParty = tx.fromPartyId === selectedParty.id; // Credit
       const isToParty = tx.toPartyId === selectedParty.id;     // Debit
 
@@ -120,32 +144,33 @@ export default function LedgerPage() {
 
   return (
     <Box p={2}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Button onClick={() => navigate(-1)}>&larr; Back</Button>
-        {selectedParty && ledgerEntries.length > 0 && (
-          <Stack direction="row" spacing={1}>
-            <Button 
-                variant="outlined" 
-                size="small"
-                startIcon={<DownloadIcon />}
-                onClick={(e) => setDownloadAnchor(e.currentTarget)}
-                disabled={isGenerating}
-            >
-                Download
-            </Button>
-            <Button 
-                variant="outlined" 
-                size="small"
-                color="secondary"
-                startIcon={<ShareIcon />}
-                onClick={(e) => setShareAnchor(e.currentTarget)}
-                disabled={isGenerating}
-            >
-                Share
-            </Button>
-          </Stack>
-        )}
-      </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
+                <Box display="flex" alignItems="center" gap={1}>
+                    <Button size="small" onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />}>Back</Button>
+                    <Typography variant="h6" fontWeight="bold">Ledger</Typography>
+                </Box>
+                <Stack direction="row" spacing={1}>
+                    <Button 
+                        variant="outlined" 
+                        size="small"
+                        startIcon={<DownloadIcon />}
+                        onClick={(e) => setDownloadAnchor(e.currentTarget)}
+                        disabled={isGenerating || !selectedParty}
+                    >
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Download</Box>
+                    </Button>
+                    <Button 
+                        variant="outlined" 
+                        size="small"
+                        color="secondary"
+                        startIcon={<ShareIcon />}
+                        onClick={(e) => setShareAnchor(e.currentTarget)}
+                        disabled={isGenerating || !selectedParty}
+                    >
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Share</Box>
+                    </Button>
+                </Stack>
+            </Box>
       <Typography variant="h5" mb={3}>Party Ledger</Typography>
       
       <Grid container spacing={2} mb={3}>

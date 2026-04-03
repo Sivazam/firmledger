@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Grid, TextField, Button, Menu, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Grid, TextField, Button, Menu, MenuItem, Stack, IconButton, Divider, FormControl, InputLabel, Select } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import ShareIcon from '@mui/icons-material/Share';
-import { Stack } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { usePartyStore } from '../../stores/partyStore';
@@ -146,9 +146,12 @@ export default function TrialBalancePage() {
     };
 
     return (
-        <Box p={2}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Button onClick={() => navigate(-1)}>&larr; Back</Button>
+        <Box p={{ xs: 1, sm: 2 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
+                <Box display="flex" alignItems="center" gap={1}>
+                    <Button size="small" onClick={() => navigate(-1)} startIcon={<ArrowBackIcon />}>Back</Button>
+                    <Typography variant="h6" fontWeight="bold">Trial Balance</Typography>
+                </Box>
                 <Stack direction="row" spacing={1}>
                     <Button 
                         variant="outlined" 
@@ -157,7 +160,7 @@ export default function TrialBalancePage() {
                         onClick={(e) => setDownloadAnchor(e.currentTarget)}
                         disabled={isGenerating || reportEntries.length === 0}
                     >
-                        Download
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Download</Box>
                     </Button>
                     <Button 
                         variant="outlined" 
@@ -167,7 +170,7 @@ export default function TrialBalancePage() {
                         onClick={(e) => setShareAnchor(e.currentTarget)}
                         disabled={isGenerating || reportEntries.length === 0}
                     >
-                        Share
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Share</Box>
                     </Button>
                 </Stack>
             </Box>

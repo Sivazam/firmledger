@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField, Divider, Menu, MenuItem, Stack } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Grid, TextField, Menu, MenuItem, Stack } from '@mui/material';
 import { useTransactionStore } from '../../stores/transactionStore';
-import { useAuthStore } from '../../stores/authStore';
+import { usePartyStore } from '../../stores/partyStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
 import { TransactionType } from '../../config/constants';
-import { usePartyStore } from '../../stores/partyStore';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { usePDF } from '../../hooks/usePDF';
@@ -12,9 +11,10 @@ import ReportPDF from '../../components/pdf/ReportPDF';
 import { ReportExportService } from '../../utils/reportExport';
 import DownloadIcon from '@mui/icons-material/Download';
 import ShareIcon from '@mui/icons-material/Share';
+import type { Party } from '../../types/party.types';
 
 export default function PLReportPage() {
-    const { transactions } = useTransactionStore();
+    const { transactions, closingStock, setClosingStock } = useTransactionStore();
     const { parties } = usePartyStore();
     const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
@@ -24,6 +24,7 @@ export default function PLReportPage() {
     const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
     const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
     const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
+    const [closingStockInput, setClosingStockInput] = useState<string>(closingStock ? (closingStock / 100).toString() : '');
 
     const filtered = transactions.filter(tx => {
         const txDate = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()) : dayjs(tx.date as any);
@@ -31,7 +32,7 @@ export default function PLReportPage() {
                txDate.isBefore(dayjs(toDate).add(1, 'day'));
     });
 
-    // Trading Account Logic
+    // --- 1. RE-CALCULATE TRADING ACCOUNT (for Gross Profit) ---
     const sales = filtered.filter(tx => tx.type === TransactionType.SI).reduce((sum, tx) => sum + tx.amount, 0);
     const salesReturn = filtered.filter(tx => tx.type === TransactionType.SR).reduce((sum, tx) => sum + tx.amount, 0);
     const purchases = filtered.filter(tx => tx.type === TransactionType.PI).reduce((sum, tx) => sum + tx.amount, 0);
@@ -39,32 +40,39 @@ export default function PLReportPage() {
 
     const netSales = sales - salesReturn;
     const netPurchases = purchases - purchaseReturn;
-    const grossProfit = netSales - netPurchases;
 
-    // P&L Logic: Sum of JV/CP/BP where category is EXPENSE or REVENUE (other than sales/purchase)
-    // For now, let's just sum all transactions involving parties of type REVENUE or EXPENSE
-    const expenses = filtered.reduce((sum, tx) => {
-        const fromP = parties.find(p => p.id === tx.fromPartyId);
-        const toP = parties.find(p => p.id === tx.toPartyId);
-        
-        let txExpense = 0;
-        if (toP?.category === 'EXPENSE') txExpense += tx.amount;
-        if (fromP?.category === 'EXPENSE') txExpense -= tx.amount; // Unusual but handled
-        
-        return sum + txExpense;
-    }, 0);
+    const tradingParties = parties.filter(p => p.category === 'Trading');
+    const tradingDeval = tradingParties.map((p: Party) => {
+        let netChange = 0;
+        filtered.forEach(tx => {
+            if (tx.toPartyId === p.id) netChange += tx.amount;
+            if (tx.fromPartyId === p.id) netChange -= tx.amount;
+        });
+        return { name: p.name, balance: netChange };
+    });
+    const totalTradingDebits = tradingDeval.filter(p => p.balance > 0).reduce((sum, p) => sum + p.balance, 0);
+    const totalTradingCredits = tradingDeval.filter(p => p.balance < 0).reduce((sum, p) => sum + Math.abs(p.balance), 0);
 
-    const indirectIncome = filtered.reduce((sum, tx) => {
-        const fromP = parties.find(p => p.id === tx.fromPartyId);
-        const toP = parties.find(p => p.id === tx.toPartyId);
-        
-        let txIncome = 0;
-        if (toP?.category === 'REVENUE' && tx.type !== TransactionType.SI) txIncome += tx.amount;
-        
-        return sum + txIncome;
-    }, 0);
+    const grossProfit = (netSales + (closingStock || 0) + totalTradingCredits) - (netPurchases + totalTradingDebits);
 
-    const netProfit = grossProfit + indirectIncome - expenses;
+    // --- 2. CALCULATE P&L ACCOUNT ---
+    const plParties = parties.filter(p => p.category === 'P & L');
+    const plDeval = plParties.map((p: Party) => {
+        let netChange = 0;
+        filtered.forEach(tx => {
+            if (tx.toPartyId === p.id) netChange += tx.amount;
+            if (tx.fromPartyId === p.id) netChange -= tx.amount;
+        });
+        return { name: p.name, balance: netChange };
+    });
+
+    const plDebits = plDeval.filter(p => p.balance > 0);
+    const plCredits = plDeval.filter(p => p.balance < 0);
+
+    const totalPLDebits = plDebits.reduce((sum, p) => sum + p.balance, 0);
+    const totalPLCredits = plCredits.reduce((sum, p) => sum + Math.abs(p.balance), 0);
+
+    const netProfit = grossProfit + totalPLCredits - totalPLDebits;
 
     const handleExportPdf = async (isShare: boolean = false) => {
         const blob = await generatePDFBlob(
@@ -73,9 +81,10 @@ export default function PLReportPage() {
                 subtitle={`${fromDate} to ${toDate}`}
                 headers={['Particulars (Dr)', 'Amount (Dr)', 'Particulars (Cr)', 'Amount (Cr)']}
                 rows={[
-                    ['To Indirect Expenses', (expenses / 100).toFixed(2), 'By Gross Profit b/f', (grossProfit / 100).toFixed(2)],
-                    ['', '', 'By Other Income', (indirectIncome / 100).toFixed(2)],
-                    ['Net Profit', (netProfit / 100).toFixed(2), '', '']
+                    ['To Gross Loss b/f', grossProfit < 0 ? (Math.abs(grossProfit) / 100).toFixed(2) : '-', 'By Gross Profit b/f', grossProfit >= 0 ? (grossProfit / 100).toFixed(2) : '-'],
+                    ...plDebits.map(p => [`To ${p.name}`, (p.balance / 100).toFixed(2), '', '']),
+                    ...plCredits.map(p => ['', '', `By ${p.name}`, (Math.abs(p.balance) / 100).toFixed(2)]),
+                    ['Net Profit', netProfit >= 0 ? (netProfit / 100).toFixed(2) : '-', 'Net Loss', netProfit < 0 ? (Math.abs(netProfit) / 100).toFixed(2) : '-']
                 ]}
                 organization={currentOrganization}
             />
@@ -95,20 +104,54 @@ export default function PLReportPage() {
     };
 
     const handleExportExcel = (isShare: boolean = false) => {
-        const headers = ['Particulars_Debit', 'Amount_Dr', 'Particulars_Credit', 'Amount_Cr'];
+        const headers = ['Debit_Particulars', 'Debit_Amount', 'Credit_Particulars', 'Credit_Amount'];
         const csvData = [
-            { Particulars_Debit: 'To Indirect Expenses', Amount_Dr: (expenses / 100).toFixed(2), Particulars_Credit: 'By Gross Profit b/f', Amount_Cr: (grossProfit / 100).toFixed(2) },
-            { Particulars_Debit: '', Amount_Dr: '', Particulars_Credit: 'By Other Income', Amount_Cr: (indirectIncome / 100).toFixed(2) },
-            { Particulars_Debit: 'Net Profit', Amount_Dr: (netProfit / 100).toFixed(2), Particulars_Credit: '', Amount_Cr: '' }
+            { Debit_Particulars: 'To Gross Loss b/f', Debit_Amount: grossProfit < 0 ? (Math.abs(grossProfit) / 100).toFixed(2) : '-', Credit_Particulars: 'By Gross Profit b/f', Credit_Amount: grossProfit >= 0 ? (grossProfit / 100).toFixed(2) : '-' },
+            ...plDebits.map(p => ({ Debit_Particulars: `To ${p.name}`, Debit_Amount: (p.balance / 100).toFixed(2), Credit_Particulars: '', Credit_Amount: '' })),
+            ...plCredits.map(p => ({ Debit_Particulars: '', Debit_Amount: '', Credit_Particulars: `By ${p.name}`, Credit_Amount: (Math.abs(p.balance) / 100).toFixed(2) })),
+            { Debit_Particulars: 'Net Profit', Debit_Amount: netProfit >= 0 ? (netProfit / 100).toFixed(2) : '-', Credit_Particulars: 'Net Loss', Credit_Amount: netProfit < 0 ? (Math.abs(netProfit) / 100).toFixed(2) : '-' }
         ];
         ReportExportService.exportToCSV('Profit_Loss', csvData, headers, isShare);
     };
 
+    if (closingStock === null) {
+        return (
+            <Box p={3} maxWidth={400} mx="auto" mt={5}>
+                <Typography variant="h5" mb={2}>Closing Stock</Typography>
+                <Typography variant="body2" color="text.secondary" mb={3}>
+                    Please enter the closing stock value to generate the P&L report.
+                </Typography>
+                <TextField
+                    fullWidth
+                    label="Closing Stock Value (₹)"
+                    type="number"
+                    sx={{ mb: 2 }}
+                    value={closingStockInput}
+                    onChange={e => setClosingStockInput(e.target.value)}
+                    autoFocus
+                />
+                <Stack direction="row" spacing={2} mt={3}>
+                    <Button variant="outlined" onClick={() => navigate(-1)} fullWidth>Go Back</Button>
+                    <Button 
+                        variant="contained" 
+                        onClick={() => setClosingStock(Math.round(Number(closingStockInput) * 100) || 0)} 
+                        fullWidth
+                    >
+                        View Report
+                    </Button>
+                </Stack>
+            </Box>
+        );
+    }
+
     return (
-        <Box p={2}>
-            <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h5" fontWeight="bold">Profit & Loss Account</Typography>
+        <Box p={{ xs: 1, sm: 2 }}>
+            <Box display="flex" alignItems="center" mb={1.5} gap={1} flexWrap="wrap">
+                <Button size="small" onClick={() => navigate(-1)}>&larr; Back</Button>
+                <Button variant="outlined" size="small" onClick={() => setClosingStock(null)}>Change Closing Stock</Button>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
+                <Typography variant="h6" fontWeight="bold">Profit & Loss Account</Typography>
                 <Stack direction="row" spacing={1}>
                     <Button 
                         variant="outlined" 
@@ -117,7 +160,7 @@ export default function PLReportPage() {
                         onClick={(e) => setDownloadAnchor(e.currentTarget)}
                         disabled={isGenerating}
                     >
-                        Download
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Download</Box>
                     </Button>
                     <Button 
                         variant="outlined" 
@@ -127,7 +170,7 @@ export default function PLReportPage() {
                         onClick={(e) => setShareAnchor(e.currentTarget)}
                         disabled={isGenerating}
                     >
-                        Share
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Share</Box>
                     </Button>
                 </Stack>
             </Box>
@@ -163,35 +206,47 @@ export default function PLReportPage() {
                 <Table>
                     <TableHead>
                         <TableRow sx={{ bgcolor: 'secondary.main' }}>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Expenses (Debit)</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Amount (₹)</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Income (Credit)</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Amount (₹)</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Particulars (Dr)</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Amount</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Particulars (Cr)</TableCell>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Amount</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         <TableRow>
-                            <TableCell>To Indirect Expenses</TableCell>
-                            <TableCell align="right">{(expenses / 100).toFixed(2)}</TableCell>
-                            <TableCell>By Gross Profit b/f</TableCell>
-                            <TableCell align="right">{(grossProfit / 100).toFixed(2)}</TableCell>
+                            <TableCell>{grossProfit < 0 ? 'To Gross Loss b/f' : ''}</TableCell>
+                            <TableCell align="right">{grossProfit < 0 ? (Math.abs(grossProfit) / 100).toFixed(2) : ''}</TableCell>
+                            <TableCell>{grossProfit >= 0 ? 'By Gross Profit b/f' : ''}</TableCell>
+                            <TableCell align="right">{grossProfit >= 0 ? (grossProfit / 100).toFixed(2) : ''}</TableCell>
                         </TableRow>
-                        <TableRow>
-                            <TableCell></TableCell>
-                            <TableCell align="right"></TableCell>
-                            <TableCell>By Other Income</TableCell>
-                            <TableCell align="right">{(indirectIncome / 100).toFixed(2)}</TableCell>
-                        </TableRow>
-                        <TableRow sx={{ '& td': { borderBottom: '2px solid', borderColor: 'divider' } }}>
-                            <TableCell colSpan={4} sx={{ p: 0 }} />
-                        </TableRow>
+                        
+                        {/* P&L Category Items */}
+                        {plDebits.map((p, i) => (
+                            <TableRow key={`dr-${i}`}>
+                                <TableCell>To {p.name}</TableCell>
+                                <TableCell align="right">{(p.balance / 100).toFixed(2)}</TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        ))}
+                        {plCredits.map((p, i) => (
+                            <TableRow key={`cr-${i}`}>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell>By {p.name}</TableCell>
+                                <TableCell align="right">{(Math.abs(p.balance) / 100).toFixed(2)}</TableCell>
+                            </TableRow>
+                        ))}
+
                         <TableRow sx={{ bgcolor: 'action.hover' }}>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Net Profit</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold', color: netProfit >= 0 ? 'success.main' : 'error.main' }}>
-                                {(netProfit / 100).toFixed(2)}
+                            <TableCell sx={{ fontWeight: 'bold' }}>{netProfit >= 0 ? 'Net Profit' : ''}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                                {netProfit >= 0 ? (netProfit / 100).toFixed(2) : ''}
                             </TableCell>
-                            <TableCell></TableCell>
-                            <TableCell></TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{netProfit < 0 ? 'Net Loss' : ''}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                {netProfit < 0 ? (Math.abs(netProfit) / 100).toFixed(2) : ''}
+                            </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

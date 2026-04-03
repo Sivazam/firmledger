@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField, InputAdornment, Button } from '@mui/material';
+import { Box, Typography, TextField, InputAdornment, Button, CircularProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { usePartyStore } from '../../stores/partyStore';
@@ -39,10 +39,20 @@ export default function PartiesListPage() {
 
     const handleExportCsv = () => {
         handleCloseMenu();
-        const headers = ['code', 'name', 'fatherName', 'town', 'address', 'phoneNumber', 'aadharNumber', 'panNumber', 'gstNumber', 'category', 'openingBalance', 'balanceType'];
+        const headers = ['Code', 'Name', 'Father_Name', 'Town', 'Address', 'Phone_Number', 'Aadhar_Number', 'PAN_Number', 'GST_Number', 'Category', 'Opening_Balance', 'Balance_Type'];
         const csvData = filteredParties.map(p => ({
-            ...p,
-            openingBalance: (p.openingBalance || 0) / 100
+            Code: p.code,
+            Name: p.name,
+            Father_Name: p.fatherName || '',
+            Town: p.town,
+            Address: p.address,
+            Phone_Number: p.phoneNumber,
+            Aadhar_Number: p.aadharNumber || '',
+            PAN_Number: p.panNumber || '',
+            GST_Number: p.gstNumber || '',
+            Category: p.category,
+            Opening_Balance: (p.openingBalance || 0) / 100,
+            Balance_Type: p.balanceType
         }));
         ReportExportService.exportToCSV(`Parties_List_${new Date().getTime()}`, csvData, headers);
     };
@@ -62,24 +72,50 @@ export default function PartiesListPage() {
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} gap={1}>
-                <Typography variant="h5" fontWeight="bold">Parties</Typography>
+                <Typography variant="h5" fontWeight="900" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>Parties</Typography>
                 <Box display="flex" gap={1}>
                     <Button
                         variant="outlined"
-                        startIcon={<DownloadIcon />}
                         onClick={handleOpenMenu}
                         disabled={isGenerating || parties.length === 0}
-                        sx={{ borderRadius: 8, textTransform: 'none' }}
+                        size="small"
+                        sx={{ 
+                            borderRadius: 2, 
+                            textTransform: 'none', 
+                            minWidth: { xs: 40, sm: 100 },
+                            height: { xs: 40, sm: 'auto' },
+                            p: { xs: 0, sm: '4px 10px' },
+                            fontWeight: 'bold'
+                        }}
                     >
-                        {isGenerating ? 'Generating...' : 'Export'}
+                        {isGenerating ? (
+                            <CircularProgress size={20} />
+                        ) : (
+                            <>
+                                <DownloadIcon sx={{ mr: { xs: 0, sm: 0.5 }, fontSize: { xs: 24, sm: 20 } }} />
+                                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                                    Export
+                                </Box>
+                            </>
+                        )}
                     </Button>
                     <Button
                         variant="contained"
-                        startIcon={<AddIcon />}
                         onClick={() => navigate('/parties/add')}
-                        sx={{ borderRadius: 8, textTransform: 'none' }}
+                        size="small"
+                        sx={{ 
+                            borderRadius: 2, 
+                            textTransform: 'none', 
+                            minWidth: { xs: 40, sm: 110 },
+                            height: { xs: 40, sm: 'auto' },
+                            p: { xs: 0, sm: '4px 10px' },
+                            fontWeight: 'bold'
+                        }}
                     >
-                        Add Party
+                        <AddIcon sx={{ mr: { xs: 0, sm: 0.5 }, fontSize: { xs: 24, sm: 20 } }} />
+                        <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                            Add Party
+                        </Box>
                     </Button>
                 </Box>
             </Box>

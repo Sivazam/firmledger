@@ -21,6 +21,7 @@ export default function ManageMembersPage() {
     const [members, setMembers] = useState<UserProfile[]>([]);
     const [loadingMembers, setLoadingMembers] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    
     const [dialogConfig, setDialogConfig] = useState<{
         open: boolean; title: string; message: string;
         variant: 'success' | 'error' | 'confirm'; onConfirm: () => void;
@@ -77,99 +78,88 @@ export default function ManageMembersPage() {
 
     const getStatusChip = (status?: string) => {
         switch (status) {
-            case 'pending':  return <Chip label="Pending Approval" color="warning" size="small" />;
-            case 'denied':   return <Chip label="Deactivated" color="error" size="small" />;
-            default:         return <Chip label="Active" color="success" size="small" />;
+            case 'pending':  return <Chip label="Pending Approval" color="warning" size="small" sx={{fontWeight: 700, fontSize: '0.65rem'}} />;
+            case 'denied':   return <Chip label="Deactivated" color="error" size="small" sx={{fontWeight: 700, fontSize: '0.65rem'}} />;
+            default:         return <Chip label="Active" color="success" size="small" sx={{fontWeight: 700, fontSize: '0.65rem'}} />;
         }
     };
 
-    const isOwner = currentOrganization?.ownerId === profile?.uid;
+    const isOrgOwner = profile?.uid === currentOrganization?.ownerId;
 
     return (
-        <Box p={2} maxWidth={700} mx="auto">
+        <Box p={2} maxWidth={750} mx="auto">
             <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
-            <Box display="flex" alignItems="center" gap={1.5} mb={3}>
-                <GroupIcon color="primary" />
-                <Typography variant="h5">Team Members</Typography>
-                {!loadingMembers && (
-                    <Chip label={`${members.length} member${members.length !== 1 ? 's' : ''}`} size="small" variant="outlined" />
-                )}
-            </Box>
-
-            {!isOwner && (
-                <Box sx={{ p: 2, mb: 3, bgcolor: '#FEF3C7', borderRadius: 2, border: '1px solid #F59E0B' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        Only the organization owner can manage team members.
-                    </Typography>
+            
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Box display="flex" alignItems="center" gap={1.5}>
+                    <GroupIcon color="primary" />
+                    <Typography variant="h5" fontWeight="800">Team Members</Typography>
+                    {!loadingMembers && (
+                        <Chip label={`${members.length} member${members.length !== 1 ? 's' : ''}`} size="small" variant="outlined" />
+                    )}
                 </Box>
-            )}
+            </Box>
 
             {loadingMembers ? (
                 <Box display="flex" justifyContent="center" py={6}>
                     <CircularProgress />
                 </Box>
             ) : members.length === 0 ? (
-                <Box textAlign="center" py={8}>
+                <Box textAlign="center" py={8} bgcolor="white" borderRadius={3} border="1px dashed #E2E8F0">
                     <GroupIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
                     <Typography variant="h6" color="text.secondary">No members yet</Typography>
                     <Typography variant="body2" color="text.disabled" mt={1}>
-                        Invite staff from Organization Details to get started.
+                        Staff members will appear here once created by the system administrator.
                     </Typography>
-                    <Button
-                        variant="outlined"
-                        sx={{ mt: 3 }}
-                        onClick={() => navigate('/settings/organization')}
-                    >
-                        Go to Organization Details
-                    </Button>
                 </Box>
             ) : (
                 <Stack spacing={2}>
                     {members.map(member => (
-                        <Card key={member.uid} variant="outlined" sx={{
-                            borderLeft: `4px solid ${
+                        <Card key={member.uid} sx={{
+                            borderRadius: 3,
+                            boxShadow: '0px 1px 3px rgba(0,0,0,0.05)',
+                            border: '1px solid #E2E8F0',
+                            borderLeft: `5px solid ${
                                 member.status === 'denied' ? '#EF4444' :
                                 member.status === 'pending' ? '#F59E0B' : '#10B981'
                             }`,
                             opacity: member.status === 'denied' ? 0.85 : 1
                         }}>
-                            <CardContent>
-                                <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={2}>
-                                    {/* Left: avatar + details */}
+                            <CardContent sx={{ py: '16px !important' }}>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
                                     <Box display="flex" gap={2} alignItems="center" flexGrow={1} minWidth={0}>
-                                        <Avatar sx={{ bgcolor: 'primary.main', flexShrink: 0 }}>
+                                        <Avatar sx={{ bgcolor: 'secondary.light', flexShrink: 0, fontWeight: 'bold' }}>
                                             {member.displayName?.[0]?.toUpperCase() ?? '?'}
                                         </Avatar>
                                         <Box minWidth={0}>
-                                            <Typography fontWeight="bold" noWrap>{member.displayName}</Typography>
-                                            <Typography variant="body2" color="text.secondary" noWrap>{member.email}</Typography>
-                                            <Typography variant="caption" color="text.disabled">{member.phone}</Typography>
+                                            <Typography fontWeight="800" noWrap fontSize="1rem">{member.displayName}</Typography>
+                                            <Typography variant="body2" color="text.secondary" noWrap fontSize="0.85rem">{member.email}</Typography>
+                                            {member.phone && <Typography variant="caption" color="text.disabled" fontWeight="600">{member.phone}</Typography>}
                                         </Box>
                                     </Box>
 
-                                    {/* Right: status + action */}
                                     <Box display="flex" flexDirection="column" alignItems="flex-end" gap={1} flexShrink={0}>
                                         {getStatusChip(member.status)}
-                                        {isOwner && member.status !== 'pending' && (
+                                        {isOrgOwner && (
                                             member.status === 'denied' ? (
                                                 <Button
                                                     size="small"
-                                                    variant="outlined"
+                                                    variant="text"
                                                     color="success"
-                                                    startIcon={<PersonIcon />}
                                                     disabled={actionLoading === member.uid}
                                                     onClick={() => handleToggleStatus(member, 'approved')}
+                                                    sx={{fontWeight: 700, fontSize: '0.7rem'}}
                                                 >
                                                     Reactivate
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     size="small"
-                                                    variant="outlined"
+                                                    variant="text"
                                                     color="error"
-                                                    startIcon={<PersonOffIcon />}
                                                     disabled={actionLoading === member.uid}
                                                     onClick={() => handleToggleStatus(member, 'denied')}
+                                                    sx={{fontWeight: 700, fontSize: '0.7rem'}}
                                                 >
                                                     Deactivate
                                                 </Button>
@@ -190,8 +180,7 @@ export default function ManageMembersPage() {
                 variant={dialogConfig.variant}
                 onConfirm={dialogConfig.onConfirm}
                 onCancel={() => setDialogConfig(prev => ({ ...prev, open: false }))}
-                confirmText="Yes, proceed"
-                cancelText="Cancel"
+                confirmText="Ok"
             />
         </Box>
     );

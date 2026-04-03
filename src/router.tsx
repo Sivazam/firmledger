@@ -65,7 +65,7 @@ const PLReportPage = lazyWithRetry(() => import('./pages/reports/PLReportPage'))
 const TrialBalancePage = lazyWithRetry(() => import('./pages/reports/TrialBalancePage'));
 
 const SettingsPage = lazyWithRetry(() => import('./pages/settings/SettingsPage'));
-const PersonalDetailsPage = lazyWithRetry(() => import('./pages/settings/PersonalDetailsPage'));
+const SecurityPage = lazyWithRetry(() => import('./pages/settings/SecurityPage'));
 const OrganizationDetailsPage = lazyWithRetry(() => import('./pages/settings/OrganizationDetailsPage'));
 const ManageMembersPage = lazyWithRetry(() => import('./pages/settings/ManageMembersPage'));
 
@@ -100,7 +100,7 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
             { path: '/login', element: <LoginPage /> },
-            { path: '/signup', element: <SignupPage /> },
+            { path: '/accountCreateSecure', element: <SignupPage /> },
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
         ]
     },
@@ -165,7 +165,7 @@ export const router = createBrowserRouter([
                             },
 
                             { path: '/settings', element: <SuspenseWrapper><SettingsPage /></SuspenseWrapper> },
-                            { path: '/settings/personal', element: <SuspenseWrapper><PersonalDetailsPage /></SuspenseWrapper> },
+                            { path: '/settings/security', element: <SuspenseWrapper><SecurityPage /></SuspenseWrapper> },
                             { path: '/settings/organization', element: <SuspenseWrapper><OrganizationDetailsPage /></SuspenseWrapper> },
                             { path: '/settings/members', element: <SuspenseWrapper><ManageMembersPage /></SuspenseWrapper> },
                         ]

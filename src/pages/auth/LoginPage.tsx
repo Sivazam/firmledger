@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Button, TextField, Typography, Box, Link as MuiLink, Alert } from '@mui/material';
+import { Button, TextField, Typography, Box, Link as MuiLink, Alert, InputAdornment, IconButton } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { AuthService } from '../../services/auth.service';
-import GoogleIcon from '@mui/icons-material/Google';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { InputAdornment, IconButton } from '@mui/material';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -27,9 +25,7 @@ export default function LoginPage() {
 
         try {
             let emailToUse = cleanIdentifier;
-            // If no @ symbol, assume it's a username
             if (!cleanIdentifier.includes('@')) {
-                console.log(`[LoginPage] Attempting username lookup for: "${cleanIdentifier.toLowerCase()}"`);
                 emailToUse = await AuthService.getEmailFromUsername(cleanIdentifier.toLowerCase());
             }
 
@@ -50,56 +46,85 @@ export default function LoginPage() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        try {
-            await AuthService.loginWithGoogle();
-            navigate('/');
-        } catch (err: any) {
-            setError(err.message || 'Google sign in failed');
-        }
-    };
-
     return (
-        <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box textAlign="center" mb={2}>
-                <Box component="img" src="/logo.svg" sx={{ height: 48, mb: 1 }} />
-                <Typography variant="h5" fontWeight="800">Welcome Back</Typography>
-                <Typography variant="body2" color="text.secondary">Enter your credentials to continue</Typography>
+        <Box component="form" onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <Box textAlign="center" mb={1}>
+                <Box 
+                    component="img" 
+                    src="/logo.svg" 
+                    sx={{ 
+                        height: 60, 
+                        mb: 2,
+                        filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.1))'
+                    }} 
+                />
+                <Typography variant="h5" fontWeight="900" letterSpacing="-0.02em">
+                    Welcome Back
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ opacity: 0.8 }}>
+                    Please enter your credentials to login
+                </Typography>
             </Box>
 
-            {error && <Alert severity="error">{error}</Alert>}
+            {error && (
+                <Alert severity="error" sx={{ borderRadius: 2, fontSize: '0.85rem' }}>
+                    {error}
+                </Alert>
+            )}
 
-            <TextField
-                label="Email or Username"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-            />
-            <TextField
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <IconButton
-                                onClick={() => setShowPassword(!showPassword)}
-                                edge="end"
-                                size="small"
-                            >
-                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                        </InputAdornment>
-                    ),
-                }}
-            />
-
-            <Box textAlign="right" sx={{ mt: -1 }}>
-                <MuiLink component={Link} to="/forgot-password" variant="body2" sx={{ fontWeight: 600 }}>
-                    Forgot Password?
-                </MuiLink>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                    label="Email or Username"
+                    placeholder="Enter email or username"
+                    variant="outlined"
+                    fullWidth
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+                />
+                
+                <Box>
+                    <TextField
+                        label="Password"
+                        placeholder="••••••••"
+                        type={showPassword ? 'text' : 'password'}
+                        variant="outlined"
+                        fullWidth
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        edge="end"
+                                        size="small"
+                                    >
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <Box textAlign="right" sx={{ mt: 1 }}>
+                        <MuiLink 
+                            component={Link} 
+                            to="/forgot-password" 
+                            variant="caption" 
+                            sx={{ 
+                                fontWeight: 700, 
+                                textDecoration: 'none',
+                                color: 'primary.main',
+                                '&:hover': { textDecoration: 'underline' }
+                            }}
+                        >
+                            Forgot Password?
+                        </MuiLink>
+                    </Box>
+                </Box>
             </Box>
 
             <Button
@@ -108,29 +133,17 @@ export default function LoginPage() {
                 color="primary"
                 size="large"
                 disabled={loading}
+                sx={{ 
+                    py: 1.5, 
+                    borderRadius: 2.5, 
+                    fontWeight: '900',
+                    fontSize: '1rem',
+                    boxShadow: '0 4px 12px rgba(30, 64, 175, 0.25)',
+                    textTransform: 'none'
+                }}
             >
                 {loading ? 'Logging in...' : 'Log In'}
             </Button>
-
-            <Typography textAlign="center" variant="body2" color="text.secondary" sx={{ position: 'relative', '&::before, &::after': { content: '""', position: 'absolute', top: '50%', width: '38%', height: '1px', bgcolor: 'divider' }, '&::before': { left: 0 }, '&::after': { right: 0 } }}>
-                OR
-            </Typography>
-
-            <Button
-                variant="outlined"
-                startIcon={<GoogleIcon />}
-                onClick={handleGoogleLogin}
-                sx={{ color: 'text.primary', borderColor: 'divider' }}
-            >
-                Sign in with Google
-            </Button>
-
-            <Typography textAlign="center" mt={2} variant="body2">
-                Don't have an account?{' '}
-                <MuiLink component={Link} to="/signup" sx={{ fontWeight: 700 }}>
-                    Sign up
-                </MuiLink>
-            </Typography>
         </Box>
     );
 }

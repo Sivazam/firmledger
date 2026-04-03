@@ -159,12 +159,13 @@ export default function TransactionsListPage() {
                         <Box display="flex" alignItems="center" gap={1}>
                             <Button 
                                 startIcon={<ArrowBackIcon />} 
+                                size="small"
                                 onClick={() => setShowReport(false)}
                                 sx={{ fontWeight: 'bold' }}
                             >
-                                Back to List
+                                Back
                             </Button>
-                            <Typography variant="h6" fontWeight="bold">Report Preview</Typography>
+                            <Typography variant="subtitle1" fontWeight="bold">Report Preview</Typography>
                         </Box>
 
                         {filteredTransactions.length > 0 && (
@@ -175,7 +176,7 @@ export default function TransactionsListPage() {
                                     startIcon={<DownloadIcon />}
                                     onClick={(e) => setDownloadAnchor(e.currentTarget)}
                                 >
-                                    Download
+                                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Download</Box>
                                 </Button>
                                 <Button 
                                     variant="outlined" 
@@ -184,7 +185,7 @@ export default function TransactionsListPage() {
                                     startIcon={<ShareIcon />}
                                     onClick={(e) => setShareAnchor(e.currentTarget)}
                                 >
-                                    Share
+                                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Share</Box>
                                 </Button>
                             </Stack>
                         )}
@@ -199,14 +200,14 @@ export default function TransactionsListPage() {
                     <Table size="small" stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Txn No</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>No</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Date</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Type</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>From Party</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>To Party</TableCell>
-                                {isMultiUser && <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Created By</TableCell>}
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>From</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>To</TableCell>
+                                {isMultiUser && <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>By</TableCell>}
                                 <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }} align="right">Amount</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Description</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>Note</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -216,11 +217,11 @@ export default function TransactionsListPage() {
                                         {tx.slNo}
                                     </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                        {tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY')}
+                                        {tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM') : dayjs(tx.date as any).format('DD/MM')}
                                     </TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{TRANSACTION_TYPE_LABELS[tx.type] || tx.type}</TableCell>
-                                    <TableCell sx={{ minWidth: 150 }}>{tx.fromPartyName}</TableCell>
-                                    <TableCell sx={{ minWidth: 150 }}>{tx.toPartyName}</TableCell>
+                                    <TableCell sx={{ minWidth: 100 }}>{tx.fromPartyName}</TableCell>
+                                    <TableCell sx={{ minWidth: 100 }}>{tx.toPartyName}</TableCell>
                                     {isMultiUser && (
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                             {tx.createdBy_name ? (
@@ -229,13 +230,13 @@ export default function TransactionsListPage() {
                                                     size="small" 
                                                     variant="outlined" 
                                                     color={tx.createdBy === currentOrganization?.ownerId ? "primary" : "secondary"}
-                                                    sx={{ fontWeight: 600 }}
+                                                    sx={{ fontWeight: 600, fontSize: '0.65rem' }}
                                                 />
                                             ) : '-'}
                                         </TableCell>
                                     )}
                                     <TableCell align="right" sx={{ fontWeight: 'bold' }}>{formatINR(tx.amount)}</TableCell>
-                                    <TableCell sx={{ minWidth: 200 }}>{tx.description}</TableCell>
+                                    <TableCell sx={{ minWidth: 120 }}>{tx.description}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -273,6 +274,12 @@ export default function TransactionsListPage() {
                 <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
                 <MenuItem onClick={() => { handleExportPDF(true); setShareAnchor(null); }}>PDF</MenuItem>
             </Menu>
+            {!showReport && (
+                <FloatingActionButton 
+                    icon={<AddIcon />} 
+                    onClick={() => navigate('/transactions/new')} 
+                />
+            )}
         </Box>
     );
 }

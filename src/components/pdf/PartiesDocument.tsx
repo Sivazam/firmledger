@@ -60,7 +60,7 @@ export default function PartiesDocument({ parties, organization }: { parties: Pa
                         <View style={[styles.tableCell, styles.colPhone]}><Text style={{ color: '#fff' }}>Phone</Text></View>
                         <View style={[styles.tableCell, styles.colGST]}><Text style={{ color: '#fff' }}>GST No</Text></View>
                         <View style={[styles.tableCell, styles.colCategory]}><Text style={{ color: '#fff' }}>Category</Text></View>
-                        <View style={[styles.tableCell, styles.colBalance, styles.lastCell]}><Text style={{ color: '#fff' }}>Closing Balance</Text></View>
+                        <View style={[styles.tableCell, styles.colBalance, styles.lastCell]}><Text style={{ color: '#fff' }}>Opening Balance</Text></View>
                     </View>
                     
                     {parties.map((party, index) => (

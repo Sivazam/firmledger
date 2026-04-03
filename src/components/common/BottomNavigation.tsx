@@ -27,7 +27,7 @@ export default function BottomNavigation() {
         if (showAdminTabs) {
             if (currentPath.startsWith('/admin/dashboard') || currentPath === '/') return 'admin_home';
             if (currentPath.startsWith('/admin/organizations')) return 'firms';
-            if (currentPath.startsWith('/settings/personal')) return 'profile';
+            if (currentPath.startsWith('/settings')) return 'settings';
             return 'admin_home';
         } else {
             if (currentPath === '/' || currentPath === '/dashboard') return 'home';
@@ -48,7 +48,6 @@ export default function BottomNavigation() {
             case 'ledger': navigate('/transactions'); break;
             case 'reports': navigate('/reports'); break;
             case 'settings': navigate('/settings'); break;
-            case 'profile': navigate('/settings/personal'); break;
         }
     };
 
@@ -98,9 +97,9 @@ export default function BottomNavigation() {
                 )}
 
                 {showAdminTabs ? (
-                    <BottomNavigationAction label="Profile" value="profile" icon={<PersonIcon />} sx={{ minWidth: 0, flex: 1 }} />
+                    <BottomNavigationAction label="Settings" value="settings" icon={<PersonIcon />} sx={{ minWidth: 0, flex: 1 }} />
                 ) : (
-                    <BottomNavigationAction label="More" value="settings" icon={<MoreHorizIcon />} sx={{ minWidth: 0, flex: 1 }} />
+                    <BottomNavigationAction label="Settings" value="settings" icon={<MoreHorizIcon />} sx={{ minWidth: 0, flex: 1 }} />
                 )}
             </MuiBottomNavigation>
 

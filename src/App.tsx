@@ -15,15 +15,9 @@ import AutoUpdater from './components/common/AutoUpdater';
 function App() {
   const { init, initialized, profile } = useAuthStore();
   const { subscribeToOrganization, currentOrganization, setOrgMemberCount } = useOrganizationStore();
-  const [showSplash, setShowSplash] = React.useState(true);
 
   useEffect(() => {
     init();
-    // Force splash for at least 3 seconds
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 3000);
-    return () => clearTimeout(timer);
   }, [init]);
 
   useEffect(() => {
@@ -101,7 +95,7 @@ function App() {
     };
     backfillSystemParties();
   }, [profile?.organizationId, profile?.status, currentOrganization]);
-  if (showSplash || !initialized) {
+  if (!initialized) {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />

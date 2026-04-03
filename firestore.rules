@@ -8,27 +8,37 @@ service cloud.firestore {
     }
 
     function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(path) ? get(path).data : null;
     }
 
     // A Global Admin is someone with 'admin' or 'super-admin' userType
     function isGlobalAdmin() {
-      return isSignedIn() && (getUserData().userType == 'admin' || getUserData().userType == 'super-admin');
+      if (!isSignedIn()) return false;
+      let data = getUserData();
+      return data != null && (data.userType == 'admin' || data.userType == 'super-admin');
     }
 
     function isMemberOf(orgId) {
-      return isSignedIn() && (getUserData().status == 'approved') && getUserData().organizationId == orgId;
+      if (!isSignedIn()) return false;
+      let data = getUserData();
+      return data != null && data.status == 'approved' && data.organizationId == orgId;
     }
 
     // --- User Management Rules ---
     match /users/{userId} {
+      // 1. A user can ALWAYS read/write their own profile if signed in.
+      // We check this first and as a simple standalone rule.
       allow read, write: if isSignedIn() && request.auth.uid == userId;
       
-      // Allow approved members to see others in the same firm (for Name Chips)
-      allow read: if isMemberOf(resource.data.organizationId);
-
-      // Global Admins can read and update ALL users for approval/management
-      allow read, update: if isGlobalAdmin();
+      // 2. Global Admins manage everything else.
+      allow create, read, update: if isGlobalAdmin();
+      
+      // 3. Team members can see each other's basic info (for attribution chips).
+      // We only allow reading existing documents.
+      allow read: if isSignedIn() && 
+                   exists(/databases/$(database)/documents/users/$(userId)) &&
+                   isMemberOf(get(/databases/$(database)/documents/users/$(userId)).data.organizationId);
     }
 
     match /usernames/{username} {
@@ -38,13 +48,15 @@ service cloud.firestore {
 
     // --- Organization Data Rules ---
     match /organizations/{orgId} {
-      // Global Admins can see all organizations. 
+      // Global Admins can see and create all organizations. 
       // Members can only see their own organization.
-      allow read: if isGlobalAdmin() || isMemberOf(orgId);
+      allow read, create: if isGlobalAdmin();
+      allow read: if isMemberOf(orgId);
       
+      // Owners can create their own organization (legacy/emergency)
       allow create: if isSignedIn() && orgId == request.auth.uid;
       
-      // Global Admins can update any organization status. 
+      // Global Admins can update any organization. 
       // Owners can update their own settings.
       allow update: if isGlobalAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
 

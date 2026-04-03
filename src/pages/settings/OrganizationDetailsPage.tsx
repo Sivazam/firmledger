@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Card, CardContent, Divider } from '@mui/material';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { Box, Typography, TextField, Button, Card, CardContent, Divider, Stack } from '@mui/material';
 import { useAuthStore } from '../../stores/authStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
 import { OrganizationService } from '../../services/organization.service';
@@ -13,8 +12,8 @@ export default function OrganizationDetailsPage() {
     const { profile } = useAuthStore();
     const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
+    
     const [loading, setLoading] = useState(false);
-    const [inviteNumber, setInviteNumber] = useState('');
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         orgName: '',
@@ -22,9 +21,14 @@ export default function OrganizationDetailsPage() {
         city: '',
         pincode: '',
         gstNumber: '',
-        logoUrl: ''
+        logoUrl: '',
+        ownerName: '',
+        phone: ''
     });
-    const [dialogConfig, setDialogConfig] = useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
+
+    const [dialogConfig, setDialogConfig] = useState<{ 
+        open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void 
+    }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
 
@@ -34,18 +38,21 @@ export default function OrganizationDetailsPage() {
         if (profile?.organizationId) {
             OrganizationService.getOrganization(profile.organizationId).then(org => {
                 if (org) {
-                    setFormData({
+                    setFormData(prev => ({
+                        ...prev,
                         orgName: org.orgName,
                         address: org.address,
                         city: org.city,
                         pincode: org.pincode,
                         gstNumber: org.gstNumber || '',
-                        logoUrl: org.logoUrl || ''
-                    });
+                        logoUrl: org.logoUrl || '',
+                        ownerName: profile?.displayName || '',
+                        phone: profile?.phone || ''
+                    }));
                 }
             });
         }
-    }, [profile?.organizationId]);
+    }, [profile?.organizationId, profile?.displayName, profile?.phone]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!isOrgOwner) return;
@@ -53,7 +60,7 @@ export default function OrganizationDetailsPage() {
     };
 
     const handleSave = async () => {
-        if (!isOrgOwner || !profile?.organizationId) return;
+        if (!isOrgOwner || !profile?.organizationId || !profile?.uid) return;
         setLoading(true);
         try {
             let finalLogoUrl = formData.logoUrl;
@@ -61,6 +68,7 @@ export default function OrganizationDetailsPage() {
                 finalLogoUrl = await OrganizationService.uploadLogo(profile.organizationId, logoFile);
             }
 
+            // 1. Update Organization
             await updateDoc(doc(db, 'organizations', profile.organizationId), {
                 orgName: formData.orgName,
                 address: formData.address,
@@ -70,11 +78,19 @@ export default function OrganizationDetailsPage() {
                 logoUrl: finalLogoUrl,
                 updatedAt: serverTimestamp()
             });
+
+            // 2. Update Owner Profile (Phone and Name)
+            await updateDoc(doc(db, 'users', profile.uid), {
+                displayName: formData.ownerName,
+                phone: formData.phone,
+                updatedAt: serverTimestamp()
+            });
+
             setDialogConfig({
                 open: true,
                 variant: 'success',
-                title: 'Organization Updated',
-                message: 'Your organization details have been successfully updated.',
+                title: 'Details Updated',
+                message: 'Organization and Owner contact details have been successfully updated.',
                 onConfirm: () => {
                     setDialogConfig(prev => ({ ...prev, open: false }));
                     navigate(-1);
@@ -86,7 +102,7 @@ export default function OrganizationDetailsPage() {
                 open: true,
                 variant: 'error',
                 title: 'Update Failed',
-                message: 'Failed to update organization details due to a network error.',
+                message: 'An error occurred while saving details.',
                 onConfirm: () => setDialogConfig(prev => ({ ...prev, open: false }))
             });
         } finally {
@@ -94,99 +110,69 @@ export default function OrganizationDetailsPage() {
         }
     };
 
-    const handleInvite = () => {
-        if (!isOrgOwner) return;
-        if (!inviteNumber || inviteNumber.length < 10) {
-            setDialogConfig({
-                open: true,
-                variant: 'error',
-                title: 'Invalid Number',
-                message: 'Please enter a valid 10-digit WhatsApp number.',
-                onConfirm: () => setDialogConfig(prev => ({ ...prev, open: false }))
-            });
-            return;
-        }
-        
-        const inviteLink = `${window.location.origin}/signup?invite=${profile?.organizationId}`;
-        const message = `Hello! You've been invited to join ${formData.orgName || 'our organization'} on Viswa Ledger.\n\nPlease click the link below to sign up and join the organization:\n\n${inviteLink}`;
-        const encodedMessage = encodeURIComponent(message);
-        
-        let formattedNumber = inviteNumber.replace(/\D/g, '');
-        if (formattedNumber.length === 10) {
-            formattedNumber = `91${formattedNumber}`; // Default to India country code
-        }
-        
-        window.open(`https://wa.me/${formattedNumber}?text=${encodedMessage}`, '_blank');
-        setInviteNumber('');
-    };
-
     return (
-        <Box p={2} maxWidth={600} mx="auto">
+        <Box p={2} maxWidth={650} mx="auto">
             <Button onClick={() => navigate(-1)} sx={{ mb: 2 }}>&larr; Back</Button>
-            <Typography variant="h5" mb={3}>Organization Details</Typography>
+            
+            <Typography variant="h5" fontWeight="800" mb={3}>Organization & Profile</Typography>
 
-            <Box display="flex" flexDirection="column" gap={2}>
-                <TextField label="Organization Name" name="orgName" value={formData.orgName} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
-                <TextField label="Address" name="address" multiline rows={2} value={formData.address} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
-                <TextField label="City" name="city" value={formData.city} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
-                <TextField label="Pincode" name="pincode" inputMode="numeric" value={formData.pincode} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
-                <TextField label="GST Number" name="gstNumber" value={formData.gstNumber} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+            <Box display="flex" flexDirection="column" gap={3}>
+                {/* Firm Section */}
+                <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none' }}>
+                    <CardContent>
+                        <Typography variant="subtitle1" fontWeight="bold" mb={2} color="primary">Firm Details</Typography>
+                        <Stack spacing={2.5}>
+                            <TextField label="Organization Name" name="orgName" fullWidth size="small" value={formData.orgName} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                            <TextField label="Address" name="address" fullWidth size="small" multiline rows={2} value={formData.address} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                            <Box display="flex" gap={2}>
+                                <TextField label="City" name="city" fullWidth size="small" value={formData.city} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                                <TextField label="Pincode" name="pincode" fullWidth size="small" inputMode="numeric" value={formData.pincode} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                            </Box>
+                            <TextField label="GST Number" name="gstNumber" fullWidth size="small" value={formData.gstNumber} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                        </Stack>
+                    </CardContent>
+                </Card>
+
+                {/* Owner Section */}
+                <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none' }}>
+                    <CardContent>
+                        <Typography variant="subtitle1" fontWeight="bold" mb={2} color="primary">Owner Contact Details</Typography>
+                        <Stack spacing={2.5}>
+                            <TextField label="Owner Name" name="ownerName" fullWidth size="small" value={formData.ownerName} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                            <TextField label="Phone / Mobile Number" name="phone" fullWidth size="small" value={formData.phone} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} helperText="Shared on reports and invoices" />
+                        </Stack>
+                    </CardContent>
+                </Card>
 
                 {isOrgOwner && (
-                    <Box>
-                        <Typography variant="body2" color="text.secondary" mb={1}>Update Logo</Typography>
-                        <Button variant="outlined" component="label">
-                            Choose File
-                            <input type="file" hidden accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
-                        </Button>
-                        {logoFile && <Typography variant="caption" ml={2}>{logoFile.name}</Typography>}
-                        {!logoFile && formData.logoUrl && (
-                            <Typography variant="caption" ml={2}>Current logo exists</Typography>
-                        )}
+                    <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: 2, border: '1px solid #E2E8F0' }}>
+                        <Typography variant="body2" color="text.secondary" fontWeight="600" mb={1.5}>Firm Logo</Typography>
+                        <Box display="flex" alignItems="center" gap={2}>
+                            <Button variant="outlined" component="label" sx={{ fontWeight: 'bold' }}>
+                                Choose File
+                                <input type="file" hidden accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
+                            </Button>
+                            {logoFile ? (
+                                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold' }}>{logoFile.name}</Typography>
+                            ) : formData.logoUrl ? (
+                                <Typography variant="caption" color="text.disabled">Current logo uploaded</Typography>
+                            ) : null}
+                        </Box>
                     </Box>
                 )}
 
                 {isOrgOwner && (
-                    <Button variant="contained" disabled={loading} onClick={handleSave} size="large">
-                        {loading ? 'Saving...' : 'Save Changes'}
+                    <Button 
+                        variant="contained" 
+                        disabled={loading} 
+                        onClick={handleSave} 
+                        size="large"
+                        sx={{ fontWeight: 'bold', py: 1.5, borderRadius: 2 }}
+                    >
+                        {loading ? 'Saving Changes...' : 'Save All Details'}
                     </Button>
                 )}
             </Box>
-
-            {isOrgOwner && (
-                <Box mt={6}>
-                    <Divider sx={{ mb: 4 }} />
-                    <Typography variant="h6" mb={2}>Invite Staff Member</Typography>
-                    <Card variant="outlined" sx={{ bgcolor: '#F8FAFC', borderColor: 'divider' }}>
-                        <CardContent>
-                            <Typography variant="body2" color="text.secondary" mb={2}>
-                                Invite a colleague to access and manage your organization's ledger. They will receive a unique link via WhatsApp to join.
-                            </Typography>
-                            <Box display="flex" gap={2} alignItems="center" sx={{ flexDirection: { xs: 'column', sm: 'row' } }}>
-                                <TextField 
-                                    variant="outlined" 
-                                    size="small" 
-                                    label="WhatsApp Number" 
-                                    placeholder="10-digit mobile number" 
-                                    value={inviteNumber}
-                                    onChange={(e) => setInviteNumber(e.target.value)}
-                                    sx={{ flexGrow: 1, bgcolor: 'white', width: '100%' }}
-                                    inputMode="numeric"
-                                />
-                                <Button 
-                                    variant="contained" 
-                                    color="success" 
-                                    startIcon={<WhatsAppIcon />}
-                                    onClick={handleInvite}
-                                    sx={{ whiteSpace: 'nowrap', width: { xs: '100%', sm: 'auto' } }}
-                                >
-                                    Send Invite
-                                </Button>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Box>
-            )}
 
             <ConfirmDialog
                 open={dialogConfig.open}

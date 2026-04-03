@@ -5,6 +5,9 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     sendPasswordResetEmail,
+    updatePassword,
+    reauthenticateWithCredential,
+    EmailAuthProvider
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
@@ -32,11 +35,9 @@ export const AuthService = {
 
     async getEmailFromUsername(username: string): Promise<string> {
         const cleanUsername = username.trim().toLowerCase();
-        console.log(`[AuthService] Looking up email for username: "${cleanUsername}"`);
         const userDoc = doc(db, 'usernames', cleanUsername);
         const snap = await getDoc(userDoc);
         if (!snap.exists()) {
-            console.error(`[AuthService] Username NOT FOUND: "${cleanUsername}"`);
             throw new Error('Username not found.');
         }
         return snap.data().email;
@@ -44,6 +45,8 @@ export const AuthService = {
 
     async createUserProfile(uid: string, profileData: Partial<UserProfile>) {
         await setDoc(doc(db, 'users', uid), {
+            status: 'approved',
+            profileComplete: true,
             ...profileData,
             uid,
             createdAt: serverTimestamp(),
@@ -63,6 +66,19 @@ export const AuthService = {
 
     sendPasswordResetEmail(email: string) {
         return sendPasswordResetEmail(auth, email);
+    },
+
+    async reauthenticateUser(currentPassword: string) {
+        const user = auth.currentUser;
+        if (!user || !user.email) throw new Error('No user logged in');
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        return reauthenticateWithCredential(user, credential);
+    },
+
+    async updateUserPassword(newPassword: string) {
+        const user = auth.currentUser;
+        if (!user) throw new Error('No user logged in');
+        return updatePassword(user, newPassword);
     },
 
     logout() {

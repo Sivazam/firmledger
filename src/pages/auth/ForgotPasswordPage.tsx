@@ -1,71 +1,95 @@
 import React, { useState } from 'react';
-import { Button, TextField, Typography, Box, Link as MuiLink, Alert, Paper } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Button, TextField, Typography, Box, Link as MuiLink, Alert } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { AuthService } from '../../services/auth.service';
 
 export default function ForgotPasswordPage() {
-    const navigate = useNavigate();
     const [email, setEmail] = useState('');
+    const [sent, setSent] = useState(false);
     const [error, setError] = useState('');
-    const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setMessage('');
         setLoading(true);
 
         try {
             await AuthService.sendPasswordResetEmail(email.trim().toLowerCase());
-            setMessage('Check your inbox for further instructions.');
+            setSent(true);
         } catch (err: any) {
             console.error(err);
-            let msg = err.message || 'Failed to reset password';
-            if (msg.includes('auth/user-not-found')) msg = 'User not found.';
-            else if (msg.includes('auth/invalid-email')) msg = 'Invalid email format.';
-            else msg = msg.replace('Firebase: Error ', '').replace(/\(auth\/.*\)\./, '').trim();
-            setError(msg);
+            setError(err.message || 'Failed to send reset email');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4 }}>
-            <Typography variant="h5" textAlign="center" mb={2}>Reset Password</Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center" mb={3}>
-                Enter your email address and we'll send you a link to reset your password.
-            </Typography>
-
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
-
-            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                    label="Email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    fullWidth
-                />
-
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    disabled={loading}
-                >
-                    {loading ? 'Sending...' : 'Send Reset Link'}
-                </Button>
-
-                <Typography textAlign="center" mt={2}>
-                    <MuiLink component={Link} to="/login">
-                        Back to Login
-                    </MuiLink>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <Box textAlign="center" mb={1}>
+                <Typography variant="h5" fontWeight="900" letterSpacing="-0.02em">
+                    Reset Password
                 </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ opacity: 0.8 }}>
+                    We'll send a recovery link to your inbox
+                </Typography>
+            </Box>
+
+            {sent ? (
+                <Alert severity="success" sx={{ borderRadius: 2 }}>
+                    Success! Check your email for a password reset link.
+                </Alert>
+            ) : (
+                <>
+                    {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+                    
+                    <TextField
+                        label="Email Address"
+                        placeholder="user@example.com"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        fullWidth
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2.5 } }}
+                    />
+
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        disabled={loading}
+                        sx={{ 
+                            py: 1.5, 
+                            borderRadius: 2.5, 
+                            fontWeight: '900',
+                            fontSize: '1rem',
+                            boxShadow: '0 4px 12px rgba(30, 64, 175, 0.25)',
+                            textTransform: 'none',
+                            mt: 1
+                        }}
+                    >
+                        {loading ? 'Sending...' : 'Send Recovery Link'}
+                    </Button>
+                </>
+            )}
+
+            <Box textAlign="center">
+                <MuiLink 
+                    component={Link} 
+                    to="/login" 
+                    sx={{ 
+                        fontWeight: 700, 
+                        color: 'primary.main', 
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                        fontSize: '0.85rem'
+                    }}
+                >
+                    &larr; Back to Login
+                </MuiLink>
             </Box>
         </Box>
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, IconButton, Box, FormControlLabel, Switch, Typography } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Box, Typography } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -15,17 +15,26 @@ export default function TopAppBar({ showBack = false }: { title?: string, showBa
     const { currentOrganization } = useOrganizationStore();
     const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
 
-    const isSettings = location.pathname === '/settings';
-
     const handleLogout = async () => {
         await AuthService.logout();
         navigate('/login');
     };
 
+    const toTitleCase = (str: string) => {
+        return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    };
+
     const displayTitle = React.useMemo(() => {
-        if (profile?.userType === 'super-admin') return 'Super Admin';
-        if (profile?.userType === 'admin') return 'Admin';
-        return currentOrganization?.orgName || 'Viswa Ledger';
+        let title = 'Viswa Ledger';
+        if (profile?.userType === 'super-admin') title = 'Super Admin';
+        else if (profile?.userType === 'admin') title = 'Admin';
+        else if (currentOrganization?.orgName) title = currentOrganization.orgName;
+        
+        return toTitleCase(title);
     }, [profile?.userType, currentOrganization?.orgName]);
 
     return (
@@ -47,14 +56,12 @@ export default function TopAppBar({ showBack = false }: { title?: string, showBa
                     <Typography 
                         variant="h6" 
                         sx={{ 
-                            fontWeight: 800, 
+                            fontWeight: 900, 
                             color: 'inherit',
-                            display: { xs: 'block', sm: 'block' },
-                            maxWidth: { xs: '180px', sm: 'none' },
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            fontSize: { xs: '1rem', sm: '1.25rem' }
+                            lineHeight: 1.1,
+                            fontSize: { xs: '1.35rem', sm: '1.6rem' },
+                            letterSpacing: '-0.02em',
+                            textTransform: 'none' // Ensure it respects the Title Case from JS
                         }}
                     >
                         {displayTitle}
