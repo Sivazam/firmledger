@@ -9,7 +9,7 @@ export default function UserManagementPage() {
     const { users, organizations, fetchUsers } = useAdminStore();
     const location = useLocation();
     const navigate = useNavigate();
-    const statusFilter = location.state?.statusFilter || 'pending';
+    const statusFilter = location.state?.statusFilter || 'approved';
 
     const [dialogConfig, setDialogConfig] = useState<{ open: boolean; title: string; message: string; variant: 'success' | 'confirm' | 'error'; onConfirm: () => void; }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
@@ -23,7 +23,7 @@ export default function UserManagementPage() {
         // Skip owners (approved via orgs) and SaaS admins
         if (ownerIds.has(u.uid) || u.userType === 'admin' || u.userType === 'super-admin') return false;
         
-        if (statusFilter === 'pending') return u.status === 'pending';
+        if (statusFilter === 'all') return true;
         if (statusFilter === 'approved') return !u.status || u.status === 'approved';
         if (statusFilter === 'denied') return u.status === 'denied';
         return true;
@@ -60,7 +60,9 @@ export default function UserManagementPage() {
         <Box p={2}>
             <Box display="flex" alignItems="center" gap={2} mb={3}>
                 <Button onClick={() => navigate('/admin/dashboard')}>&larr; Back</Button>
-                <Typography variant="h5" textTransform="capitalize">{statusFilter} Users</Typography>
+                <Typography variant="h5" textTransform="capitalize" fontWeight="900">
+                    {statusFilter === 'approved' ? 'Staff Members' : `${statusFilter} Users`}
+                </Typography>
             </Box>
 
             <TableContainer component={Paper}>
@@ -116,6 +118,22 @@ export default function UserManagementPage() {
                                                         Deny
                                                     </Button>
                                                 </>
+                                            )}
+                                            {(!user.status || user.status === 'approved') && (
+                                                <Button variant="outlined" color="error" size="small"
+                                                    disabled={loadingAction === user.uid}
+                                                    onClick={() => handleUpdateStatus(user.uid, 'denied')}
+                                                >
+                                                    Revoke Access
+                                                </Button>
+                                            )}
+                                            {user.status === 'denied' && (
+                                                <Button variant="outlined" color="success" size="small"
+                                                    disabled={loadingAction === user.uid}
+                                                    onClick={() => handleUpdateStatus(user.uid, 'approved')}
+                                                >
+                                                    Re-Approve
+                                                </Button>
                                             )}
                                         </Box>
                                     </TableCell>

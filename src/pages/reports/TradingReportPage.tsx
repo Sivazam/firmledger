@@ -203,16 +203,16 @@ export default function TradingReportPage() {
                     <TableBody>
                         <TableRow>
                             <TableCell>To Purchases (Net)</TableCell>
-                            <TableCell align="right">{(netPurchases / 100).toFixed(2)}</TableCell>
+                            <TableCell align="right" sx={{ color: 'error.main', fontWeight: 'bold' }}>{(netPurchases / 100).toFixed(2)}</TableCell>
                             <TableCell>By Sales (Net)</TableCell>
-                            <TableCell align="right">{(netSales / 100).toFixed(2)}</TableCell>
+                            <TableCell align="right" sx={{ color: 'success.main', fontWeight: 'bold' }}>{(netSales / 100).toFixed(2)}</TableCell>
                         </TableRow>
                         
                         {/* Trading Category Items */}
                         {tradingDebits.map((p, i) => (
                             <TableRow key={`dr-${i}`}>
                                 <TableCell>To {p.name}</TableCell>
-                                <TableCell align="right">{(p.balance / 100).toFixed(2)}</TableCell>
+                                <TableCell align="right" sx={{ color: 'error.main' }}>{(p.balance / 100).toFixed(2)}</TableCell>
                                 <TableCell></TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
@@ -222,23 +222,25 @@ export default function TradingReportPage() {
                                 <TableCell></TableCell>
                                 <TableCell></TableCell>
                                 <TableCell>By {p.name}</TableCell>
-                                <TableCell align="right">{(Math.abs(p.balance) / 100).toFixed(2)}</TableCell>
+                                <TableCell align="right" sx={{ color: 'success.main' }}>{(Math.abs(p.balance) / 100).toFixed(2)}</TableCell>
                             </TableRow>
                         ))}
 
                         <TableRow>
                             <TableCell></TableCell>
                             <TableCell></TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>By Closing Stock</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'primary.main' }}>{((closingStock || 0) / 100).toFixed(2)}</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', color: 'success.main' }}>By Closing Stock</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'success.main' }}>{((closingStock || 0) / 100).toFixed(2)}</TableCell>
                         </TableRow>
                         <TableRow sx={{ bgcolor: 'action.hover' }}>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Gross Profit c/o</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold', color: grossProfit >= 0 ? 'success.main' : 'error.main' }}>
-                                {(grossProfit / 100).toFixed(2)}
+                            <TableCell sx={{ fontWeight: 'bold' }}>{grossProfit >= 0 ? 'Gross Profit c/o' : ''}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                                {grossProfit >= 0 ? (grossProfit / 100).toFixed(2) : ''}
                             </TableCell>
-                            <TableCell></TableCell>
-                            <TableCell></TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{grossProfit < 0 ? 'Gross Loss c/o' : ''}</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                {grossProfit < 0 ? (Math.abs(grossProfit) / 100).toFixed(2) : ''}
+                            </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

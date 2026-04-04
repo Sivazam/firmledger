@@ -72,11 +72,18 @@ export default function DashboardPage() {
             transition: 'all 0.18s ease',
             '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
         }}>
-            <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="body2" fontWeight="700" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>
+            <CardContent sx={{ 
+                py: { xs: 1, sm: 1.5 }, 
+                px: 2, 
+                '&:last-child': { pb: { xs: 1, sm: 1.5 } }, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between' 
+            }}>
+                <Typography variant="body2" fontWeight="700" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
                     {label}
                 </Typography>
-                <Typography variant="h6" fontWeight="900" color={color}>
+                <Typography variant="h6" fontWeight="900" color={color} sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
                     {value}
                 </Typography>
             </CardContent>
@@ -86,12 +93,12 @@ export default function DashboardPage() {
     return (
         <Box>
             <Box mb={2}>
-                <Typography variant="caption" fontWeight="800" sx={{ color: 'primary.main', opacity: 0.8, letterSpacing: '0.05em' }}>
+                <Typography variant="body2" fontWeight="900" sx={{ color: 'primary.main', opacity: 0.8, letterSpacing: '0.05em' }}>
                     USER - {profile?.displayName || 'GUEST'}
                 </Typography>
             </Box>
 
-            <Grid container spacing={1.5}>
+            <Grid container spacing={1}>
                 <Grid size={{ xs: 12 }}>
                     <CardItem label="Cash Opening Balance" value={formatINR(stats.dashboardOpeningBalance)} color="#1565c0" />
                 </Grid>
@@ -106,13 +113,16 @@ export default function DashboardPage() {
                 </Grid>
             </Grid>
 
-            <Box mt={3}>
+            <Box mt={1.5}>
                 <Typography variant="subtitle2" fontWeight="900" color="text.primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    Todays Reminders
+                    Today's Reminders
                 </Typography>
-                <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderStyle: 'dashed', bgcolor: '#F8FAFC', textAlign: 'center', borderColor: '#CBD5E1' }}>
-                    <Typography variant="caption" color="text.secondary" fontWeight="700" sx={{ fontSize: '0.7rem' }}>
-                        Coming soon feature - Manage your tasks here.
+                <Paper variant="outlined" sx={{ p: { xs: 2 }, borderRadius: 3, borderStyle: 'dashed', bgcolor: '#F8FAFC', textAlign: 'center', borderColor: '#CBD5E1' }}>
+                    <Typography variant="body2" color="text.secondary" fontWeight="700">
+                        ✨ You're all caught up!
+                    </Typography>
+                    <Typography variant="caption" color="text.disabled">
+                        No pending tasks or reminders for today.
                     </Typography>
                 </Paper>
             </Box>

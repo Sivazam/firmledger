@@ -210,22 +210,22 @@ export default function LedgerPage() {
                   </TableCell>
                   <TableCell align="right">
                     {entry.id === 'opening' ? (
-                      selectedParty?.balanceType === 'Debit' ? <AmountDisplay amount={entry.debit} /> : '-'
+                      selectedParty?.balanceType === 'Debit' ? <AmountDisplay amount={entry.debit} color="error.main" /> : '-'
                     ) : (
-                      entry.debit > 0 ? <AmountDisplay amount={entry.debit} /> : '-'
+                      entry.debit > 0 ? <AmountDisplay amount={entry.debit} color="error.main" /> : '-'
                     )}
                   </TableCell>
                   <TableCell align="right">
                     {entry.id === 'opening' ? (
-                      selectedParty?.balanceType === 'Credit' ? <AmountDisplay amount={entry.credit} /> : '-'
+                      selectedParty?.balanceType === 'Credit' ? <AmountDisplay amount={entry.credit} color="success.main" /> : '-'
                     ) : (
-                      entry.credit > 0 ? <AmountDisplay amount={entry.credit} /> : '-'
+                      entry.credit > 0 ? <AmountDisplay amount={entry.credit} color="success.main" /> : '-'
                     )}
                   </TableCell>
                   <TableCell align="right">
                     <AmountDisplay 
                       amount={Math.abs(entry.balance)} 
-                      color={entry.balance >= 0 ? 'success.main' : 'error.main'} 
+                      color={entry.balance > 0 ? 'error.main' : (entry.balance < 0 ? 'success.main' : 'text.primary')} 
                     />
                   </TableCell>
                 </TableRow>

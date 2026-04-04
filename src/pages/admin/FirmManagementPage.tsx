@@ -231,13 +231,24 @@ export default function FirmManagementPage() {
 
     return (
         <Box p={2}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h5" fontWeight="800">Firm Management</Typography>
+            <Box 
+                display="flex" 
+                flexDirection={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between" 
+                alignItems={{ xs: 'flex-start', sm: 'center' }} 
+                mb={3} 
+                gap={2}
+            >
+                <Typography variant="h5" fontWeight="900" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+                    Firm Management
+                </Typography>
                 <Button 
                     variant="contained" 
                     startIcon={<AddIcon />}
                     onClick={() => setCreateOrgDialogOpen(true)}
-                    size="small"
+                    size="medium"
+                    fullWidth={{ xs: true, sm: false } as any}
+                    sx={{ borderRadius: 2, fontWeight: 'bold' }}
                 >
                     Create Organization
                 </Button>

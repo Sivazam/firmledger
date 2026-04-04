@@ -215,16 +215,16 @@ export default function PLReportPage() {
                     <TableBody>
                         <TableRow>
                             <TableCell>{grossProfit < 0 ? 'To Gross Loss b/f' : ''}</TableCell>
-                            <TableCell align="right">{grossProfit < 0 ? (Math.abs(grossProfit) / 100).toFixed(2) : ''}</TableCell>
+                            <TableCell align="right" sx={{ color: 'error.main' }}>{grossProfit < 0 ? (Math.abs(grossProfit) / 100).toFixed(2) : ''}</TableCell>
                             <TableCell>{grossProfit >= 0 ? 'By Gross Profit b/f' : ''}</TableCell>
-                            <TableCell align="right">{grossProfit >= 0 ? (grossProfit / 100).toFixed(2) : ''}</TableCell>
+                            <TableCell align="right" sx={{ color: 'success.main' }}>{grossProfit >= 0 ? (grossProfit / 100).toFixed(2) : ''}</TableCell>
                         </TableRow>
                         
                         {/* P&L Category Items */}
                         {plDebits.map((p, i) => (
                             <TableRow key={`dr-${i}`}>
                                 <TableCell>To {p.name}</TableCell>
-                                <TableCell align="right">{(p.balance / 100).toFixed(2)}</TableCell>
+                                <TableCell align="right" sx={{ color: 'error.main' }}>{(p.balance / 100).toFixed(2)}</TableCell>
                                 <TableCell></TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
@@ -234,7 +234,7 @@ export default function PLReportPage() {
                                 <TableCell></TableCell>
                                 <TableCell></TableCell>
                                 <TableCell>By {p.name}</TableCell>
-                                <TableCell align="right">{(Math.abs(p.balance) / 100).toFixed(2)}</TableCell>
+                                <TableCell align="right" sx={{ color: 'success.main' }}>{(Math.abs(p.balance) / 100).toFixed(2)}</TableCell>
                             </TableRow>
                         ))}
 

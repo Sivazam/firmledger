@@ -222,10 +222,10 @@ export default function TrialBalancePage() {
                                     <Box display="inline-flex" alignItems="center" gap={0.5}>
                                         <AmountDisplay 
                                             amount={Math.abs(entry.openingBalance)} 
-                                            color={entry.openingBalance === 0 ? 'text.secondary' : (entry.openingBalance > 0 ? 'success.main' : 'error.main')} 
+                                            color={entry.openingBalance === 0 ? 'text.secondary' : (entry.openingBalance > 0 ? 'error.main' : 'success.main')} 
                                         />
                                         {entry.openingBalance !== 0 && (
-                                            <Typography component="span" variant="body2" color={entry.openingBalance > 0 ? 'success.main' : 'error.main'}>
+                                            <Typography component="span" variant="body2" color={entry.openingBalance > 0 ? 'error.main' : 'success.main'}>
                                                 {entry.openingBalance > 0 ? 'Dr' : 'Cr'}
                                             </Typography>
                                         )}
@@ -242,10 +242,10 @@ export default function TrialBalancePage() {
                                     </>
                                 )}
                                 <TableCell align="right">
-                                    {entry.closingBalance > 0 ? <AmountDisplay amount={entry.closingBalance} /> : '-'}
+                                    {entry.closingBalance > 0 ? <AmountDisplay amount={entry.closingBalance} color="error.main" /> : '-'}
                                 </TableCell>
                                 <TableCell align="right">
-                                    {entry.closingBalance < 0 ? <AmountDisplay amount={Math.abs(entry.closingBalance)} /> : '-'}
+                                    {entry.closingBalance < 0 ? <AmountDisplay amount={Math.abs(entry.closingBalance)} color="success.main" /> : '-'}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -257,11 +257,11 @@ export default function TrialBalancePage() {
                                         <strong>
                                             <AmountDisplay 
                                                 amount={Math.abs(totalOpening)} 
-                                                color={totalOpening === 0 ? 'text.primary' : (totalOpening > 0 ? 'success.main' : 'error.main')} 
+                                                color={totalOpening === 0 ? 'text.primary' : (totalOpening > 0 ? 'error.main' : 'success.main')} 
                                             />
                                         </strong>
                                         {totalOpening !== 0 && (
-                                            <Typography component="span" variant="body2" color={totalOpening > 0 ? 'success.main' : 'error.main'} sx={{ fontWeight: 'bold' }}>
+                                            <Typography component="span" variant="body2" color={totalOpening > 0 ? 'error.main' : 'success.main'} sx={{ fontWeight: 'bold' }}>
                                                 {totalOpening > 0 ? 'Dr' : 'Cr'}
                                             </Typography>
                                         )}
@@ -273,8 +273,8 @@ export default function TrialBalancePage() {
                                         <TableCell align="right"><strong><AmountDisplay amount={totalCredit} /></strong></TableCell>
                                     </>
                                 )}
-                                <TableCell align="right"><strong><AmountDisplay amount={totalClosingDebit} /></strong></TableCell>
-                                <TableCell align="right"><strong><AmountDisplay amount={totalClosingCredit} /></strong></TableCell>
+                                <TableCell align="right"><strong><AmountDisplay amount={totalClosingDebit} color="error.main" /></strong></TableCell>
+                                <TableCell align="right"><strong><AmountDisplay amount={totalClosingCredit} color="success.main" /></strong></TableCell>
                             </TableRow>
                         )}
                         {reportEntries.length === 0 && (

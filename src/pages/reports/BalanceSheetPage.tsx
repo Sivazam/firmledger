@@ -252,11 +252,11 @@ export default function BalanceSheetPage() {
                     <TableBody>
                         <TableRow>
                             <TableCell sx={{ fontWeight: 'bold' }}>Capital / Net Profit</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'success.main' }}>
                                 {reportData.netProfit > 0 ? (reportData.netProfit / 100).toFixed(2) : '-'}
                             </TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Closing Stock</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                            <TableCell align="right" sx={{ fontWeight: 'bold', color: 'error.main' }}>
                                 {(Math.abs(closingStock || 0) / 100).toFixed(2)}
                             </TableCell>
                         </TableRow>
@@ -265,11 +265,11 @@ export default function BalanceSheetPage() {
                         {Array.from({ length: Math.max(reportData.liabilities.length, reportData.assets.length) }).map((_, i) => (
                             <TableRow key={i}>
                                 <TableCell>{reportData.liabilities[i]?.name || ''}</TableCell>
-                                <TableCell align="right">
+                                <TableCell align="right" sx={{ color: 'success.main' }}>
                                     {reportData.liabilities[i] ? (Math.abs(reportData.liabilities[i].balance) / 100).toFixed(2) : ''}
                                 </TableCell>
                                 <TableCell>{reportData.assets[i]?.name || ''}</TableCell>
-                                <TableCell align="right">
+                                <TableCell align="right" sx={{ color: 'error.main' }}>
                                     {reportData.assets[i] ? (reportData.assets[i].balance / 100).toFixed(2) : ''}
                                 </TableCell>
                             </TableRow>

@@ -138,7 +138,7 @@ export default function OrganizationDetailsPage() {
                     <CardContent>
                         <Typography variant="subtitle1" fontWeight="bold" mb={2} color="primary">Owner Contact Details</Typography>
                         <Stack spacing={2.5}>
-                            <TextField label="Owner Name" name="ownerName" fullWidth size="small" value={formData.ownerName} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} />
+                            <TextField label="Owner Name" name="ownerName" fullWidth size="small" value={formData.ownerName} disabled={true} helperText="Primary account identity (Read-only)" />
                             <TextField label="Phone / Mobile Number" name="phone" fullWidth size="small" value={formData.phone} onChange={handleChange} slotProps={{ input: { readOnly: !isOrgOwner } }} helperText="Shared on reports and invoices" />
                         </Stack>
                     </CardContent>

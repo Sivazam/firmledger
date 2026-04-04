@@ -126,8 +126,14 @@ export default function ManageMembersPage() {
                             opacity: member.status === 'denied' ? 0.85 : 1
                         }}>
                             <CardContent sx={{ py: '16px !important' }}>
-                                <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
-                                    <Box display="flex" gap={2} alignItems="center" flexGrow={1} minWidth={0}>
+                                <Box 
+                                    display="flex" 
+                                    flexDirection={{ xs: 'column', sm: 'row' }}
+                                    justifyContent="space-between" 
+                                    alignItems={{ xs: 'flex-start', sm: 'center' }} 
+                                    gap={2}
+                                >
+                                    <Box display="flex" gap={2} alignItems="center" flexGrow={1} minWidth={0} width="100%">
                                         <Avatar sx={{ bgcolor: 'secondary.light', flexShrink: 0, fontWeight: 'bold' }}>
                                             {member.displayName?.[0]?.toUpperCase() ?? '?'}
                                         </Avatar>
@@ -138,32 +144,29 @@ export default function ManageMembersPage() {
                                         </Box>
                                     </Box>
 
-                                    <Box display="flex" flexDirection="column" alignItems="flex-end" gap={1} flexShrink={0}>
+                                    <Box 
+                                        display="flex" 
+                                        flexDirection={{ xs: 'row-reverse', sm: 'column' }}
+                                        alignItems={{ xs: 'center', sm: 'flex-end' }} 
+                                        justifyContent="space-between"
+                                        gap={1} 
+                                        flexShrink={0}
+                                        width={{ xs: '100%', sm: 'auto' }}
+                                        pt={{ xs: 1, sm: 0 }}
+                                        borderTop={{ xs: '1px solid #F1F5F9', sm: 'none' }}
+                                    >
                                         {getStatusChip(member.status)}
                                         {isOrgOwner && (
-                                            member.status === 'denied' ? (
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    color="success"
-                                                    disabled={actionLoading === member.uid}
-                                                    onClick={() => handleToggleStatus(member, 'approved')}
-                                                    sx={{fontWeight: 700, fontSize: '0.7rem'}}
-                                                >
-                                                    Reactivate
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    size="small"
-                                                    variant="text"
-                                                    color="error"
-                                                    disabled={actionLoading === member.uid}
-                                                    onClick={() => handleToggleStatus(member, 'denied')}
-                                                    sx={{fontWeight: 700, fontSize: '0.7rem'}}
-                                                >
-                                                    Deactivate
-                                                </Button>
-                                            )
+                                            <Button
+                                                size="small"
+                                                variant="text"
+                                                color={member.status === 'denied' ? 'success' : 'error'}
+                                                disabled={actionLoading === member.uid}
+                                                onClick={() => handleToggleStatus(member, member.status === 'denied' ? 'approved' : 'denied')}
+                                                sx={{fontWeight: 700, fontSize: '0.75rem', px: 0}}
+                                            >
+                                                {member.status === 'denied' ? 'Reactivate' : 'Deactivate'}
+                                            </Button>
                                         )}
                                     </Box>
                                 </Box>

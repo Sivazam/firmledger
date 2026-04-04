@@ -274,12 +274,6 @@ export default function TransactionsListPage() {
                 <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
                 <MenuItem onClick={() => { handleExportPDF(true); setShareAnchor(null); }}>PDF</MenuItem>
             </Menu>
-            {!showReport && (
-                <FloatingActionButton 
-                    icon={<AddIcon />} 
-                    onClick={() => navigate('/transactions/new')} 
-                />
-            )}
         </Box>
     );
 }
