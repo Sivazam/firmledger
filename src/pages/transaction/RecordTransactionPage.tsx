@@ -53,6 +53,8 @@ export default function RecordTransactionPage() {
 
             const newTx = await TransactionService.addTransaction(profile.organizationId, {
                 ...data,
+                phoneNumber: data.phoneNumber || null,
+                referenceNumber: data.referenceNumber || null,
                 date: Timestamp.fromDate(data.date),
                 fromPartyName,
                 toPartyName,
@@ -80,7 +82,8 @@ export default function RecordTransactionPage() {
                     if (navigator.share) {
                         await navigator.share({
                             files: [file],
-                            title: `Receipt ${newTx.slNo}`
+                            title: `Receipt ${newTx.slNo}`,
+                            text: `Please find the receipt ${newTx.slNo} attached for your reference.`
                         });
                     } else {
                         // Fallback: download

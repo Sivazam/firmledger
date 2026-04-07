@@ -142,19 +142,22 @@ export default function FirmManagementPage() {
             if (!isAvailable) throw new Error('Username already taken.');
 
             const uid = await SecondaryAuthService.createUser(ownerEmail, ownerPassword, ownerUsername);
-            await AuthService.registerWithUsername(ownerUsername, ownerEmail, uid);
-            await AuthService.createUserProfile(uid, {
-                displayName: ownerUsername, email: ownerEmail, phone: phone, 
-                city: city, address: address, pincode: pincode, userType: 'user',
-                status: 'approved', profileComplete: true
-            });
-
+            
             const selectedFy = fyOptions[newOrgData.selectedFyIndex];
-            await OrganizationService.createOrganization(uid, {
-                orgName, city, address, pincode, gstNumber: newOrgData.gstNumber, ownerId: uid,
-                subscriptionStart: selectedFy.startDate, subscriptionEnd: selectedFy.endDate,
-                subscriptionLabel: selectedFy.label, subscriptionDescription: selectedFy.description
-            }, true);
+            
+            await Promise.all([
+                AuthService.registerWithUsername(ownerUsername, ownerEmail, uid),
+                AuthService.createUserProfile(uid, {
+                    displayName: ownerUsername, email: ownerEmail, phone: phone, 
+                    city: city, address: address, pincode: pincode, userType: 'user',
+                    status: 'approved', profileComplete: true
+                }),
+                OrganizationService.createOrganization(uid, {
+                    orgName, city, address, pincode, gstNumber: newOrgData.gstNumber, ownerId: uid,
+                    subscriptionStart: selectedFy.startDate, subscriptionEnd: selectedFy.endDate,
+                    subscriptionLabel: selectedFy.label, subscriptionDescription: selectedFy.description
+                }, true)
+            ]);
 
             setCreateOrgDialogOpen(false);
             setNewOrgData({
@@ -225,7 +228,7 @@ export default function FirmManagementPage() {
     };
 
     const getShareableText = () => {
-        const loginUrl = window.location.origin + '/login';
+        const loginUrl = 'https://www.ytraders.in/login';
         return `Hello, here are your login credentials for Viswa Ledger:\n\nLogin Link: ${loginUrl}\nUsername: ${successDetails.username}\nEmail: ${successDetails.email}\nPassword: ${successDetails.password}\n\nPlease change your password after logging in via Settings.`;
     };
 
@@ -428,7 +431,7 @@ export default function FirmManagementPage() {
                         </Box>
                         <Box display="flex" justifyContent="space-between" mt={1} pt={1} borderTop="1px solid #CBD5E1">
                             <Typography variant="caption" fontWeight="bold">Login URL:</Typography>
-                            <Typography variant="caption" sx={{ color: 'primary.main', textDecoration: 'underline' }}>{window.location.origin}/login</Typography>
+                            <Typography variant="caption" sx={{ color: 'primary.main', textDecoration: 'underline' }}>https://www.ytraders.in/login</Typography>
                         </Box>
                     </Stack>
                 </DialogContent>

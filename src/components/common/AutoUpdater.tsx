@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { Snackbar, Button, Alert } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
 
 export default function AutoUpdater() {
-    // intervalMS: check every 60 minutes
+    // Check for updates every 60 minutes
     const intervalMS = 60 * 60 * 1000;
 
     const {
-        needRefresh: [needRefresh],
+        needRefresh: [needRefresh, setNeedRefresh],
         updateServiceWorker,
     } = useRegisterSW({
         onRegistered(r: any) {
@@ -21,18 +23,10 @@ export default function AutoUpdater() {
         },
     });
 
-    useEffect(() => {
-        if (needRefresh) {
-            // Automatically force the active service worker to take control and reload the page
-            updateServiceWorker(true);
-        }
-    }, [needRefresh, updateServiceWorker]);
-
     // Check for updates when the user returns to the app tab
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                // Try to get the registration and update
                 navigator.serviceWorker?.getRegistration().then((r) => {
                     if (r) r.update();
                 });
@@ -43,5 +37,40 @@ export default function AutoUpdater() {
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, []);
 
-    return null; // Invisible component
+    const closePrompt = () => {
+        setNeedRefresh(false);
+    };
+
+    return (
+        <Snackbar 
+            open={needRefresh} 
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            sx={{ bottom: { xs: 90, sm: 24 } }} // Clears the bottom navigation bar safely
+        >
+            <Alert 
+                severity="info" 
+                variant="filled" 
+                sx={{ width: '100%', alignItems: 'center', backgroundColor: '#1E293B', color: 'white' }}
+                action={
+                    <React.Fragment>
+                        <Button 
+                            color="primary" 
+                            variant="contained" 
+                            size="small" 
+                            startIcon={<DownloadIcon />}
+                            onClick={() => updateServiceWorker(true)}
+                            sx={{ mr: 1, fontWeight: 'bold' }}
+                        >
+                            Update
+                        </Button>
+                        <Button color="inherit" size="small" onClick={closePrompt}>
+                            Ignore
+                        </Button>
+                    </React.Fragment>
+                }
+            >
+                A new update is available!
+            </Alert>
+        </Snackbar>
+    );
 }

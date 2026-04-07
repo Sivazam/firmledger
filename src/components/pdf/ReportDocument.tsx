@@ -4,7 +4,7 @@ import { TRANSACTION_TYPE_LABELS, TransactionType } from '../../config/constants
 import type { Organization } from '../../types/organization.types';
 
 const styles = StyleSheet.create({
-    page: { padding: 30, fontSize: 9, fontFamily: 'Helvetica', backgroundColor: '#fff' },
+    page: { padding: 30, fontSize: 9, fontFamily: 'NotoSansTelugu', backgroundColor: '#fff' },
     header: { flexDirection: 'row', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#1a237e', paddingBottom: 10 },
     logoBox: { width: 50, height: 50, marginRight: 15 },
     logo: { width: '100%', height: '100%', objectFit: 'contain' },

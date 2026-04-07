@@ -50,6 +50,8 @@ export default function EditTransactionPage() {
 
             const updateData = {
                 ...data,
+                phoneNumber: data.phoneNumber || null,
+                referenceNumber: data.referenceNumber || null,
                 date: Timestamp.fromDate(data.date),
                 fromPartyName,
                 toPartyName,

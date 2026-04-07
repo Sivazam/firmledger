@@ -108,7 +108,7 @@ export default function PartyForm({ initialData, onSubmit, isLoading }: Props) {
                     <TextField
                         label="Opening Balance (₹)"
                         type="number"
-                        inputProps={{ step: "0.01" }}
+                        inputProps={{ step: "0.01", inputMode: 'decimal' }}
                         {...register('openingBalance', { valueAsNumber: true })}
                         error={!!errors.openingBalance}
                         helperText={errors.openingBalance ? (errors.openingBalance?.message as any) : "Use a minus sign (-) for Credit/Negative balances (e.g., -500)"}

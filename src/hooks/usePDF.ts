@@ -24,6 +24,7 @@ export function usePDF() {
                 await navigator.share({
                     files: [file],
                     title: filename,
+                    text: 'Please find the attached document.'
                 });
                 return true;
             } catch (err) {

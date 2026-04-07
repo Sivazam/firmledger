@@ -67,8 +67,8 @@ export default function TransactionsListPage() {
         if (filteredTransactions.length === 0) return;
         
         const headers = isMultiUser
-            ? ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Created By', 'Amount', 'Description']
-            : ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Description'];
+            ? ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Created By', 'Amount', 'Ref No', 'Phone', 'Description']
+            : ['Txn No', 'Date', 'Type', 'From Party', 'To Party', 'Amount', 'Ref No', 'Phone', 'Description'];
         const rows = filteredTransactions.map(tx => {
             const date = tx.date && (tx.date as any).toDate ? dayjs((tx.date as any).toDate()).format('DD/MM/YYYY') : dayjs(tx.date as any).format('DD/MM/YYYY');
             const base = [
@@ -79,19 +79,28 @@ export default function TransactionsListPage() {
                 tx.toPartyName,
             ];
             if (isMultiUser) base.push(tx.createdBy_name || '-');
-            base.push(tx.amount / 100, tx.description.replace(/,/g, ' '));
+            base.push(
+                tx.amount / 100, 
+                tx.referenceNumber || '-', 
+                tx.phoneNumber || '-', 
+                tx.description.replace(/,/g, ' ')
+            );
             return base;
         });
 
         const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
         const filename = `Transactions_${fromDate}_to_${toDate}.csv`;
 
         const file = new File([blob], filename, { type: 'text/csv' });
         
         if (isShare && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
-                await navigator.share({ files: [file], title: 'Transactions Export' });
+                await navigator.share({ 
+                    files: [file], 
+                    title: 'Transactions Export',
+                    text: 'Please find the exported transactions document attached.'
+                });
             } catch (err) {
                 console.error('Share failed', err);
             }

@@ -113,6 +113,7 @@ export default function TradingReportPage() {
                     fullWidth
                     label="Closing Stock Value (₹)"
                     type="number"
+                    inputProps={{ inputMode: 'decimal' }}
                     sx={{ mb: 2 }}
                     value={closingStockInput}
                     onChange={e => setClosingStockInput(e.target.value)}

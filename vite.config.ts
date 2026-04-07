@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'icons/*'],
       manifestFilename: 'manifest.json',
       manifest: {
@@ -16,6 +16,7 @@ export default defineConfig({
         theme_color: '#FFFFFF',
         background_color: '#F5F5F5',
         display: 'standalone',
+        orientation: 'portrait',
         scope: '/',
         start_url: '/?source=pwa',
         icons: [

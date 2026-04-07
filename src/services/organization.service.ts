@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getCountFromServer, onSnapshot, QuerySnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, collection, query, where, getCountFromServer, onSnapshot, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import type { Organization } from '../types/organization.types';
@@ -73,8 +73,10 @@ export const OrganizationService = {
                 { code: '3038', name: 'VATTAX PAID A/C' }
             ];
 
-            const restrictedPromises = restrictedParties.map(party => 
-                setDoc(doc(db, 'organizations', orgId, 'parties', party.id), {
+            const batch = writeBatch(db);
+
+            restrictedParties.forEach(party => 
+                batch.set(doc(db, 'organizations', orgId, 'parties', party.id), {
                     id: party.id,
                     code: party.code,
                     name: party.name,
@@ -90,9 +92,9 @@ export const OrganizationService = {
                 })
             );
 
-            const plPromises = plParties.map(party => {
+            plParties.forEach(party => {
                 const id = `party_${party.code}`;
-                return setDoc(doc(db, 'organizations', orgId, 'parties', id), {
+                batch.set(doc(db, 'organizations', orgId, 'parties', id), {
                     id: id,
                     code: party.code,
                     name: party.name,
@@ -102,13 +104,13 @@ export const OrganizationService = {
                     phoneNumber: '0000000000',
                     openingBalance: 0,
                     balanceType: 'Debit',
-                    isSystem: false, // User can edit/delete these
+                    isSystem: false,
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
             });
 
-            await Promise.all([...restrictedPromises, ...plPromises]);
+            await batch.commit();
         }
     },
 

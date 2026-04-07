@@ -22,9 +22,22 @@ window.addEventListener('beforeinstallprompt', (e) => {
   window.dispatchEvent(new CustomEvent('pwa-prompt-captured'));
 });
 
+import { Font } from '@react-pdf/renderer';
+
 // Polyfills for react-pdf/renderer
 (window as any).Buffer = Buffer;
 (window as any).process = process;
+
+// Register Telugu Font for PDF generation natively using local TrueType fonts
+Font.register({
+  family: 'NotoSansTelugu',
+  fonts: [
+    { src: '/fonts/NotoSansTelugu-Regular.ttf', fontWeight: 400 },
+    { src: '/fonts/NotoSansTelugu-Bold.ttf', fontWeight: 700 },
+    { src: '/fonts/NotoSansTelugu-Regular.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: '/fonts/NotoSansTelugu-Bold.ttf', fontWeight: 700, fontStyle: 'italic' }
+  ]
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

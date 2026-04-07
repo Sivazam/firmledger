@@ -57,6 +57,13 @@ const theme = createTheme({
         }
       }
     },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontSize: '16px !important', // Prevents iOS Safari from auto-zooming
+        }
+      }
+    },
     MuiTextField: {
       defaultProps: { variant: 'outlined', fullWidth: true, size: 'small' },
       styleOverrides: {

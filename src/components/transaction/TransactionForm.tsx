@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { Box, Button, TextField, Grid } from '@mui/material';
+import { Box, Button, TextField, Grid, Autocomplete, Typography, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { useBlocker } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,12 +79,22 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
             toPartyId: '',
             description: '',
             amount: '' as any,
+            phoneNumber: '',
+            referenceNumber: ''
         }
     });
 
     const selectedType = watch('type');
     const [fromParty, setFromParty] = useState<Party | null>(null);
     const [toParty, setToParty] = useState<Party | null>(null);
+    const [phoneConflict, setPhoneConflict] = useState<{ p1: Party, p2: Party } | null>(null);
+
+    const getValidPhone = (party?: Party | null) => {
+        if (!party || !party.phoneNumber) return null;
+        const clean = party.phoneNumber.replace(/\D/g, '');
+        if (clean.length < 5 || /^0+$/.test(clean)) return null;
+        return party.phoneNumber;
+    };
 
     const prevTypeRef = React.useRef(selectedType);
 
@@ -139,6 +149,21 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
             setFromParty(pretParty); setValue('fromPartyId', pretParty.id, { shouldDirty: false });
         }
     }, [selectedType, parties, setValue, initialData]);
+
+    const handlePhoneAutoSelect = (p1: Party | null, p2: Party | null) => {
+        // Prevent auto-fill if user explicitly typed something else already? 
+        // Actually, overriding on party change is usually desired for speed.
+        const ph1 = getValidPhone(p1);
+        const ph2 = getValidPhone(p2);
+
+        if (ph1 && ph2 && ph1 !== ph2) {
+            setPhoneConflict({ p1: p1!, p2: p2! });
+        } else if (ph1) {
+            setValue('phoneNumber', ph1, { shouldDirty: true });
+        } else if (ph2) {
+            setValue('phoneNumber', ph2, { shouldDirty: true });
+        }
+    };
 
     const handleFormSubmit = async (data: TransactionFormData) => {
         try {
@@ -198,6 +223,14 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                             if (isFrom) setFromParty(p);
                             else setToParty(p);
                             field.onChange(p?.id || '');
+                            
+                            if (p && !initialData) {
+                                setTimeout(() => {
+                                    const freshFrom = isFrom ? p : fromParty;
+                                    const freshTo = isFrom ? toParty : p;
+                                    handlePhoneAutoSelect(freshFrom, freshTo);
+                                }, 0);
+                            }
                         }}
                         error={!!errors[fieldName]}
                         helperText={errors[fieldName]?.message as any}
@@ -268,6 +301,54 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                         helperText={errors.amount?.message as any}
                     />
                 </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                        label="Voucher / Reference No."
+                        fullWidth
+                        {...register('referenceNumber')}
+                        error={!!errors.referenceNumber}
+                        helperText={errors.referenceNumber?.message as any}
+                        placeholder="e.g. IN-204"
+                    />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <Controller
+                        name="phoneNumber"
+                        control={control}
+                        render={({ field }) => (
+                            <Autocomplete
+                                freeSolo
+                                options={Array.from(new Set(parties.map(p => getValidPhone(p)).filter(Boolean) as string[]))}
+                                value={field.value || ''}
+                                onChange={(_, newValue) => field.onChange(newValue || '')}
+                                onInputChange={(_, newInputValue) => field.onChange(newInputValue)}
+                                renderOption={(props, option) => {
+                                    const matchedParties = parties.filter(p => getValidPhone(p) === option);
+                                    const names = matchedParties.map(p => p.name).join(', ');
+                                    return (
+                                        <li {...props} key={option}>
+                                            <Box>
+                                                <Typography variant="body1" fontWeight="bold">{option}</Typography>
+                                                {names && <Typography variant="caption" color="text.secondary">{names}</Typography>}
+                                            </Box>
+                                        </li>
+                                    );
+                                }}
+                                renderInput={(params) => (
+                                    <TextField 
+                                        {...params} 
+                                        label="Phone Number" 
+                                        inputProps={{ ...params.inputProps, inputMode: 'numeric' }}
+                                        error={!!errors.phoneNumber}
+                                        helperText={errors.phoneNumber ? (errors.phoneNumber?.message as any) : "Selected from parties automatically"}
+                                    />
+                                )}
+                            />
+                        )}
+                    />
+                </Grid>
             </Grid>
 
             <Button type="submit" variant="contained" size="large" disabled={isLoading} sx={{ mt: 2, color: 'white' }}>
@@ -283,6 +364,31 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
                 onConfirm={() => blocker.state === 'blocked' && blocker.proceed()}
                 onCancel={() => blocker.state === 'blocked' && blocker.reset()}
             />
+
+            {/* Phone Conflict Dialog */}
+            <Dialog open={!!phoneConflict} onClose={() => setPhoneConflict(null)}>
+                <DialogTitle>Select Phone Number</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" mb={2}>
+                        Both parties have valid phone numbers. Which one should be attached to this receipt?
+                    </Typography>
+                    <List>
+                        <ListItem disablePadding>
+                            <ListItemButton onClick={() => { setValue('phoneNumber', getValidPhone(phoneConflict?.p1) || ''); setPhoneConflict(null); }}>
+                                <ListItemText primary={getValidPhone(phoneConflict?.p1)} secondary={phoneConflict?.p1.name} />
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem disablePadding>
+                            <ListItemButton onClick={() => { setValue('phoneNumber', getValidPhone(phoneConflict?.p2) || ''); setPhoneConflict(null); }}>
+                                <ListItemText primary={getValidPhone(phoneConflict?.p2)} secondary={phoneConflict?.p2.name} />
+                            </ListItemButton>
+                        </ListItem>
+                    </List>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPhoneConflict(null)}>Skip</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
