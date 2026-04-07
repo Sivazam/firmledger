@@ -15,6 +15,8 @@ interface AuthState {
     init: () => void;
 }
 
+let authUnsubscribe: (() => void) | null = null;
+
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     profile: null,
@@ -25,7 +27,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     setProfile: (profile) => set({ profile }),
 
     init: () => {
-        onAuthStateChanged(auth, async (user) => {
+        if (authUnsubscribe) return; // Singleton pattern to block React 18 Strict Mode double-hooks
+        authUnsubscribe = onAuthStateChanged(auth, async (user) => {
             // Only show full loading splash if it's the first initialization
             set((state) => ({ user, loading: !state.initialized ? true : state.loading }));
             if (user) {
