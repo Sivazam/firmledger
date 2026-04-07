@@ -30,12 +30,22 @@ export default function AutoUpdater() {
                 navigator.serviceWorker?.getRegistration().then((r) => {
                     if (r) r.update();
                 });
+                
+                // If there's an update pending from a previous background sync, deploy it immediately when they open the app
+                if (needRefresh) {
+                    updateServiceWorker(true);
+                }
             }
         };
 
+        // If the app just booted and an update is already pending, force the flush payload instantly
+        if (needRefresh && document.visibilityState === 'visible') {
+            updateServiceWorker(true);
+        }
+
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, []);
+    }, [needRefresh, updateServiceWorker]);
 
     const closePrompt = () => {
         setNeedRefresh(false);
