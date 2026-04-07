@@ -36,10 +36,13 @@ export default defineConfig({
       },
       devOptions: {
         enabled: true
+      },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5000000 // 5MB limit to prevent failing on large MUI chunks
       }
     })
   ],
   define: {
     global: 'window',
-  },
+  }
 })
