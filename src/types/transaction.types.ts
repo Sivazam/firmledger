@@ -12,8 +12,8 @@ export interface Transaction {
     toPartyName: string;
     description: string;
     amount: number; // in paisa
-    phoneNumber?: string;
-    referenceNumber?: string;
+    phoneNumber?: string | null;
+    referenceNumber?: string | null;
     createdBy: string;
     createdBy_name?: string;
     createdAt: Timestamp;
