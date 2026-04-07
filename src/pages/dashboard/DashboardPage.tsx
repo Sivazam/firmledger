@@ -1,14 +1,18 @@
 import React, { useEffect, useMemo } from 'react';
-import { Box, Typography, Grid, Card, CardContent, CircularProgress, Paper } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, CircularProgress, Paper, Button } from '@mui/material';
 import { useAuthStore } from '../../stores/authStore';
 import { usePartyStore } from '../../stores/partyStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { TransactionType } from '../../config/constants';
 import { formatINR } from '../../utils/formatters';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 export default function DashboardPage() {
     const { profile } = useAuthStore();
+    const navigate = useNavigate();
     const { parties, fetchParties, loading: partiesLoading, initialized: partiesInit } = usePartyStore();
     const { transactions, fetchTransactions, loading: txLoading, initialized: txInit } = useTransactionStore();
 
@@ -73,9 +77,9 @@ export default function DashboardPage() {
             '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
         }}>
             <CardContent sx={{ 
-                py: { xs: 1, sm: 1.5 }, 
+                py: { xs: 0.75, sm: 1 }, 
                 px: 2, 
-                '&:last-child': { pb: { xs: 1, sm: 1.5 } }, 
+                '&:last-child': { pb: { xs: 0.75, sm: 1 } }, 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'space-between' 
@@ -110,6 +114,63 @@ export default function DashboardPage() {
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <CardItem label="Cash Closing Balance" value={formatINR(stats.dashboardClosingBalance)} color="#6a1b9a" />
+                </Grid>
+            </Grid>
+
+            <Grid container spacing={1.5} sx={{ mt: 2, mb: 1 }}>
+                <Grid size={{ xs: 6 }}>
+                    <Button 
+                        fullWidth 
+                        variant="contained" 
+                        onClick={() => navigate('/transactions/record?type=CR')}
+                        startIcon={<AddCircleOutlineIcon sx={{ opacity: 0.9 }} />}
+                        sx={{ 
+                            py: 1, 
+                            borderRadius: 2.5, 
+                            color: 'white',
+                            background: 'linear-gradient(135deg, #43a047 0%, #2e7d32 100%)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.02em',
+                            boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
+                            '&:hover': { 
+                                background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 6px 14px rgba(46, 125, 50, 0.45)'
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <Typography variant="button" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' }, fontWeight: '900' }}>
+                            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cash </Box>Receipt
+                        </Typography>
+                    </Button>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                    <Button 
+                        fullWidth 
+                        variant="contained" 
+                        onClick={() => navigate('/transactions/record?type=CP')}
+                        startIcon={<RemoveCircleOutlineIcon sx={{ opacity: 0.9 }} />}
+                        sx={{ 
+                            py: 1, 
+                            borderRadius: 2.5, 
+                            color: 'white',
+                            background: 'linear-gradient(135deg, #e53935 0%, #c62828 100%)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.02em',
+                            boxShadow: '0 4px 12px rgba(198, 40, 40, 0.3)',
+                            '&:hover': { 
+                                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 6px 14px rgba(198, 40, 40, 0.45)'
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <Typography variant="button" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' }, fontWeight: '900' }}>
+                            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cash </Box>Payment
+                        </Typography>
+                    </Button>
                 </Grid>
             </Grid>
 

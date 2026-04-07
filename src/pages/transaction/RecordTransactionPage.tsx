@@ -7,7 +7,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { usePartyStore } from '../../stores/partyStore';
 import { OrganizationService } from '../../services/organization.service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
 import { formatDate, formatINR } from '../../utils/formatters';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
@@ -24,6 +24,8 @@ export default function RecordTransactionPage() {
     const { parties } = usePartyStore();
     const { currentOrganization } = useOrganizationStore();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const defaultType = (searchParams.get('type') as any) || undefined;
     const [resetKey, setResetKey] = useState(0);
     const [dialogConfig, setDialogConfig] = useState<{ 
         open: boolean, 
@@ -134,7 +136,7 @@ export default function RecordTransactionPage() {
 
     return (
         <Box maxWidth={800} mx="auto">
-            <TransactionForm key={resetKey} onSubmit={handleSubmit} isLoading={loading} />
+            <TransactionForm key={resetKey} onSubmit={handleSubmit} isLoading={loading} defaultType={defaultType} />
             <ConfirmDialog
                 open={dialogConfig.open}
                 title={dialogConfig.title}

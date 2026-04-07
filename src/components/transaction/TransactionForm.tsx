@@ -17,11 +17,12 @@ import ConfirmDialog from '../common/ConfirmDialog';
 
 interface Props {
     initialData?: any;
+    defaultType?: TransactionType;
     onSubmit: (data: TransactionFormData) => Promise<void>;
     isLoading: boolean;
 }
 
-export default function TransactionForm({ initialData, onSubmit, isLoading }: Props) {
+export default function TransactionForm({ initialData, defaultType, onSubmit, isLoading }: Props) {
     const { parties } = usePartyStore();
     const { currentOrganization } = useOrganizationStore();
     
@@ -74,7 +75,7 @@ export default function TransactionForm({ initialData, onSubmit, isLoading }: Pr
         resolver: zodResolver(boundedSchema),
         defaultValues: initialData || {
             date: dayjs.tz().format('YYYY-MM-DD'),
-            type: TransactionType.CR,
+            type: defaultType || TransactionType.CR,
             fromPartyId: '',
             toPartyId: '',
             description: '',
