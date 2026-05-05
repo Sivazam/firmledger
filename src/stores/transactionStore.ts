@@ -10,6 +10,7 @@ interface TransactionState {
     fetchTransactions: (orgId: string) => Promise<void>;
     addTransactionLocal: (tx: Transaction) => void;
     updateTransactionLocal: (txId: string, data: Partial<Transaction>) => void;
+    removeTransactionLocal: (txId: string) => void;
     setClosingStock: (val: number | null) => void;
 }
 
@@ -49,6 +50,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
             if (da !== db) return da - db;
             return String(b.slNo).localeCompare(String(a.slNo), undefined, { numeric: true });
         }) });
+    },
+
+    removeTransactionLocal: (txId) => {
+        set({ transactions: get().transactions.filter(t => t.id !== txId) });
     },
 
     setClosingStock: (val) => set({ closingStock: val })

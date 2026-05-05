@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Snackbar, Alert } from '@mui/material';
 import dayjs from 'dayjs';
 import AddIcon from '@mui/icons-material/Add';
 import { useTransactionStore } from '../../stores/transactionStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useOrganizationStore } from '../../stores/organizationStore';
+import { TransactionService } from '../../services/transaction.service';
 import TransactionCard from '../../components/transaction/TransactionCard';
 import TransactionFilters from '../../components/transaction/TransactionFilters';
 import FloatingActionButton from '../../components/common/FloatingActionButton';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { useNavigate } from 'react-router-dom';
 import { usePDF } from '../../hooks/usePDF';
 import { pdf } from '@react-pdf/renderer';
 import ReportDocument from '../../components/pdf/ReportDocument';
 import { TRANSACTION_TYPE_LABELS } from '../../config/constants';
+import type { Transaction } from '../../types/transaction.types';
 import { 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
     Button, IconButton, Menu, MenuItem, Divider, Stack
@@ -32,20 +35,22 @@ export default function TransactionsListPage() {
     const isMultiUser = orgMemberCount > 1;
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState('');
-    const [fromDate, setFromDate] = useState(dayjs.tz().startOf('month').format('YYYY-MM-DD'));
-    const [toDate, setToDate] = useState(dayjs.tz().format('YYYY-MM-DD'));
+    const [fromDate, setFromDate] = useState(() => sessionStorage.getItem('tx_fromDate') || dayjs.tz().startOf('month').format('YYYY-MM-DD'));
+    const [toDate, setToDate] = useState(() => sessionStorage.getItem('tx_toDate') || dayjs.tz().format('YYYY-MM-DD'));
     const [showReport, setShowReport] = useState(false);
+    
+    useEffect(() => {
+        sessionStorage.setItem('tx_fromDate', fromDate);
+        sessionStorage.setItem('tx_toDate', toDate);
+    }, [fromDate, toDate]);
     
     const [downloadAnchor, setDownloadAnchor] = useState<null | HTMLElement>(null);
     const [shareAnchor, setShareAnchor] = useState<null | HTMLElement>(null);
-    
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        if (profile?.organizationId && !initialized) {
-            fetchTransactions(profile.organizationId);
-        }
-    }, [profile?.organizationId, initialized, fetchTransactions]);
+    // Delete state
+    const { removeTransactionLocal } = useTransactionStore();
+    const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const filteredTransactions = transactions.filter(tx => {
         const txDate = tx.date && (tx.date as any).toDate ? dayjs.tz((tx.date as any).toDate()) : dayjs.tz(tx.date as any);
@@ -62,6 +67,41 @@ export default function TransactionsListPage() {
         
         return isWithinDate && matchSearch && matchType;
     });
+
+    // First-time swipe guide
+    const [showSwipeGuide, setShowSwipeGuide] = useState(false);
+    useEffect(() => {
+        const seen = localStorage.getItem('swipe_delete_guide_seen');
+        if (!seen && filteredTransactions.length > 0) {
+            const timer = setTimeout(() => {
+                setShowSwipeGuide(true);
+                localStorage.setItem('swipe_delete_guide_seen', '1');
+            }, 1000); // 1 second delay so they see it after load
+            return () => clearTimeout(timer);
+        }
+    }, [filteredTransactions.length]);
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteTarget || !profile?.organizationId) return;
+        setDeleting(true);
+        try {
+            await TransactionService.deleteTransaction(profile.organizationId, deleteTarget.id);
+            removeTransactionLocal(deleteTarget.id);
+        } catch (err) {
+            console.error('Delete failed', err);
+        } finally {
+            setDeleting(false);
+            setDeleteTarget(null);
+        }
+    };
+    
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (profile?.organizationId && !initialized) {
+            fetchTransactions(profile.organizationId);
+        }
+    }, [profile?.organizationId, initialized, fetchTransactions]);
 
     const handleExportExcel = async (isShare: boolean = false) => {
         if (filteredTransactions.length === 0) return;
@@ -257,7 +297,8 @@ export default function TransactionsListPage() {
                         key={tx.id} 
                         tx={tx} 
                         isMultiUser={isMultiUser} 
-                        ownerId={currentOrganization?.ownerId} 
+                        ownerId={currentOrganization?.ownerId}
+                        onDelete={(t) => setDeleteTarget(t)}
                     />
                 ))
             ) : (
@@ -283,6 +324,36 @@ export default function TransactionsListPage() {
                 <MenuItem onClick={() => { handleExportExcel(true); setShareAnchor(null); }}>Excel</MenuItem>
                 <MenuItem onClick={() => { handleExportPDF(true); setShareAnchor(null); }}>PDF</MenuItem>
             </Menu>
+
+            {/* Delete Confirm Dialog */}
+            <ConfirmDialog
+                open={!!deleteTarget}
+                title="Delete Transaction"
+                message={deleteTarget ? `Are you sure you want to permanently delete transaction SL-${deleteTarget.slNo}? This action cannot be undone.` : ''}
+                variant="confirm"
+                confirmText={deleting ? 'Deleting...' : 'Delete'}
+                cancelText="Cancel"
+                onConfirm={handleDeleteConfirm}
+                onCancel={() => setDeleteTarget(null)}
+            />
+
+            {/* First-time swipe guide */}
+            <Snackbar
+                open={showSwipeGuide}
+                autoHideDuration={6000}
+                onClose={() => setShowSwipeGuide(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                sx={{ bottom: { xs: 80, sm: 24 }, zIndex: 9999 }} // Raise above bottom nav
+            >
+                <Alert
+                    severity="info"
+                    variant="filled"
+                    onClose={() => setShowSwipeGuide(false)}
+                    sx={{ width: '100%', borderRadius: 2 }}
+                >
+                    👈 Swipe left on any transaction to delete it
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

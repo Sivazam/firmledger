@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, getDocs, getDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs, getDoc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import type { Transaction  } from '../types/transaction.types';
 import { CounterService } from './counter.service';
@@ -33,6 +33,11 @@ export const TransactionService = {
             ...data,
             updatedAt: serverTimestamp()
         });
+    },
+
+    async deleteTransaction(orgId: string, txId: string): Promise<void> {
+        const docRef = doc(db, `organizations/${orgId}/transactions`, txId);
+        await deleteDoc(docRef);
     },
 
     async getAllTransactions(orgId: string): Promise<Transaction[]> {

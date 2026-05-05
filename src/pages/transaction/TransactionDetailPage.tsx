@@ -2,10 +2,12 @@ import React from 'react';
 import { Box, Typography, Button, Paper, Divider, Chip, CircularProgress } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTransactionStore } from '../../stores/transactionStore';
+import { TransactionService } from '../../services/transaction.service';
 import { formatDate } from '../../utils/formatters';
 import AmountDisplay from '../../components/transaction/AmountDisplay';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { usePDF } from '../../hooks/usePDF';
 import ReceiptDocument from '../../components/pdf/ReceiptDocument';
 import { useAuthStore } from '../../stores/authStore';
@@ -16,9 +18,11 @@ import ConfirmDialog from '../../components/common/ConfirmDialog';
 export default function TransactionDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { transactions } = useTransactionStore();
+    const { transactions, removeTransactionLocal } = useTransactionStore();
     const { profile } = useAuthStore();
     const { generatePDFBlob, sharePDF, isGenerating } = usePDF();
+    const [deleting, setDeleting] = React.useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
     const [dialogConfig, setDialogConfig] = React.useState<{ open: boolean, title: string, message: string, variant: 'success' | 'error', onConfirm: () => void }>({
         open: false, title: '', message: '', variant: 'success', onConfirm: () => { }
     });
@@ -108,7 +112,7 @@ export default function TransactionDetailPage() {
                     </Box>
                 </Box>
 
-                <Box display="flex" gap={2}>
+                <Box display="flex" gap={2} flexWrap="wrap">
                     <Button
                         variant="contained"
                         startIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <PictureAsPdfIcon />}
@@ -126,6 +130,16 @@ export default function TransactionDetailPage() {
                     >
                         Edit
                     </Button>
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />}
+                        fullWidth
+                        disabled={deleting}
+                        onClick={() => setShowDeleteConfirm(true)}
+                    >
+                        {deleting ? 'Deleting...' : 'Delete'}
+                    </Button>
                 </Box>
             </Paper>
 
@@ -135,6 +149,36 @@ export default function TransactionDetailPage() {
                 message={dialogConfig.message}
                 variant={dialogConfig.variant}
                 onConfirm={dialogConfig.onConfirm}
+            />
+            <ConfirmDialog
+                open={showDeleteConfirm}
+                title="Delete Transaction"
+                message={`Are you sure you want to permanently delete transaction SL-${tx.slNo}? This action cannot be undone.`}
+                variant="confirm"
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={async () => {
+                    setShowDeleteConfirm(false);
+                    if (!profile?.organizationId) return;
+                    setDeleting(true);
+                    try {
+                        await TransactionService.deleteTransaction(profile.organizationId, tx.id);
+                        removeTransactionLocal(tx.id);
+                        navigate('/transactions', { replace: true });
+                    } catch (err) {
+                        console.error('Delete failed', err);
+                        setDialogConfig({
+                            open: true,
+                            variant: 'error',
+                            title: 'Delete Failed',
+                            message: 'Failed to delete the transaction. Please try again.',
+                            onConfirm: () => setDialogConfig(prev => ({ ...prev, open: false }))
+                        });
+                    } finally {
+                        setDeleting(false);
+                    }
+                }}
+                onCancel={() => setShowDeleteConfirm(false)}
             />
         </Box>
     );
