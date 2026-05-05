@@ -10,9 +10,10 @@ interface Props {
     error?: boolean;
     helperText?: string;
     filter?: (party: Party) => boolean;
+    highlight?: boolean;
 }
 
-export default function PartySelector({ label, value, onChange, error, helperText, filter }: Props) {
+export default function PartySelector({ label, value, onChange, error, helperText, filter, highlight }: Props) {
     const { parties } = usePartyStore();
     const filteredOptions = filter ? parties.filter(filter) : parties;
 
@@ -30,6 +31,16 @@ export default function PartySelector({ label, value, onChange, error, helperTex
                     error={error}
                     helperText={helperText}
                     required
+                    sx={highlight ? {
+                        '& .MuiOutlinedInput-root': {
+                            '& fieldset': { 
+                                borderColor: 'primary.main', 
+                                borderWidth: '2px',
+                                boxShadow: '0 0 8px rgba(25, 118, 210, 0.2)'
+                            },
+                        },
+                        '& .MuiInputLabel-root': { color: 'primary.main', fontWeight: 'bold' }
+                    } : {}}
                 />
             )}
             isOptionEqualToValue={(option, val) => option.id === val.id}

@@ -90,6 +90,15 @@ export default function TransactionForm({ initialData, defaultType, onSubmit, is
     const [toParty, setToParty] = useState<Party | null>(null);
     const [phoneConflict, setPhoneConflict] = useState<{ p1: Party, p2: Party } | null>(null);
 
+    const targetRole = React.useMemo(() => {
+        if (selectedType === TransactionType.CR || selectedType === TransactionType.BR || 
+            selectedType === TransactionType.PI || selectedType === TransactionType.SR || 
+            selectedType === TransactionType.JV || selectedType === TransactionType.BP) {
+            return 'from';
+        }
+        return 'to';
+    }, [selectedType]);
+
     const getValidPhone = (party?: Party | null) => {
         if (!party || !party.phoneNumber) return null;
         const clean = party.phoneNumber.replace(/\D/g, '');
@@ -148,6 +157,16 @@ export default function TransactionForm({ initialData, defaultType, onSubmit, is
             setToParty(sretParty); setValue('toPartyId', sretParty.id, { shouldDirty: false });
         } else if (selectedType === TransactionType.PR && pretParty) {
             setFromParty(pretParty); setValue('fromPartyId', pretParty.id, { shouldDirty: false });
+        }
+
+        // Auto-fill Bank if only one bank exists
+        const bankParties = parties.filter(p => p.isBank);
+        if (bankParties.length === 1) {
+            if (selectedType === TransactionType.BR) {
+                setToParty(bankParties[0]); setValue('toPartyId', bankParties[0].id, { shouldDirty: false });
+            } else if (selectedType === TransactionType.BP) {
+                setFromParty(bankParties[0]); setValue('fromPartyId', bankParties[0].id, { shouldDirty: false });
+            }
         }
     }, [selectedType, parties, setValue, initialData]);
 
@@ -235,6 +254,7 @@ export default function TransactionForm({ initialData, defaultType, onSubmit, is
                         }}
                         error={!!errors[fieldName]}
                         helperText={errors[fieldName]?.message as any}
+                        highlight={!initialData && role === targetRole && !(role === 'from' ? fromParty : toParty)}
                     />
                 )}
             />
